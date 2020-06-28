@@ -4469,6 +4469,11 @@ _DW({									\
     gImmp1(pkt, G_RDPHALF_2, (unsigned int)(wordlo));	\
 }
 
+#define gdSPDefVtxN(x,y,z,s,t,      \
+                    nx,ny,nz,a)       ((Vtx)                                  \
+                                       {.n={{x,y,z},0,{0,0},    \
+                                            {nx,ny,nz},a}})
+
 #define	gDPFullSync(pkt)	gDPNoParam(pkt, G_RDPFULLSYNC)
 #define	gsDPFullSync()		gsDPNoParam(G_RDPFULLSYNC)
 #define	gDPTileSync(pkt)	gDPNoParam(pkt, G_RDPTILESYNC)
