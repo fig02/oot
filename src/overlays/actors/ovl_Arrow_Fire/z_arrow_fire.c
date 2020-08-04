@@ -6,6 +6,7 @@
 
 #include "z_arrow_fire.h"
 #include "overlays/actors/ovl_En_Arrow/z_en_arrow.h"
+#include "overlays/actors/ovl_En_Bom/z_en_bom.h"
 
 #define FLAGS 0x02000010
 
@@ -53,6 +54,8 @@ void ArrowFire_Init(Actor* thisx, GlobalContext* globalCtx) {
     this->alpha = 160;
     this->timer = 0;
     this->unk_15C = 0.0f;
+    this->exploded = false;
+    this->startBombCount = AMMO(ITEM_BOMB);
 }
 
 void ArrowFire_Destroy(Actor* thisx, GlobalContext* globalCtx) {
@@ -76,8 +79,7 @@ void ArrowFire_Charge(ArrowFire* this, GlobalContext* globalCtx) {
     // copy position and rotation from the attached arrow
     this->actor.posRot.pos = arrow->actor.posRot.pos;
     this->actor.shape.rot = arrow->actor.shape.rot;
-
-    func_8002F974(&this->actor, NA_SE_PL_ARROW_CHARGE_FIRE - SFX_FLAG);
+    func_8002F974(&this->actor, NA_SE_IT_BOMB_IGNIT - SFX_FLAG);
 
     // If arrow's attached is null, Link has fired the arrow
     if (arrow->actor.attachedA == NULL) {
@@ -99,6 +101,12 @@ void ArrowFire_Hit(ArrowFire* this, GlobalContext* globalCtx) {
     f32 offset;
     u16 timer;
 
+    if (!this->exploded) {
+        EnBom* bomb = (EnBom*)Actor_Spawn(&globalCtx->actorCtx, globalCtx, ACTOR_EN_BOM, this->actor.posRot.pos.x,
+                                          this->actor.posRot.pos.y, this->actor.posRot.pos.z, 0, 0, 0, 0);
+        bomb->timer = 0;
+        this->exploded = true;
+    }
     if (this->actor.projectedW < 50.0f) {
         scale = 10.0f;
     } else {
@@ -156,6 +164,10 @@ void ArrowFire_Fly(ArrowFire* this, GlobalContext* globalCtx) {
         Actor_Kill(&this->actor);
         return;
     }
+    if (this->startBombCount == AMMO(ITEM_BOMB)) {
+        AMMO(ITEM_BOMB)--;
+    }
+    
     // copy position and rotation from the attached arrow
     this->actor.posRot.pos = arrow->actor.posRot.pos;
     this->actor.shape.rot = arrow->actor.shape.rot;
@@ -171,79 +183,76 @@ void ArrowFire_Fly(ArrowFire* this, GlobalContext* globalCtx) {
         ArrowFire_SetupAction(this, ArrowFire_Hit);
         this->timer = 32;
         this->alpha = 255;
-    } else if (arrow->timer < 34) {
-        if (this->alpha < 35) {
-            Actor_Kill(&this->actor);
-        } else {
-            this->alpha -= 0x19;
-        }
     }
 }
 
 void ArrowFire_Update(Actor* thisx, GlobalContext* globalCtx) {
     ArrowFire* this = THIS;
+    static Vec3f moveEff = { 0.0f, 0.0f, 32.0f };
+    static Vec3f zeroVec = { 0.0f, 0.0f, 0.0f };
+    static Vec3f dustAccel = { 0.0f, 0.6f, 0.0f };
+    static Color_RGBA8 sparkEnv = { 255, 255, 150, 255 };
+    static Color_RGBA8 sparkPrim = { 255, 0, 0, 0 };
+    static Color_RGBA8_n dustColor = { 255, 255, 255, 255 };
+    Vec3f effPos;
+
+    this->flashTimer++;
+
+    Matrix_Translate(thisx->posRot.pos.x, thisx->posRot.pos.y, thisx->posRot.pos.z, MTXMODE_NEW);
+    Matrix_RotateY(thisx->shape.rot.y * (360.0f / 65535.0f) * (M_PI / 180.0f), MTXMODE_APPLY);
+    Matrix_RotateX(thisx->shape.rot.x * (360.0f / 65535.0f) * (M_PI / 180.0f), MTXMODE_APPLY);
+    Matrix_MultVec3f(&moveEff, &effPos);
+    effPos.y += 3.0f;
+
+    if ((globalCtx->gameplayFrames % 2) == 0) {
+        func_80029060(globalCtx, thisx, &effPos, &zeroVec, &zeroVec, &sparkEnv, &sparkPrim, 25, 5);
+    }
+
+    func_8002829C(globalCtx, &effPos, &zeroVec, &dustAccel, &dustColor, &dustColor, 25, 5);
 
     if (globalCtx->msgCtx.msgMode == 0xD || globalCtx->msgCtx.msgMode == 0x11) {
         Actor_Kill(&this->actor);
     } else {
         this->actionFunc(this, globalCtx);
     }
+
+    if ((this->flashTimer & 8) != 0) {
+        Math_SmoothScaleMaxMinF(&this->flashIntensity, 140.0f, 1.0f, 140.0f / 7, 0.0f);
+    } else {
+        Math_SmoothScaleMaxMinF(&this->flashIntensity, 0.0f, 1.0f, 140.0f / 7, 0.0f);
+    }
 }
+extern Gfx D_04007860[];
+extern Gfx D_04007A50[];
 
 void ArrowFire_Draw(Actor* thisx, GlobalContext* globalCtx) {
     ArrowFire* this = THIS;
-    s32 pad;
-    u32 stateFrames;
     GraphicsContext* gfxCtx;
-    Actor* tranform;
-    EnArrow* arrow;
     Gfx* dispRefs[4];
 
-    stateFrames = globalCtx->state.frames;
-    arrow = (EnArrow*)this->actor.attachedA;
-    if (1) {}
+    if (this->actor.attachedA != NULL) {
+        gfxCtx = globalCtx->state.gfxCtx;
+        Graph_OpenDisps(dispRefs, globalCtx->state.gfxCtx, "../z_en_bom.c", 913);
 
-    if ((arrow != NULL) && (arrow->actor.update != NULL) && (this->timer < 255)) {
-        if (1) {}
-        tranform = (arrow->hitWall & 2) ? &this->actor : &arrow->actor;
-        // clang-format off
-        gfxCtx = globalCtx->state.gfxCtx; Graph_OpenDisps(dispRefs, globalCtx->state.gfxCtx, "../z_arrow_fire.c", 618);
-        // clang-format on
-        Matrix_Translate(tranform->posRot.pos.x, tranform->posRot.pos.y, tranform->posRot.pos.z, MTXMODE_NEW);
-        Matrix_RotateY(tranform->shape.rot.y * (M_PI / 32768), MTXMODE_APPLY);
-        Matrix_RotateX(tranform->shape.rot.x * (M_PI / 32768), MTXMODE_APPLY);
-        Matrix_RotateZ(tranform->shape.rot.z * (M_PI / 32768), MTXMODE_APPLY);
-        Matrix_Scale(0.01f, 0.01f, 0.01f, MTXMODE_APPLY);
+        func_80093D18(globalCtx->state.gfxCtx);
+        func_800D1FD4(&globalCtx->mf_11DA0);
+        Matrix_Scale(0.35f, 0.35f, 0.35f, MTXMODE_APPLY);
+        Matrix_Translate(50.0f, 50.0f, -2500.0f, MTXMODE_APPLY);
 
-        // Draw red effect over the screen when arrow hits
-        if (this->unk_15C > 0) {
-            gfxCtx->polyXlu.p = func_800937C0(gfxCtx->polyXlu.p);
-            gDPSetPrimColor(gfxCtx->polyXlu.p++, 0, 0, (s32)(40.0f * this->unk_15C) & 0xFF, 0, 0,
-                            (s32)(150.0f * this->unk_15C) & 0xFF);
-            gDPSetAlphaDither(gfxCtx->polyXlu.p++, G_AD_DISABLE);
-            gDPSetColorDither(gfxCtx->polyXlu.p++, G_CD_DISABLE);
-            gDPFillRectangle(gfxCtx->polyXlu.p++, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
-        }
-
-        // Draw fire on the arrow
-        func_80093D84(globalCtx->state.gfxCtx);
-        gDPSetPrimColor(gfxCtx->polyXlu.p++, 0x80, 0x80, 255, 200, 0, this->alpha);
-        gDPSetEnvColor(gfxCtx->polyXlu.p++, 255, 0, 0, 128);
-        Matrix_RotateRPY(0x4000, 0x0, 0x0, MTXMODE_APPLY);
-        if (this->timer != 0) {
-            Matrix_Translate(0.0f, 0.0f, 0.0f, MTXMODE_APPLY);
-        } else {
-            Matrix_Translate(0.0f, 1500.0f, 0.0f, MTXMODE_APPLY);
-        }
-        Matrix_Scale(this->radius * 0.2f, this->unk_158 * 4.0f, this->radius * 0.2f, MTXMODE_APPLY);
-        Matrix_Translate(0.0f, -700.0f, 0.0f, MTXMODE_APPLY);
-        gSPMatrix(gfxCtx->polyXlu.p++, Matrix_NewMtx(globalCtx->state.gfxCtx, "../z_arrow_fire.c", 666),
+        // gold cap
+        gSPMatrix(gfxCtx->polyOpa.p++, Matrix_NewMtx(globalCtx->state.gfxCtx, "../z_en_bom.c", 928),
                   G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
-        gSPDisplayList(gfxCtx->polyXlu.p++, sTextureDL);
-        gSPDisplayList(gfxCtx->polyXlu.p++,
-                       Gfx_TwoTexScroll(globalCtx->state.gfxCtx, 0, 255 - (stateFrames * 2) % 256, 0, 64, 32, 1,
-                                        255 - stateFrames % 256, 511 - (stateFrames * 10) % 512, 64, 64));
-        gSPDisplayList(gfxCtx->polyXlu.p++, sVertexDL);
+        gSPDisplayList(gfxCtx->polyOpa.p++, D_04007A50);
+
+        // bomb body
+        Matrix_RotateRPY(0x4000, 0, 0, MTXMODE_APPLY);
+        gSPMatrix(gfxCtx->polyOpa.p++, Matrix_NewMtx(globalCtx->state.gfxCtx, "../z_en_bom.c", 934),
+                  G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        gDPPipeSync(gfxCtx->polyOpa.p++);
+        gDPSetEnvColor(gfxCtx->polyOpa.p++, this->flashIntensity, 0, 40, 255);
+        gDPSetPrimColor(gfxCtx->polyOpa.p++, 0, 0, this->flashIntensity, 0, 40, 255);
+        gSPDisplayList(gfxCtx->polyOpa.p++, D_04007860);
+
         Graph_CloseDisps(dispRefs, globalCtx->state.gfxCtx, "../z_arrow_fire.c", 682);
     }
 }

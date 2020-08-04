@@ -124,7 +124,7 @@ void EffectSsGSpk_Update(GlobalContext* globalCtx, u32 index, EffectSs* this) {
     this->accel.z = (Math_Rand_ZeroOne() - 0.5f) * 3.0f;
 
     if (SPARK_SOURCE != NULL) {
-        if ((SPARK_SOURCE->type == ACTORTYPE_EXPLOSIVES) && (SPARK_SOURCE->update != NULL)) {
+        if (SPARK_SOURCE->update != NULL) {
             this->pos.x = SPARK_SOURCE->posRot.pos.x + this->unk_2C.x;
             this->pos.y = SPARK_SOURCE->posRot.pos.y + this->unk_2C.y;
             this->pos.z = SPARK_SOURCE->posRot.pos.z + this->unk_2C.z;
