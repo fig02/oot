@@ -7,9 +7,14 @@ all: $(PROGRAMS)
 	cd ZAPD && $(MAKE)
 
 clean:
-	$(RM) $(PROGRAMS)
+	$(RM) $(PROGRAMS) $(addsuffix .exe,$(PROGRAMS))
 	$(RM) ZAPD/ZAPD.out
 # Need to clean the above line later...
+
+distclean: clean
+	$(MAKE) -C ZAPD clean
+
+.PHONY: all clean distclean
 
 mkldscript_SOURCES := mkldscript.c util.c
 elf2rom_SOURCES    := elf2rom.c elf32.c n64chksum.c util.c

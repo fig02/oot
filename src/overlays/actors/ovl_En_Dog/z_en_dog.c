@@ -35,7 +35,7 @@ typedef enum {
 
 const ActorInit En_Dog_InitVars = {
     ACTOR_EN_DOG,
-    ACTORTYPE_NPC,
+    ACTORCAT_NPC,
     FLAGS,
     OBJECT_DOG,
     sizeof(EnDog),
@@ -46,8 +46,22 @@ const ActorInit En_Dog_InitVars = {
 };
 
 static ColliderCylinderInit sCylinderInit = {
-    { COLTYPE_UNK6, 0x00, 0x09, 0x39, 0x10, COLSHAPE_CYLINDER },
-    { 0x00, { 0x00000000, 0x00, 0x00 }, { 0xFFCFFFFF, 0x00, 0x00 }, 0x00, 0x01, 0x01 },
+    {
+        COLTYPE_HIT6,
+        AT_NONE,
+        AC_ON | AC_TYPE_PLAYER,
+        OC1_ON | OC1_TYPE_ALL,
+        OC2_TYPE_1,
+        COLSHAPE_CYLINDER,
+    },
+    {
+        ELEMTYPE_UNK0,
+        { 0x00000000, 0x00, 0x00 },
+        { 0xFFCFFFFF, 0x00, 0x00 },
+        TOUCH_NONE,
+        BUMP_ON,
+        OCELEM_ON,
+    },
     { 16, 20, 0, { 0 } },
 };
 
@@ -171,8 +185,8 @@ s32 EnDog_PlayAnimAndSFX(EnDog* this) {
 s8 EnDog_CanFollow(EnDog* this, GlobalContext* globalCtx) {
     // checks for hurtbox collided, but the dogs hurtbox is never updated.
     // nothing checks for return value 2 as well, so it seems hitting dogs was a cut feature
-    if (this->collider.base.acFlags & 2) {
-        this->collider.base.acFlags &= ~2;
+    if (this->collider.base.acFlags & AC_HIT) {
+        this->collider.base.acFlags &= ~AC_HIT;
         return 2;
     }
 
@@ -180,8 +194,8 @@ s8 EnDog_CanFollow(EnDog* this, GlobalContext* globalCtx) {
         return 0;
     }
 
-    if (this->collider.base.maskB & 1) {
-        this->collider.base.maskB &= ~1;
+    if (this->collider.base.maskB & OC2_HIT_PLAYER) {
+        this->collider.base.maskB &= ~OC2_HIT_PLAYER;
 
         if (gSaveContext.dogParams != 0) {
             return 0;
@@ -227,7 +241,7 @@ s32 EnDog_Orient(EnDog* this, GlobalContext* globalCtx) {
     f32 waypointDistSq;
 
     waypointDistSq = Path_OrientAndGetDistSq(&this->actor, this->path, this->waypoint, &targetYaw);
-    Math_SmoothStepToS(&this->actor.posRot.rot.y, targetYaw, 10, 1000, 1);
+    Math_SmoothStepToS(&this->actor.world.rot.y, targetYaw, 10, 1000, 1);
 
     if ((waypointDistSq > 0.0f) && (waypointDistSq < 1000.0f)) {
         return EnDog_UpdateWaypoint(this, globalCtx);
@@ -258,7 +272,7 @@ void EnDog_Init(Actor* thisx, GlobalContext* globalCtx) {
 
     Collider_InitCylinder(globalCtx, &this->collider);
     Collider_SetCylinder(globalCtx, &this->collider, &this->actor, &sCylinderInit);
-    func_80061EFC(&this->actor.colChkInfo, 0, &sColChkInfoInit);
+    CollisionCheck_SetInfo2(&this->actor.colChkInfo, 0, &sColChkInfoInit);
     Actor_SetScale(&this->actor, 0.0075f);
     this->waypoint = 0;
     this->actor.gravity = -1.0f;
@@ -314,7 +328,7 @@ void EnDog_FollowPath(EnDog* this, GlobalContext* globalCtx) {
         speed = (this->nextBehavior == DOG_WALK) ? 1.0f : 4.0f;
         Math_SmoothStepToF(&this->actor.speedXZ, speed, 0.4f, 1.0f, 0.0f);
         EnDog_Orient(this, globalCtx);
-        this->actor.shape.rot = this->actor.posRot.rot;
+        this->actor.shape.rot = this->actor.world.rot;
 
         // Used to change between two text boxes for Richard's owner in the Market Day scene
         // depending on where he is on his path. En_Hy checks these event flags.
@@ -374,7 +388,7 @@ void EnDog_FollowLink(EnDog* this, GlobalContext* globalCtx) {
         }
         gSaveContext.dogParams = 0;
         speed = 0.0f;
-    } else if (this->actor.xzDistToLink > 100.0f) {
+    } else if (this->actor.xzDistToPlayer > 100.0f) {
         this->nextBehavior = DOG_RUN;
         speed = 4.0f;
     } else if (this->actor.xzDistToLink < 40.0f) {
@@ -389,16 +403,16 @@ void EnDog_FollowLink(EnDog* this, GlobalContext* globalCtx) {
 
     Math_ApproachF(&this->actor.speedXZ, speed, 0.6f, 1.0f);
 
-    if (!(this->actor.xzDistToLink > 400.0f)) {
-        Math_SmoothStepToS(&this->actor.posRot.rot.y, this->actor.yawTowardsLink, 10, 1000, 1);
-        this->actor.shape.rot = this->actor.posRot.rot;
+    if (!(this->actor.xzDistToPlayer > 400.0f)) {
+        Math_SmoothStepToS(&this->actor.world.rot.y, this->actor.yawTowardsPlayer, 10, 1000, 1);
+        this->actor.shape.rot = this->actor.world.rot;
     }
 }
 
 void EnDog_RunAway(EnDog* this, GlobalContext* globalCtx) {
-    if (this->actor.xzDistToLink < 200.0f) {
+    if (this->actor.xzDistToPlayer < 200.0f) {
         Math_ApproachF(&this->actor.speedXZ, 4.0f, 0.6f, 1.0f);
-        Math_SmoothStepToS(&this->actor.posRot.rot.y, (this->actor.yawTowardsLink ^ 0x8000), 10, 1000, 1);
+        Math_SmoothStepToS(&this->actor.world.rot.y, (this->actor.yawTowardsPlayer ^ 0x8000), 10, 1000, 1);
     } else {
         this->actionFunc = EnDog_FaceLink;
     }
@@ -431,14 +445,14 @@ void EnDog_FaceLink(EnDog* this, GlobalContext* globalCtx) {
         this->nextBehavior = DOG_RUN;
         this->actionFunc = EnDog_RunAway;
     }
-    this->actor.shape.rot = this->actor.posRot.rot;
+    this->actor.shape.rot = this->actor.world.rot;
 }
 
 void EnDog_Wait(EnDog* this, GlobalContext* globalCtx) {
-    this->unusedAngle = (this->actor.yawTowardsLink - this->actor.shape.rot.y);
+    this->unusedAngle = (this->actor.yawTowardsPlayer - this->actor.shape.rot.y);
 
     // If another dog is following Link and he gets within 200 units of waiting dog, run away
-    if ((gSaveContext.dogParams != 0) && (this->actor.xzDistToLink < 200.0f)) {
+    if ((gSaveContext.dogParams != 0) && (this->actor.xzDistToPlayer < 200.0f)) {
         this->nextBehavior = DOG_RUN;
         this->actionFunc = EnDog_RunAway;
     }
@@ -450,7 +464,8 @@ void EnDog_Update(Actor* thisx, GlobalContext* globalCtx) {
 
     EnDog_PlayAnimAndSFX(this);
     SkelAnime_Update(&this->skelAnime);
-    func_8002E4B4(globalCtx, &this->actor, this->collider.dim.radius, this->collider.dim.height * 0.5f, 0.0f, 5);
+    Actor_UpdateBgCheckInfo(globalCtx, &this->actor, this->collider.dim.radius, this->collider.dim.height * 0.5f, 0.0f,
+                            5);
     Actor_MoveForward(&this->actor);
     this->actionFunc(this, globalCtx);
     Collider_CylinderUpdate(&this->actor, &this->collider);

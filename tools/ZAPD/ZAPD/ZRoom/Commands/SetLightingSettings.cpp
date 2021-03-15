@@ -9,7 +9,7 @@ using namespace std;
 SetLightingSettings::SetLightingSettings(ZRoom* nZRoom, std::vector<uint8_t> rawData, int rawDataIndex) : ZRoomCommand(nZRoom, rawData, rawDataIndex)
 {
 	uint8_t numLights = rawData[rawDataIndex + 1];
-	segmentOffset = SEG2FILESPACE(BitConverter::ToInt32BE(rawData, rawDataIndex + 4));
+	segmentOffset = GETSEGOFFSET(BitConverter::ToInt32BE(rawData, rawDataIndex + 4));
 
 	for (int i = 0; i < numLights; i++)
 		settings.push_back(new LightingSettings(rawData, segmentOffset + (i * 22)));
@@ -33,6 +33,12 @@ SetLightingSettings::SetLightingSettings(ZRoom* nZRoom, std::vector<uint8_t> raw
 		zRoom->parent->AddDeclarationArray(segmentOffset, DeclarationAlignment::None, DeclarationPadding::None, numLights * 22, "LightSettings",
 			StringHelper::Sprintf("%sLightSettings0x%06X", zRoom->GetName().c_str(), segmentOffset), numLights, declaration);
 	}
+}
+
+SetLightingSettings::~SetLightingSettings()
+{
+	for (LightingSettings* setting : settings)
+		delete setting;
 }
 
 string SetLightingSettings::GenerateSourceCodePass1(string roomName, int baseAddress)
@@ -62,7 +68,7 @@ RoomCommand SetLightingSettings::GetRoomCommand()
 
 LightingSettings::LightingSettings(vector<uint8_t> rawData, int rawDataIndex)
 {
-	uint8_t* data = rawData.data();
+	const uint8_t* data = rawData.data();
 
 	ambientClrR = data[rawDataIndex + 0];
 	ambientClrG = data[rawDataIndex + 1];

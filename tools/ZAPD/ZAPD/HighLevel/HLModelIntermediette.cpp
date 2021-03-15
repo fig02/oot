@@ -6,10 +6,10 @@
 #include "../File.h"
 
 #ifdef USE_ASSIMP
-#include "../assimp/Importer.hpp"
-#include "../assimp/Exporter.hpp"
-#include "../assimp/scene.h"
-#include "../assimp/postprocess.h"
+#include <assimp/Importer.hpp>
+#include <assimp/Exporter.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 #endif
 
 using namespace std;
@@ -259,7 +259,7 @@ void HLModelIntermediette::FromZSkeleton(HLModelIntermediette* model, ZSkeleton*
 
 	for (int i = 0; i < zSkeleton->limbs.size(); i++)
 	{
-		ZLimbStandard* limb = zSkeleton->limbs[i];
+		ZLimb* limb = zSkeleton->limbs[i];
 
 		for (int j = 0; j < model->blocks.size(); j++)
 		{
