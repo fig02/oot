@@ -6,8 +6,22 @@
 
 struct EnVase;
 
+typedef void (*DorrieActionFunc)(struct EnVase*, GlobalContext*);
+
 typedef struct EnVase {
-    /* 0x0000 */ Actor actor;
+    DynaPolyActor dyna;
+    SkelAnime skelAnime;
+    Vec3s jointTable[22];
+    Vec3s morphTable[22];
+    LightNode* lightNode;
+    LightInfo lightInfo;
+    s32 timer;
+    s16 finAngle;
+    DorrieActionFunc actionFunc;
+    s32 state;
+    ColliderCylinder collider;
+    u8 introDone;
+    s16 targetTurn;
 } EnVase; // size = 0x014C
 
 extern const ActorInit En_Vase_InitVars;
