@@ -10423,6 +10423,8 @@ void Player_Draw(Actor* thisx, GlobalContext* globalCtx) {
         if (this->unk_862 > 0) {
             Player_DrawGetItem(globalCtx, this);
         }
+
+        DrawSphere(globalCtx, &this->actor.world.pos, 18.0f);
     }
 
     CLOSE_DISPS(globalCtx->state.gfxCtx, "../z_player.c", 19473);

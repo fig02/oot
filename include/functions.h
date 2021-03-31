@@ -2656,4 +2656,6 @@ void func_80820434(GlobalContext*, GraphicsContext*);
 void func_80821C10(GlobalContext*);
 void func_80825C14(GlobalContext*);
 void func_808161AC(GlobalContext*);
+f32 floorf(f32 x);
+void DrawSphere(GlobalContext* globalCtx, Vec3f* pos, f32 radius);
 #endif
