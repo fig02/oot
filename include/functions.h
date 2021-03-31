@@ -2657,5 +2657,6 @@ void func_80821C10(GlobalContext*);
 void func_80825C14(GlobalContext*);
 void func_808161AC(GlobalContext*);
 f32 floorf(f32 x);
-void DrawSphere(GlobalContext* globalCtx, Vec3f* pos, f32 radius);
+void DrawSphere(GlobalContext* globalCtx, Vec3f* pos, u8 r, u8 g, u8 b, f32 radius);
+void Seams_DrawText(GlobalContext* globalCtx, Gfx** buf);
 #endif

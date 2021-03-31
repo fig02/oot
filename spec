@@ -511,6 +511,7 @@ beginseg
     include "build/src/code/z_message_PAL.o"
     include "build/data/z_message_PAL.bss.o"
     include "build/src/code/z_game_over.o"
+    include "build/src/code/seams.o"
     include "build/src/code/z_construct.o"
     include "build/data/rsp.text.o"
     include "build/data/rsp.rodata.o"

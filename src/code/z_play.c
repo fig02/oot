@@ -302,7 +302,7 @@ void Gameplay_Init(GameState* thisx) {
         osSyncPrintf("出戻り？\n"); // "Return?"
     }
 
-    Cutscene_HandleEntranceTriggers(globalCtx);
+    //Cutscene_HandleEntranceTriggers(globalCtx);
     KaleidoScopeCall_Init(globalCtx);
     func_801109B0(globalCtx);
 
@@ -407,6 +407,8 @@ void Gameplay_Init(GameState* thisx) {
     }
 }
 
+s32 noclip = false;
+
 void Gameplay_Update(GlobalContext* globalCtx) {
     s32 pad1;
     s32 sp80;
@@ -442,7 +444,7 @@ void Gameplay_Update(GlobalContext* globalCtx) {
     gSegments[5] = VIRTUAL_TO_PHYSICAL(globalCtx->objectCtx.status[globalCtx->objectCtx.subKeepIndex].segment);
     gSegments[2] = VIRTUAL_TO_PHYSICAL(globalCtx->sceneSegment);
 
-    if (FrameAdvance_Update(&globalCtx->frameAdvCtx, &input[1])) {
+    if (FrameAdvance_Update(&globalCtx->frameAdvCtx, &input[0])) {
         if ((globalCtx->transitionMode == 0) && (globalCtx->sceneLoadFlag != 0)) {
             globalCtx->transitionMode = 1;
         }
@@ -1204,6 +1206,16 @@ void Gameplay_Draw(GlobalContext* globalCtx) {
                         Room_Draw(globalCtx, &globalCtx->roomCtx.curRoom, sp80 & 3);
                         Room_Draw(globalCtx, &globalCtx->roomCtx.prevRoom, sp80 & 3);
                     }
+                }
+                {
+                    Gfx* prevDisplayList = POLY_OPA_DISP;
+                    Gfx* displayList = Graph_GfxPlusOne(POLY_OPA_DISP);
+
+                    gSPDisplayList(OVERLAY_DISP++, displayList);
+                    Seams_DrawText(globalCtx, &displayList);
+                    gSPEndDisplayList(displayList++);
+                    Graph_BranchDlist(prevDisplayList, displayList);
+                    POLY_OPA_DISP = displayList;
                 }
 
                 if ((HREG(80) != 10) || (HREG(83) != 0)) {

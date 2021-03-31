@@ -1761,4 +1761,27 @@ typedef struct {
     /* 0x04 */ const char* name;
 } FlagSetEntry; // size = 0x08
 
+typedef struct {
+    CollisionPoly* floor;
+    CollisionPoly* wall;
+    u8 isPlayer;
+    u8 xzMovement;
+    u8 check2; // (checkHeight + dy) < 5.0f
+    u8 block2; // (checkHeight + dy) < 5.0f
+    u8 lineTest;
+    u8 isNotFlat;
+    u8 inStaticBox;
+    u8 sphVsStaticWall;
+    Vec3f sphCenter;
+    u8 zIntersected;
+    u8 xIntersected;
+    u8 triCheckActive;
+    u8 nxIsZero;
+    u8 triCheck;
+    u8 cirTriSq;
+    u8 sqDistCheck;
+    u8 detCheck;
+} SeamInfo;
+// checkHeight = 26.0f
+
 #endif

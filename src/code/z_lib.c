@@ -626,7 +626,7 @@ static void draw_ico_sphere(Gfx** p_gfx_p, Gfx** p_gfx_d, f32 x, f32 y, f32 z, f
 
         for (i = 0; i < 5; ++i) {
             f32 a_xz = 2.f * M_PI / 10.f;
-            f32 a_y = Math_atanf(1.f / 2.f);
+            f32 a_y = Math_FAtanF(1.f / 2.f);
 
             vtx[r2_i + (i * r2_m + 0) % r2_n].x = cosf(a_xz * (i * r2_m + 0)) * cosf(a_y * 1.f);
             vtx[r2_i + (i * r2_m + 0) % r2_n].y = sinf(a_y * 1.f);
@@ -744,7 +744,7 @@ static void draw_ico_sphere(Gfx** p_gfx_p, Gfx** p_gfx_d, f32 x, f32 y, f32 z, f
     Matrix_Pop();
 }
 
-void DrawSphere(GlobalContext* globalCtx, Vec3f* pos, f32 radius) {
+void DrawSphere(GlobalContext* globalCtx, Vec3f* pos, u8 r, u8 g, u8 b, f32 radius) {
     GraphicsContext* gfxCtx = globalCtx->state.gfxCtx;
     u32 rm;
     u32 blc1;
@@ -781,7 +781,7 @@ void DrawSphere(GlobalContext* globalCtx, Vec3f* pos, f32 radius) {
     gDPSetRenderMode(gfxCtx->polyXlu.p++, rm | blc1, rm | blc2);
     gDPSetCombineLERP(gfxCtx->polyXlu.p++, PRIMITIVE, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT, PRIMITIVE, 0, SHADE, 0, 0, 0,
                       0, ENVIRONMENT);
-    gDPSetPrimColor(gfxCtx->polyXlu.p++, 0, 0, 255, 255, 255, 255);
+    gDPSetPrimColor(gfxCtx->polyXlu.p++, 0, 0, r, g, b, 255);
 
     draw_ico_sphere(&gfxCtx->polyXlu.p, &gfxCtx->polyXlu.d, pos->x, pos->y, pos->z, radius, gfxCtx);
 }

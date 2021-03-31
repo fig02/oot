@@ -106,6 +106,9 @@ void EnReeba_Init(Actor* thisx, GlobalContext* globalCtx) {
     EnReeba* this = THIS;
     s32 surfaceType;
 
+    Actor_Kill(&this->actor);
+    return;
+    
     this->actor.naviEnemyId = 0x47;
     this->actor.targetMode = 3;
     this->actor.gravity = -3.5f;

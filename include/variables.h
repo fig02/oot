@@ -3583,5 +3583,6 @@ extern u8 gSystemHeap[];
 //extern ? D_A4800004;
 //extern ? D_A4800010;
 //extern ? D_A4800018;
-
+extern s32 noclip;
+extern SeamInfo seam;
 #endif

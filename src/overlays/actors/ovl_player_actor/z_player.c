@@ -9098,6 +9098,11 @@ void Player_Init(Actor* thisx, GlobalContext* globalCtx2) {
         Audio_PlayActorSound2(&this->actor, ((void)0, gSaveContext.entranceSound));
         gSaveContext.entranceSound = 0;
     }
+    this->actor.world.pos.x = 967.0f;
+    this->actor.world.pos.y = 237.0f;
+    this->actor.world.pos.z = -671.0f;
+    this->actor.shape.rot.y = 0x28F4;
+    gSaveContext.entranceSpeed = 0;
 
     Map_SavePlayerInitialInfo(globalCtx);
     MREG(64) = 0;
@@ -10202,7 +10207,8 @@ void Player_Update(Actor* thisx, GlobalContext* globalCtx) {
     s32 pad;
     Input sp44;
     Actor* dog;
-
+    
+    noclip = D_808535D0;
     if (func_8084FCAC(this, globalCtx)) {
         if (gSaveContext.dogParams < 0) {
             if (Object_GetIndex(&globalCtx->objectCtx, OBJECT_DOG) < 0) {
@@ -10335,6 +10341,7 @@ void func_8084A0E8(GlobalContext* globalCtx, Player* this, s32 lod, Gfx* cullDLi
 void Player_Draw(Actor* thisx, GlobalContext* globalCtx) {
     s32 pad;
     Player* this = THIS;
+    f32 radius;
 
     if (1) {}
 
@@ -10424,7 +10431,8 @@ void Player_Draw(Actor* thisx, GlobalContext* globalCtx) {
             Player_DrawGetItem(globalCtx, this);
         }
 
-        DrawSphere(globalCtx, &this->actor.world.pos, 18.0f);
+        radius = LINK_IS_ADULT ? 18.0f : 14.0f;
+        DrawSphere(globalCtx, &this->actor.world.pos, 255, 255, 255, radius);
     }
 
     CLOSE_DISPS(globalCtx->state.gfxCtx, "../z_player.c", 19473);

@@ -1149,6 +1149,7 @@ s32 sCurCeilingBgId;
 s32 func_8002E2AC(GlobalContext* globalCtx, Actor* actor, Vec3f* arg2, s32 arg3) {
     f32 floorHeightDiff;
     s32 floorBgId;
+    Player* player = PLAYER;
 
     arg2->y += 50.0f;
 
@@ -1212,6 +1213,13 @@ void Actor_UpdateBgCheckInfo(GlobalContext* globalCtx, Actor* actor, f32 arg2, f
     WaterBox* waterBox;
     f32 waterBoxYSurface;
     Vec3f ripplePos;
+    Player* player = PLAYER;
+
+    if (actor == (Actor*)player) {
+        seam.isPlayer = true;
+    } else {
+        seam.isPlayer = false;
+    }
 
     sp74 = actor->world.pos.y - actor->prevPos.y;
 
@@ -1275,6 +1283,13 @@ void Actor_UpdateBgCheckInfo(GlobalContext* globalCtx, Actor* actor, f32 arg2, f
             actor->bgCheckFlags &= ~0x60;
             actor->yDistToWater = BGCHECK_Y_MIN;
         }
+    }
+
+    if (seam.isPlayer) {
+        seam.floor = actor->floorPoly;
+        seam.wall = actor->wallPoly;
+    } else {
+        seam.isPlayer = false;
     }
 }
 

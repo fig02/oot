@@ -1169,9 +1169,7 @@ void CollisionCheck_DrawCollision(GlobalContext* globalCtx, CollisionCheckContex
         if (AREG(24)) {
             BgCheck_DrawDynaCollision(globalCtx, &globalCtx->colCtx);
         }
-        if (AREG(25)) {
-            BgCheck_DrawStaticCollision(globalCtx, &globalCtx->colCtx);
-        }
+        BgCheck_DrawStaticCollision(globalCtx, &globalCtx->colCtx);
     }
 }
 

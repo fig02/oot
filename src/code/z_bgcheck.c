@@ -740,7 +740,8 @@ s32 BgCheck_SphVsStaticWall(StaticLookup* lookup, CollisionContext* colCtx, u16 
                 continue;
             }
         }
-        if (CollisionPoly_CheckZIntersectApprox(curPoly, vtxList, resultPos.x, pos->y, &intersect)) {
+        if (seam.zIntersected =
+                CollisionPoly_CheckZIntersectApprox(curPoly, vtxList, resultPos.x, pos->y, &intersect)) {
             if (fabsf(intersect - resultPos.z) <= radius / temp_f16) {
                 if ((intersect - resultPos.z) * nz <= 4.0f) {
                     BgCheck_ComputeWallDisplacement(colCtx, curPoly, &resultPos.x, &resultPos.z, nx, ny, nz,
@@ -821,7 +822,12 @@ s32 BgCheck_SphVsStaticWall(StaticLookup* lookup, CollisionContext* colCtx, u16 
                 continue;
             }
         }
-        if (CollisionPoly_CheckXIntersectApprox(curPoly, vtxList, pos->y, resultPos.z, &intersect)) {
+        seam.triCheckActive = true;
+        seam.nxIsZero = false;
+        seam.triCheck = false;
+        
+        if (seam.xIntersected =
+                CollisionPoly_CheckXIntersectApprox(curPoly, vtxList, pos->y, resultPos.z, &intersect)) {
             if (fabsf(intersect - resultPos.x) <= radius / temp_f16) {
                 if ((intersect - resultPos.x) * nx <= 4.0f) {
                     BgCheck_ComputeWallDisplacement(colCtx, curPoly, &resultPos.x, &resultPos.z, nx, ny, nz,
@@ -830,6 +836,7 @@ s32 BgCheck_SphVsStaticWall(StaticLookup* lookup, CollisionContext* colCtx, u16 
                 }
             }
         }
+        seam.triCheckActive = false;
         if (curNode->next == SS_NULL) {
             break;
         } else {
@@ -1884,8 +1891,11 @@ s32 BgCheck_SphVsWallImpl(CollisionContext* colCtx, u16 xpFlags, Vec3f* posResul
     }
 
     // if there's movement on the xz plane, and argA flag is 0,
+    seam.xzMovement = (dx != 0.0f || dz != 0.0f);
     if ((dx != 0.0f || dz != 0.0f) && (argA & 1) == 0) {
+        seam.check2 = (checkHeight + dy) < 5.0f;
         if ((checkHeight + dy) < 5.0f) {
+            seam.block2 = false;
             result = BgCheck_LineTestImpl(colCtx, xpFlags, COLPOLY_IGNORE_NONE, posPrev, posNext, &posIntersect, &poly,
                                           &bgId, actor, 1.0f, BGCHECK_CHECK_ALL & ~BGCHECK_CHECK_CEILING);
             if (result) {
@@ -1912,6 +1922,7 @@ s32 BgCheck_SphVsWallImpl(CollisionContext* colCtx, u16 xpFlags, Vec3f* posResul
                 *outBgId = bgId;
             }
         } else {
+            seam.block2 = true;
             // if the radius is less than the distance travelled on the xz plane, also test for floor collisions
             bccFlags = SQ(radius) < (SQ(dx) + SQ(dz))
                            ? (BGCHECK_CHECK_ALL & ~BGCHECK_CHECK_CEILING)
@@ -1925,6 +1936,7 @@ s32 BgCheck_SphVsWallImpl(CollisionContext* colCtx, u16 xpFlags, Vec3f* posResul
             checkLinePrev.y = checkLineNext.y;
             result = BgCheck_LineTestImpl(colCtx, xpFlags, COLPOLY_IGNORE_NONE, &checkLinePrev, &checkLineNext,
                                           &posIntersect, &poly, &bgId, actor, 1.0f, bccFlags);
+            seam.lineTest = result;
 
             if (result) {
                 nx2 = COLPOLY_GET_NORMAL(poly->normal.x);
@@ -1957,6 +1969,14 @@ s32 BgCheck_SphVsWallImpl(CollisionContext* colCtx, u16 xpFlags, Vec3f* posResul
         sphCenter = *posResult;
         sphCenter.y += checkHeight;
     }
+
+    seam.sphCenter.x = sphCenter.x;
+    seam.sphCenter.y = sphCenter.y;
+    seam.sphCenter.z = sphCenter.z;
+
+    seam.inStaticBox = BgCheck_PosInStaticBoundingBox(colCtx, posNext);
+    seam.sphVsStaticWall = BgCheck_SphVsStaticWall(BgCheck_GetNearestStaticLookup(colCtx, lookupTbl, posResult), colCtx,
+                                                   xpFlags, &posResult->x, &posResult->z, &sphCenter, radius, outPoly);
     // test if sphere (sphCenter, radius) collides with a static wall, displacing the x/z coordinates
     if (BgCheck_PosInStaticBoundingBox(colCtx, posNext) == true &&
         // possible bug? if the sphere's radius is smaller than the distance to a subdivision boundary, some static
@@ -4490,13 +4510,9 @@ void BgCheck_DrawStaticCollision(GlobalContext* globalCtx, CollisionContext* col
     Player* player = PLAYER;
     StaticLookup* lookup = BgCheck_GetNearestStaticLookup(colCtx, colCtx->lookupTbl, &player->actor.world.pos);
 
-    if (AREG(23) != 0) {
-        BgCheck_DrawStaticPolyList(globalCtx, colCtx, &lookup->floor, 0, 0, 255);
-    }
-    if (AREG(22) != 0) {
-        BgCheck_DrawStaticPolyList(globalCtx, colCtx, &lookup->wall, 0, 255, 0);
-    }
-    if (AREG(21) != 0) {
-        BgCheck_DrawStaticPolyList(globalCtx, colCtx, &lookup->ceiling, 255, 0, 0);
-    }
+    BgCheck_DrawStaticPolyList(globalCtx, colCtx, &lookup->floor, 0, 0, 255);
+
+    BgCheck_DrawStaticPolyList(globalCtx, colCtx, &lookup->wall, 0, 255, 0);
+
+    BgCheck_DrawStaticPolyList(globalCtx, colCtx, &lookup->ceiling, 255, 0, 0);
 }

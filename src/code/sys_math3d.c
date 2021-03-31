@@ -1100,20 +1100,37 @@ s32 Math3D_TriChkPointParaXImpl(Vec3f* v0, Vec3f* v1, Vec3f* v2, f32 y, f32 z, f
     f32 distToEdgeSq;
     f32 chkDistSq;
 
+    if (seam.triCheckActive && Math3D_CirSquareVsTriSquare(v0->y, v0->z, v1->y, v1->z, v2->y, v2->z, y, z, chkDist)) {
+        seam.cirTriSq = true;
+    } else {
+        seam.cirTriSq = false;
+    }
+
     if (!Math3D_CirSquareVsTriSquare(v0->y, v0->z, v1->y, v1->z, v2->y, v2->z, y, z, chkDist)) {
         return false;
     }
 
     chkDistSq = SQ(chkDist);
+    if (seam.triCheckActive) {
+        seam.sqDistCheck = ((SQ(v0->y - y) + SQ(v0->z - z)) < chkDistSq) ||
+                           ((SQ(v1->y - y) + SQ(v1->z - z)) < chkDistSq) ||
+                           ((SQ(v2->y - y) + SQ(v2->z - z)) < chkDistSq);
+    }
 
     if (((SQ(v0->y - y) + SQ(v0->z - z)) < chkDistSq) || ((SQ(v1->y - y) + SQ(v1->z - z)) < chkDistSq) ||
         ((SQ(v2->y - y) + SQ(v2->z - z)) < chkDistSq)) {
+
         return true;
     }
 
     detv0v1 = ((v0->y - y) * (v1->z - z)) - ((v0->z - z) * (v1->y - y));
     detv1v2 = ((v1->y - y) * (v2->z - z)) - ((v1->z - z) * (v2->y - y));
     detv2v0 = ((v2->y - y) * (v0->z - z)) - ((v2->z - z) * (v0->y - y));
+
+    if (seam.triCheckActive) {
+        seam.detCheck = (((detv0v1 <= detMax) && (detv1v2 <= detMax) && (detv2v0 <= detMax)) ||
+        ((-detMax <= detv0v1) && (-detMax <= detv1v2) && (-detMax <= detv2v0)));
+    }
 
     if (((detv0v1 <= detMax) && (detv1v2 <= detMax) && (detv2v0 <= detMax)) ||
         ((-detMax <= detv0v1) && (-detMax <= detv1v2) && (-detMax <= detv2v0))) {
@@ -1144,11 +1161,17 @@ s32 Math3D_TriChkPointParaXDeterminate(Vec3f* v0, Vec3f* v1, Vec3f* v2, f32 y, f
 s32 Math3D_TriChkPointParaXIntersect(Vec3f* v0, Vec3f* v1, Vec3f* v2, f32 nx, f32 ny, f32 nz, f32 originDist, f32 y,
                                      f32 z, f32* xIntersect) {
     if (IS_ZERO(nx)) {
+        if (seam.triCheckActive) {
+            seam.nxIsZero = true;
+        }
         return false;
     }
 
     if (Math3D_TriChkPointParaXImpl(v0, v1, v2, y, z, 300.0f, 1.0f, nx)) {
         *xIntersect = (((-ny * y) - (nz * z)) - originDist) / nx;
+        if (seam.triCheckActive) {
+            seam.triCheck = true;
+        }
         return true;
     }
     return false;
