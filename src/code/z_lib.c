@@ -753,7 +753,7 @@ void DrawSphere(GlobalContext* globalCtx, Vec3f* pos, u8 r, u8 g, u8 b, f32 radi
     u32 gm;
     u8 xlu;
     Mtx* p_m;
-    xlu = true;
+    xlu = false;
 
     if (xlu) {
         rm = Z_CMP | IM_RD | CVG_DST_FULL | FORCE_BL;
@@ -781,6 +781,15 @@ void DrawSphere(GlobalContext* globalCtx, Vec3f* pos, u8 r, u8 g, u8 b, f32 radi
     gDPSetRenderMode(gfxCtx->polyXlu.p++, rm | blc1, rm | blc2);
     gDPSetCombineLERP(gfxCtx->polyXlu.p++, PRIMITIVE, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT, PRIMITIVE, 0, SHADE, 0, 0, 0,
                       0, ENVIRONMENT);
+    if(seam.sphVsStaticWall) {
+        r = 255;
+        g = 0;
+        b = 0;
+    } else {
+        r = 255;
+        g = 255;
+        b = 255;
+    }
     gDPSetPrimColor(gfxCtx->polyXlu.p++, 0, 0, r, g, b, 255);
 
     draw_ico_sphere(&gfxCtx->polyXlu.p, &gfxCtx->polyXlu.d, pos->x, pos->y, pos->z, radius, gfxCtx);

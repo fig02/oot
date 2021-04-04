@@ -21,7 +21,8 @@ void Opening_SetupTitleScreen(OpeningContext* this) {
     gSaveContext.buttonStatus[0] = BTN_ENABLED;
     gSaveContext.unk_13E7 = gSaveContext.unk_13E8 = gSaveContext.unk_13EA = gSaveContext.unk_13EC = 0;
     Audio_SetBGM(NA_BGM_STOP);
-    gSaveContext.entranceIndex = 0x123;
+    gSaveContext.entranceIndex = 0x123; // colossus
+    // gSaveContext.entranceIndex = 0x147; // dmt
     gSaveContext.respawnFlag = 0;
     gSaveContext.respawn[RESPAWN_MODE_DOWN].entranceIndex = -1;
     gSaveContext.seqIndex = 0xFF;

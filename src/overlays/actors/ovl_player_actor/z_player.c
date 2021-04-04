@@ -9098,9 +9098,12 @@ void Player_Init(Actor* thisx, GlobalContext* globalCtx2) {
         Audio_PlayActorSound2(&this->actor, ((void)0, gSaveContext.entranceSound));
         gSaveContext.entranceSound = 0;
     }
-    this->actor.world.pos.x = 967.0f;
-    this->actor.world.pos.y = 237.0f;
-    this->actor.world.pos.z = -671.0f;
+    // this->actor.world.pos.x = 967.0f;
+    // this->actor.world.pos.y = 237.0f;
+    // this->actor.world.pos.z = -671.0f;
+    this->actor.world.pos.x = 1708.0f;
+    this->actor.world.pos.y = 2194.0f;
+    this->actor.world.pos.z = 1164.0f;
     this->actor.shape.rot.y = 0x28F4;
     gSaveContext.entranceSpeed = 0;
 
@@ -10432,7 +10435,9 @@ void Player_Draw(Actor* thisx, GlobalContext* globalCtx) {
         }
 
         radius = LINK_IS_ADULT ? 18.0f : 14.0f;
-        DrawSphere(globalCtx, &this->actor.world.pos, 255, 255, 255, radius);
+        gSaveContext.environmentTime = 0x8000;
+        //DrawSphere(globalCtx, &this->actor.world.pos, 255, 255, 255, radius);
+        globalCtx->envCtx.unk_8C[1][0] = globalCtx->envCtx.unk_8C[1][1] = globalCtx->envCtx.unk_8C[1][2] = 200;
     }
 
     CLOSE_DISPS(globalCtx->state.gfxCtx, "../z_player.c", 19473);
