@@ -9101,11 +9101,12 @@ void Player_Init(Actor* thisx, GlobalContext* globalCtx2) {
     // this->actor.world.pos.x = 967.0f;
     // this->actor.world.pos.y = 237.0f;
     // this->actor.world.pos.z = -671.0f;
-    this->actor.world.pos.x = 1708.0f;
-    this->actor.world.pos.y = 2194.0f;
-    this->actor.world.pos.z = 1164.0f;
-    this->actor.shape.rot.y = 0x28F4;
-    gSaveContext.entranceSpeed = 0;
+
+    // this->actor.world.pos.x = 1708.0f;
+    // this->actor.world.pos.y = 2194.0f;
+    // this->actor.world.pos.z = 1164.0f;
+    // this->actor.shape.rot.y = 0x28F4;
+    // gSaveContext.entranceSpeed = 0;
 
     Map_SavePlayerInitialInfo(globalCtx);
     MREG(64) = 0;
