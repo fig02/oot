@@ -120,15 +120,13 @@ s16 func_80A9C6C0(GlobalContext* globalCtx, Actor* thisx) {
     s16 ret = 1;
 
     switch (Message_GetState(&globalCtx->msgCtx)) {
-        case TEXT_STATE_DONE:
+        case TEXT_STATE_CLOSING:
             ret = 0;
             switch (this->actor.textId) {
                 case 0x4012:
                     gSaveContext.infTable[19] |= 0x200;
-                    ret = 2;
-                    break;
                 case 0x401B:
-                    ret = !Message_ShouldAdvance(globalCtx) ? 1 : 2;
+                    ret = 2;
                     break;
                 case 0x401F:
                     gSaveContext.infTable[19] |= 0x200;
@@ -149,12 +147,8 @@ s16 func_80A9C6C0(GlobalContext* globalCtx, Actor* thisx) {
             }
             break;
         case TEXT_STATE_CHOICE:
-            if (!Message_ShouldAdvance(globalCtx)) {
-                break;
-            }
-            if (this->actor.textId == 0x4014) {
+            if (Message_ShouldAdvance(globalCtx) && this->actor.textId == 0x4014) {
                 if (globalCtx->msgCtx.choiceIndex == 0) {
-                    EnKz_SetupGetItem(this, globalCtx);
                     ret = 2;
                 } else {
                     this->actor.textId = 0x4016;
@@ -167,9 +161,14 @@ s16 func_80A9C6C0(GlobalContext* globalCtx, Actor* thisx) {
                 ret = 2;
             }
             break;
+        case TEXT_STATE_DONE:
+            if (Message_ShouldAdvance(globalCtx)) {
+                ret = 3;
+            }
+            break;
+
         case TEXT_STATE_NONE:
         case TEXT_STATE_DONE_HAS_NEXT:
-        case TEXT_STATE_CLOSING:
         case TEXT_STATE_SONG_DEMO_DONE:
         case TEXT_STATE_8:
         case TEXT_STATE_9:
@@ -194,29 +193,19 @@ s32 func_80A9C95C(GlobalContext* globalCtx, EnKz* this, s16* arg2, f32 unkf, cal
     s16 sp32;
     s16 sp30;
     f32 xzDistToPlayer;
-    f32 yaw;
 
     if (Actor_ProcessTalkRequest(&this->actor, globalCtx)) {
         *arg2 = 1;
         return 1;
     }
 
-    if (*arg2 != 0) {
-        *arg2 = callback2(globalCtx, &this->actor);
-        return 0;
-    }
-
-    yaw = Math_Vec3f_Yaw(&this->actor.home.pos, &player->actor.world.pos);
-    yaw -= this->actor.shape.rot.y;
-    if ((fabsf(yaw) > 1638.0f) || (this->actor.xzDistToPlayer < 265.0f)) {
-        this->actor.flags &= ~ACTOR_FLAG_0;
-        return 0;
-    }
-
-    this->actor.flags |= ACTOR_FLAG_0;
-
     Actor_GetScreenPos(globalCtx, &this->actor, &sp32, &sp30);
     if (!((sp32 >= -30) && (sp32 < 361) && (sp30 >= -10) && (sp30 < 241))) {
+        return 0;
+    }
+
+    if (*arg2 != 0) {
+        *arg2 = callback2(globalCtx, &this->actor);
         return 0;
     }
 
@@ -234,7 +223,15 @@ s32 func_80A9C95C(GlobalContext* globalCtx, EnKz* this, s16* arg2, f32 unkf, cal
 
 void func_80A9CB18(EnKz* this, GlobalContext* globalCtx) {
     Player* player = GET_PLAYER(globalCtx);
+    f32 yaw;
 
+    yaw = Math_Vec3f_Yaw(&this->actor.home.pos, &player->actor.world.pos);
+    yaw -= this->actor.shape.rot.y;
+    if ((fabsf(yaw) > 1638.0f) || (this->actor.xzDistToPlayer < 265.0f)) {
+        this->actor.flags &= ~ACTOR_FLAG_0;
+    }
+
+    this->actor.flags |= ACTOR_FLAG_0;
     if (func_80A9C95C(globalCtx, this, &this->unk_1E0.unk_00, 340.0f, EnKz_GetText, func_80A9C6C0)) {
         if ((this->actor.textId == 0x401A) && !(gSaveContext.eventChkInf[3] & 8)) {
             if (func_8002F368(globalCtx) == EXCH_ITEM_LETTER_RUTO) {
@@ -253,11 +250,11 @@ void func_80A9CB18(EnKz* this, GlobalContext* globalCtx) {
                 this->actor.textId = 0x4014;
                 this->sfxPlayed = false;
                 player->actor.textId = this->actor.textId;
-                this->isTrading = true;
+                // this->isTrading = true;
                 return;
             }
 
-            this->isTrading = false;
+            // this->isTrading = false;
             if (gSaveContext.infTable[19] & 0x200) {
                 this->actor.textId = CHECK_QUEST_ITEM(QUEST_SONG_SERENADE) ? 0x4045 : 0x401A;
                 player->actor.textId = this->actor.textId;
@@ -415,6 +412,7 @@ void EnKz_StopMweep(EnKz* this, GlobalContext* globalCtx) {
 
 void EnKz_Wait(EnKz* this, GlobalContext* globalCtx) {
     if (this->unk_1E0.unk_00 == 2) {
+        this->unk_1E0.unk_00 = 0;
         this->actionFunc = EnKz_SetupGetItem;
         EnKz_SetupGetItem(this, globalCtx);
     } else {
@@ -432,7 +430,8 @@ void EnKz_SetupGetItem(EnKz* this, GlobalContext* globalCtx) {
         this->unk_1E0.unk_00 = 1;
         this->actionFunc = EnKz_StartTimer;
     } else {
-        getItemId = this->isTrading == true ? GI_FROG : GI_TUNIC_ZORA;
+        osSyncPrintf("giving item, exch item:0x%1X\n", func_8002F368(globalCtx));
+        getItemId = func_8002F368(globalCtx) == EXCH_ITEM_PRESCRIPTION ? GI_FROG : GI_TUNIC_ZORA;
         yRange = fabsf(this->actor.yDistToPlayer) + 1.0f;
         xzRange = this->actor.xzDistToPlayer + 1.0f;
         func_8002F434(&this->actor, globalCtx, getItemId, xzRange, yRange);
