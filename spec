@@ -593,6 +593,12 @@ beginseg
 endseg
 
 beginseg
+    name "ovl_Clippy"
+    include "build/src/overlays/actors/ovl_Clippy/clippy.o"
+    include "build/src/overlays/actors/ovl_Clippy/ovl_Clippy_reloc.o"
+endseg
+
+beginseg
     name "ovl_Arms_Hook"
     include "build/src/overlays/actors/ovl_Arms_Hook/z_arms_hook.o"
     include "build/src/overlays/actors/ovl_Arms_Hook/ovl_Arms_Hook_reloc.o"

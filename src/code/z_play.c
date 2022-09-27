@@ -883,6 +883,14 @@ void Play_Update(PlayState* this) {
 
                     PLAY_LOG(3637);
 
+                    if (CHECK_BTN_ALL(input[0].press.button, BTN_DLEFT)) {
+                        Player* player = GET_PLAYER(this);
+
+                        Actor_Spawn(&this->actorCtx, this, ACTOR_CLIPPY, player->actor.world.pos.x,
+                                    player->actor.world.pos.y, player->actor.world.pos.z, 0, player->actor.shape.rot.y,
+                                    0, 0);
+                    }
+
                     if (!this->unk_11DE9) {
                         Actor_UpdateAll(this, &this->actorCtx);
                     }

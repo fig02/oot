@@ -420,6 +420,10 @@ s32 CollisionPoly_CheckZIntersectApprox(CollisionPoly* poly, Vec3s* vtxList, f32
                                             zIntersect);
 }
 
+CollisionPoly* gClippyPoly;
+u8 gClippyEnabled = false;
+
+#define CLIPPY_CONDITION (gClippyEnabled && gClippyPoly != NULL && poly == gClippyPoly)
 /**
  * Test if travelling from `posA` to `posB` intersects `poly`
  * returns true if an intersection occurs, else false
@@ -444,9 +448,27 @@ s32 CollisionPoly_LineVsPoly(CollisionPoly* poly, Vec3s* vtxList, Vec3f* posA, V
         plane.originDist;
 
     planeDistDelta = planeDistA - planeDistB;
+
+    if (CLIPPY_CONDITION) {
+        osSyncPrintf("poly:%X nx:%d ny:%d nz:%d dist:%d\n", poly, poly->normal.x, poly->normal.y, poly->normal.z,
+                     poly->dist);
+        osSyncPrintf("planeDistA:%f planeDistB:%f \n", planeDistA, planeDistB);
+        osSyncPrintf("posA:{ %f, %f, %f } posB:{ %f, %f, %f }\n", posA->x, posA->y, posA->z, posB->x, posB->y, posB->z);
+    }
+
     if ((planeDistA >= 0.0f && planeDistB >= 0.0f) || (planeDistA < 0.0f && planeDistB < 0.0f) ||
         (chkOneFace && planeDistA < 0.0f && planeDistB > 0.0f) || IS_ZERO(planeDistDelta)) {
+        if (CLIPPY_CONDITION) {
+            Audio_PlaySfxGeneral(NA_SE_EV_FROG_CRY_0, &gSfxDefaultPos, 4, &gSfxDefaultFreqAndVolScale,
+                                 &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
+            osSyncPrintf(VT_BGCOL(RED) "GROUND CLIP IS POSSIBLE" VT_RST);
+            osSyncPrintf("\n\n");
+        }
         return false;
+    } else {
+        if (CLIPPY_CONDITION) {
+            osSyncPrintf("GROUND CLIP IS NOT POSSIBLE\n\n");
+        }
     }
 
     CollisionPoly_GetNormalF(poly, &plane.normal.x, &plane.normal.y, &plane.normal.z);
