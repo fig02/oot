@@ -716,7 +716,6 @@ void MapSelect_Main(GameState* thisx) {
 }
 
 void MapSelect_Destroy(GameState* thisx) {
-    osSyncPrintf("%c", BEL);
     // "view_cleanup will hang, so it won't be called"
     osSyncPrintf("*** view_cleanupはハングアップするので、呼ばない ***\n");
 }

@@ -173,7 +173,11 @@ void EnBom_Explode(EnBom* this, PlayState* play) {
         Rumble_Request(this->actor.xzDistToPlayer, 255, 20, 150);
     }
 
-    this->explosionCollider.elements[0].dim.worldSphere.radius += this->actor.shape.rot.z + 8;
+    this->explosionCollider.elements[0].dim.worldSphere.radius = 100;
+
+    if (this->timer == 7) {
+        this->explosionCollider.base.atFlags &= ~AT_TYPE_ENEMY;
+    }
 
     if (this->actor.params == BOMB_EXPLOSION) {
         CollisionCheck_SetAT(play, &play->colChkCtx, &this->explosionCollider.base);

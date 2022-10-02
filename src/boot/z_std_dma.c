@@ -397,23 +397,23 @@ void DmaMgr_Init(void) {
     iter = gDmaDataTable;
     idx = 0;
 
-    while (iter->vromEnd != 0) {
-        if (iter->romEnd != 0) {
-            sDmaMgrIsRomCompressed = true;
-        }
+    // while (iter->vromEnd != 0) {
+    //     if (iter->romEnd != 0) {
+    //         sDmaMgrIsRomCompressed = true;
+    //     }
 
-        osSyncPrintf(
-            "%3d %08x %08x %08x %08x %08x %c %s\n", idx, iter->vromStart, iter->vromEnd, iter->romStart, iter->romEnd,
-            (iter->romEnd != 0) ? iter->romEnd - iter->romStart : iter->vromEnd - iter->vromStart,
-            (((iter->romEnd != 0) ? iter->romEnd - iter->romStart : 0) > 0x10000) ? '*' : ' ', name ? *name : "");
+    //     osSyncPrintf(
+    //         "%3d %08x %08x %08x %08x %08x %c %s\n", idx, iter->vromStart, iter->vromEnd, iter->romStart, iter->romEnd,
+    //         (iter->romEnd != 0) ? iter->romEnd - iter->romStart : iter->vromEnd - iter->vromStart,
+    //         (((iter->romEnd != 0) ? iter->romEnd - iter->romStart : 0) > 0x10000) ? '*' : ' ', name ? *name : "");
 
-        idx++;
-        iter++;
+    //     idx++;
+    //     iter++;
 
-        if (name != NULL) {
-            name++;
-        }
-    }
+    //     if (name != NULL) {
+    //         name++;
+    //     }
+    // }
 
     if ((uintptr_t)_bootSegmentRomStart != gDmaDataTable[0].vromEnd) {
         osSyncPrintf("_bootSegmentRomStart(%08x) != dma_rom_ad[0].rom_b(%08x)\n", _bootSegmentRomStart,

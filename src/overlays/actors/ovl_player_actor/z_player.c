@@ -6,6 +6,7 @@
 
 #include "ultra64.h"
 #include "global.h"
+#include "vt.h"
 
 #include "overlays/actors/ovl_Bg_Heavy_Block/z_bg_heavy_block.h"
 #include "overlays/actors/ovl_Demo_Kankyo/z_demo_kankyo.h"
@@ -2398,7 +2399,6 @@ s32 func_80834BD4(Player* this, PlayState* play) {
         frame = Animation_GetLastFrame(anim);
         LinkAnimation_Change(play, &this->skelAnime2, anim, 1.0f, frame, frame, ANIMMODE_ONCE, 0.0f);
     }
-
     this->stateFlags1 |= PLAYER_STATE1_22;
     Player_SetModelsForHoldingShield(this);
 
@@ -3864,10 +3864,17 @@ s32 func_808382DC(Player* this, PlayState* play) {
             // However, `Collider.atFlags` is a byte so the flag check at the end is incorrect and cannot work.
             // Additionally, `Collider.atHit` can never be set while already colliding as AC, so it's also bugged.
             // This behavior was later fixed in MM, most likely by removing both the `atHit` and `atFlags` checks.
-            if (sp64 || ((this->invincibilityTimer < 0) && (this->cylinder.base.acFlags & AC_HIT) &&
-                         (this->cylinder.info.atHit != NULL) && (this->cylinder.info.atHit->atFlags & 0x20000000))) {
+            if (((this->shieldQuad.base.acFlags & AC_BOUNCED) ||
+               ((this->invincibilityTimer < 0) && (this->cylinder.base.acFlags & 2) &&
+                (this->cylinder.info.acHitInfo != NULL) &&
+                (this->cylinder.info.acHitInfo->toucher.dmgFlags != DMG_UNBLOCKABLE)))) {
+                // osSyncPrintf(VT_BGCOL(RED)"BLOCKING on frame %d\n" VT_RST, play->state.frames);
+                // Player_RequestRumble(this, 180, 20, 100, 0);
 
-                Player_RequestRumble(this, 180, 20, 100, 0);
+                // osSyncPrintf("AC_BOUNCED %d\n", this->shieldQuad.base.acFlags & AC_BOUNCED);
+                // osSyncPrintf("invincibilityTimer %d\n", this->invincibilityTimer < 0);
+                // osSyncPrintf("acFlags %d\n", this->cylinder.base.acFlags & 2);
+                // osSyncPrintf("acHitInfo %d\n", this->cylinder.info.acHitInfo != NULL);
 
                 if (!Player_IsChildWithHylianShield(this)) {
                     if (this->invincibilityTimer >= 0) {
@@ -3893,6 +3900,7 @@ s32 func_808382DC(Player* this, PlayState* play) {
                     }
 
                     if (!(this->stateFlags1 & (PLAYER_STATE1_13 | PLAYER_STATE1_14 | PLAYER_STATE1_21))) {
+                        osSyncPrintf("SETTING 18 SPEED!!!!!!!!!!!!!!!!!!!!!\n");
                         this->linearVelocity = -18.0f;
                         this->currentYaw = this->actor.shape.rot.y;
                     }
@@ -3910,10 +3918,10 @@ s32 func_808382DC(Player* this, PlayState* play) {
                 (this->meleeWeaponQuads[1].base.atFlags & AT_HIT)) {
                 return 0;
             }
-
             if (this->cylinder.base.acFlags & AC_HIT) {
                 Actor* ac = this->cylinder.base.ac;
                 s32 sp4C;
+                osSyncPrintf("TAKING DAMAGE on frame: %d\n", play->state.frames);
 
                 if (ac->flags & ACTOR_FLAG_24) {
                     func_8002F7DC(&this->actor, NA_SE_PL_BODY_HIT);
@@ -6001,6 +6009,7 @@ void func_8083DFE0(Player* this, f32* arg1, s16* arg2) {
     s16 yawDiff = this->currentYaw - *arg2;
 
     if (this->meleeWeaponState == 0) {
+        osSyncPrintf("CLAMPING VELOCITY!!\n");
         this->linearVelocity = CLAMP(this->linearVelocity, -(R_RUN_SPEED_LIMIT / 100.0f), (R_RUN_SPEED_LIMIT / 100.0f));
     }
 
@@ -6012,6 +6021,30 @@ void func_8083DFE0(Player* this, f32* arg1, s16* arg2) {
         Math_AsymStepToF(&this->linearVelocity, *arg1, 0.05f, 0.1f);
         Math_ScaledStepToS(&this->currentYaw, *arg2, 200);
     }
+}
+
+// replaces func_8083DFE0
+
+s32 func_8083CBC4(Player* this, f32 arg1, s16 arg2, f32 arg3, f32 arg4, f32 arg5, s16 arg6) {
+    s16 temp_v0 = this->currentYaw - arg2;
+
+    if (((R_RUN_SPEED_LIMIT / 100.0f) * 1.5f) < fabsf(this->linearVelocity)) {
+        arg5 *= 4.0f;
+        arg3 *= 4.0f;
+    }
+
+    if (ABS(temp_v0) > 0x6000) {
+        if (Math_StepToF(&this->linearVelocity, 0.0f, arg3) == 0) {
+            return false;
+        }
+
+        this->currentYaw = arg2;
+    } else {
+        Math_AsymStepToF(&this->linearVelocity, arg1, arg4, arg5);
+        Math_ScaledStepToS(&this->currentYaw, arg2, arg6);
+    }
+
+    return true;
 }
 
 static struct_80854578 D_80854578[] = {
@@ -7982,9 +8015,9 @@ void func_808435C4(Player* this, PlayState* play) {
         }
     } else {
         temp = func_808374A0(play, this, &this->skelAnime, 4.0f);
+        this->stateFlags1 |= PLAYER_STATE1_22;
         if ((temp != 0) && ((temp > 0) || LinkAnimation_Update(play, &this->skelAnime))) {
             func_80835C58(play, this, func_80843188, 1);
-            this->stateFlags1 |= PLAYER_STATE1_22;
             Player_SetModelsForHoldingShield(this);
             anim = GET_PLAYER_ANIM(PLAYER_ANIMGROUP_20, this->modelAnimType);
             frames = Animation_GetLastFrame(anim);
@@ -8276,9 +8309,10 @@ void func_8084411C(Player* this, PlayState* play) {
 
         LinkAnimation_Update(play, &this->skelAnime);
 
-        if (!(this->stateFlags2 & PLAYER_STATE2_19)) {
-            func_8083DFE0(this, &sp4C, &sp4A);
-        }
+        // if (!(this->stateFlags2 & PLAYER_STATE2_19)) {
+        //     func_8083DFE0(this, &sp4C, &sp4A);
+        // }
+        func_8083CBC4(this, sp4C, sp4A, 1.0f, 0.05f, 0.1f, 0xC8);
 
         func_80836670(this, play);
 
@@ -9315,7 +9349,7 @@ void Player_InitCommon(Player* this, PlayState* play, FlexSkeletonHeader* skelHe
     Effect_Add(play, &this->meleeWeaponEffectIndex, EFFECT_BLURE2, 0, 0, &D_8085470C);
     ActorShape_Init(&this->actor.shape, 0.0f, ActorShadow_DrawFeet, this->ageProperties->unk_04);
     this->subCamId = CAM_ID_NONE;
-
+    osSyncPrintf("player:%8X\n", this);
     Collider_InitCylinder(play, &this->cylinder);
     Collider_SetCylinder(play, &this->cylinder, &this->actor, &D_80854624);
     Collider_InitQuad(play, &this->meleeWeaponQuads[0]);
@@ -10336,7 +10370,7 @@ void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
                 this->actor.speedXZ = this->linearVelocity;
                 this->actor.world.rot.y = this->currentYaw;
             }
-
+            osSyncPrintf("linear:%f\n", this->linearVelocity);
             func_8002D868(&this->actor);
 
             if ((this->pushedSpeed != 0.0f) && !Player_InCsMode(play) &&

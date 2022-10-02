@@ -1258,6 +1258,7 @@ void Player_UpdateShieldCollider(PlayState* play, Player* this, ColliderQuad* co
         Matrix_MultVec3f(&quadSrc[3], &quadDest[3]);
         Collider_SetQuadVertices(collider, &quadDest[0], &quadDest[1], &quadDest[2], &quadDest[3]);
 
+        // osSyncPrintf("SETTING SHIELD AC:%d\n", play->state.frames);
         CollisionCheck_SetAC(play, &play->colChkCtx, &collider->base);
         CollisionCheck_SetAT(play, &play->colChkCtx, &collider->base);
     }

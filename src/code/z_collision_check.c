@@ -1687,9 +1687,27 @@ void CollisionCheck_SetBounce(Collider* at, Collider* ac) {
  */
 s32 CollisionCheck_SetATvsAC(PlayState* play, Collider* at, ColliderInfo* atInfo, Vec3f* atPos, Collider* ac,
                              ColliderInfo* acInfo, Vec3f* acPos, Vec3f* hitPos) {
+    u8 shieldHit = false;
+                
+    // if (at->actor->id == ACTOR_EN_BOM && ac->actor->id == ACTOR_PLAYER) {
+    //     Player* player = (Player*)ac->actor;
+    //     if (ac == &player->shieldQuad.base) {
+    //         shieldHit = true;
+    //         osSyncPrintf("PLAYER SHIELD HIT BY A BOMB!! %d\n", play->state.frames);
+    //     }
+    // }
+
+    // osSyncPrintf("\nChecking for bounce:\n");
+    // osSyncPrintf("AC_HARD:%d\n", ac->acFlags & AC_HARD);
+    // osSyncPrintf("at->actor:%d\n", at->actor != NULL);
+    // osSyncPrintf("ac->actor:%d\n", ac->actor != NULL);
     if (ac->acFlags & AC_HARD && at->actor != NULL && ac->actor != NULL) {
+        if (shieldHit) {
+            //osSyncPrintf("setting bounce flag!%d\n", play->state.frames);
+        }
         CollisionCheck_SetBounce(at, ac);
     }
+
     if (!(acInfo->bumperFlags & BUMP_NO_AT_INFO)) {
         at->atFlags |= AT_HIT;
         at->at = ac->actor;
