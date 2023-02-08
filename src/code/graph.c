@@ -134,6 +134,9 @@ GameStateOverlay* Graph_GetNextGameState(GameState* gameState) {
     if (gameStateInitFunc == FileSelect_Init) {
         return &gGameStateOverlayTable[5];
     }
+    if (gameStateInitFunc == Sample_Init) {
+        return &gGameStateOverlayTable[6];
+    }
 
     LOG_ADDRESS("game_init_func", gameStateInitFunc, "../graph.c", 696);
     return NULL;

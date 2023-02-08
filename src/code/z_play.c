@@ -649,7 +649,7 @@ void Play_Update(PlayState* this) {
                                     gSaveContext.minigameState = 3;
                                 }
                             } else {
-                                SET_NEXT_GAMESTATE(&this->state, FileSelect_Init, FileSelectState);
+                                SET_NEXT_GAMESTATE(&this->state, Sample_Init, SampleState);
                             }
                         } else {
                             this->transitionCtx.destroy(&this->transitionCtx.instanceData);

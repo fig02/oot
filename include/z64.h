@@ -766,10 +766,14 @@ typedef struct MapSelectState {
 } MapSelectState; // size = 0x240
 
 typedef struct {
-    /* 0x0000 */ GameState state;
-    /* 0x00A4 */ u8* staticSegment;
-    /* 0x00A8 */ View view;
-} SampleState; // size = 0x1D0
+    GameState state;
+    View view;
+    u8 color;
+    u8 showInfo;
+    u8 triggered;
+    u8 frame;
+    f32 fps;
+} SampleState;
 
 typedef struct {
     /* 0x00 */ u8 byte0;

@@ -1,9 +1,64 @@
+/*
+ * Input Delay Tester
+ * I took over the game's sample gamestate to do this, which is why it says "sample" everywhere lol
+ */
+
 #include "global.h"
 
-void Sample_HandleStateChange(SampleState* this) {
-    if (CHECK_BTN_ALL(this->state.input[0].press.button, BTN_START)) {
-        SET_NEXT_GAMESTATE(&this->state, Play_Init, PlayState);
-        this->state.running = false;
+static Color_RGB8 sColors[] = {
+    { 255, 255, 255 }, // white
+    { 255, 0, 0 },     // red
+    { 255, 127, 0 },   // orange
+    { 255, 255, 0 },   // yellow
+    { 0, 255, 0 },     // green
+    { 0, 0, 255 },     // blue
+    { 127, 0, 255 },   // purple
+};
+
+OSTime sGraphTimes[30];
+
+void Sample_Update(SampleState* this) {
+    Input* controller1 = &this->state.input[0];
+    u32 triggerButtons = (BTN_A | BTN_B | BTN_CUP | BTN_CDOWN | BTN_CLEFT | BTN_CRIGHT);
+    u32 infoButtons = (BTN_L | BTN_R | BTN_Z);
+
+    if (CHECK_BTN_ANY(controller1->press.button, triggerButtons)) {
+        Audio_PlaySfxGeneral(NA_SE_IT_WALL_HIT_SOFT, &gSfxDefaultPos, 4, &gSfxDefaultFreqAndVolScale,
+                             &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
+        this->triggered = true;
+    } else {
+        this->triggered = false;
+    }
+
+    if (CHECK_BTN_ANY(controller1->press.button, infoButtons)) {
+        this->showInfo ^= 1;
+    }
+
+    if (CHECK_BTN_ALL(controller1->press.button, BTN_START)) {
+        this->color++;
+
+        if (this->color >= ARRAY_COUNT(sColors)) {
+            this->color = 0;
+        }
+    }
+
+    if (this->showInfo) {
+        s32 i;
+        s32 numFrames = ARRAY_COUNT(sGraphTimes);
+        OSTime avg = 0;
+
+        this->frame++;
+        this->frame %= numFrames;
+
+        sGraphTimes[this->frame] = gGraphUpdatePeriod;
+
+        for (i = 0; i < numFrames; i++) {
+            avg += sGraphTimes[i];
+        }
+
+        avg /= numFrames;
+        this->fps = 1 / (((f32)OS_CYCLES_TO_USEC(avg) / 1000.0f) / 1000.0f);
+        
     }
 }
 
@@ -11,39 +66,52 @@ void Sample_Draw(SampleState* this) {
     GraphicsContext* gfxCtx = this->state.gfxCtx;
     View* view = &this->view;
 
-    OPEN_DISPS(gfxCtx, "../z_sample.c", 62);
-
-    gSPSegment(POLY_OPA_DISP++, 0x00, NULL);
-    gSPSegment(POLY_OPA_DISP++, 0x01, this->staticSegment);
-
-    Gfx_SetupFrame(gfxCtx, 0, 0, 0);
+    if (this->triggered) {
+        Color_RGB8* color = &sColors[this->color];
+        Gfx_SetupFrame(gfxCtx, color->r, color->g, color->b);
+    } else {
+        Gfx_SetupFrame(gfxCtx, 0, 0, 0);
+    }
 
     view->flags = VIEW_VIEWING | VIEW_VIEWPORT | VIEW_PROJECTION_PERSPECTIVE;
     View_Apply(view, VIEW_ALL);
 
-    {
-        Mtx* mtx = Graph_Alloc(gfxCtx, sizeof(Mtx));
+    if (this->showInfo) {
+        GfxPrint printer;
 
-        guPosition(mtx, SREG(37), SREG(38), SREG(39), 1.0f, SREG(40), SREG(41), SREG(42));
-        gSPMatrix(POLY_OPA_DISP++, mtx, G_MTX_LOAD);
+        OPEN_DISPS(gfxCtx, __FILE__, __LINE__);
+
+        GfxPrint_Init(&printer);
+        GfxPrint_Open(&printer, POLY_OPA_DISP);
+
+        GfxPrint_SetColor(&printer, 255, 255, 255, 255);
+        GfxPrint_SetPos(&printer, 7, 2);
+        GfxPrint_Printf(&printer, "Input Delay Tester by Fig");
+
+        GfxPrint_SetPos(&printer, 2, 7);
+        GfxPrint_Printf(&printer, "FPS: %f", this->fps);
+
+        GfxPrint_SetPos(&printer, 2, 20);
+        GfxPrint_Printf(&printer, "A/B/C: Flash screen");
+
+        GfxPrint_SetPos(&printer, 2, 22);
+        GfxPrint_Printf(&printer, "L/R/Z: Toggle text display");
+
+        GfxPrint_SetPos(&printer, 2, 24);
+        GfxPrint_Printf(&printer, "Start: Change flash color");
+
+        POLY_OPA_DISP = GfxPrint_Close(&printer);
+        GfxPrint_Destroy(&printer);
+
+        CLOSE_DISPS(gfxCtx, __FILE__, __LINE__);
     }
-
-    POLY_OPA_DISP = Gfx_SetFog2(POLY_OPA_DISP, 255, 255, 255, 0, 0, 0);
-    Gfx_SetupDL_25Opa(gfxCtx);
-
-    gDPSetCycleType(POLY_OPA_DISP++, G_CYC_1CYCLE);
-    gDPSetRenderMode(POLY_OPA_DISP++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2);
-    gDPSetCombineMode(POLY_OPA_DISP++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
-    gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 0, 0);
-
-    CLOSE_DISPS(gfxCtx, "../z_sample.c", 111);
 }
 
 void Sample_Main(GameState* thisx) {
     SampleState* this = (SampleState*)thisx;
 
+    Sample_Update(this);
     Sample_Draw(this);
-    Sample_HandleStateChange(this);
 }
 
 void Sample_Destroy(GameState* thisx) {
@@ -76,25 +144,18 @@ void Sample_SetupView(SampleState* this) {
     }
 }
 
-void Sample_LoadTitleStatic(SampleState* this) {
-    u32 size = _title_staticSegmentRomEnd - _title_staticSegmentRomStart;
-
-    this->staticSegment = GameState_Alloc(&this->state, size, "../z_sample.c", 163);
-    DmaMgr_RequestSyncDebug(this->staticSegment, (uintptr_t)_title_staticSegmentRomStart, size, "../z_sample.c", 164);
-}
-
 void Sample_Init(GameState* thisx) {
     SampleState* this = (SampleState*)thisx;
 
     this->state.main = Sample_Main;
     this->state.destroy = Sample_Destroy;
+
     R_UPDATE_RATE = 1;
     Sample_SetupView(this);
-    Sample_LoadTitleStatic(this);
-    SREG(37) = 0;
-    SREG(38) = 0;
-    SREG(39) = 0;
-    SREG(40) = 0;
-    SREG(41) = 0;
-    SREG(42) = 0;
+
+    SEQCMD_RESET_AUDIO_HEAP(0, 10);
+
+    this->color = 0;
+    this->showInfo = true;
+    this->frame = 0;
 }
