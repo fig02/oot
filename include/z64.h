@@ -772,6 +772,8 @@ typedef struct {
     u8 showInfo;
     u8 triggered;
     u8 frame;
+    u8 fpsReady;
+    f32 alpha;
     f32 fps;
 } SampleState;
 

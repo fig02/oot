@@ -15,7 +15,7 @@ static Color_RGB8 sColors[] = {
     { 127, 0, 255 },   // purple
 };
 
-OSTime sGraphTimes[30];
+OSTime sGraphTimes[60];
 
 void Sample_Update(SampleState* this) {
     Input* controller1 = &this->state.input[0];
@@ -42,6 +42,16 @@ void Sample_Update(SampleState* this) {
         }
     }
 
+    if (CHECK_BTN_ALL(controller1->press.button, BTN_DRIGHT)) {
+        this->alpha += 10.0f;
+    }
+
+    if (CHECK_BTN_ALL(controller1->press.button, BTN_DLEFT)) {
+        this->alpha -= 10.0f;
+    }
+
+    this->alpha = CLAMP(this->alpha, 0.0f, 100.0f);
+
     if (this->showInfo) {
         s32 i;
         s32 numFrames = ARRAY_COUNT(sGraphTimes);
@@ -49,6 +59,12 @@ void Sample_Update(SampleState* this) {
 
         this->frame++;
         this->frame %= numFrames;
+
+        if (!this->fpsReady) {
+            if (this->frame >= 59) {
+                this->fpsReady = true;
+            }
+        }
 
         sGraphTimes[this->frame] = gGraphUpdatePeriod;
 
@@ -68,7 +84,9 @@ void Sample_Draw(SampleState* this) {
 
     if (this->triggered) {
         Color_RGB8* color = &sColors[this->color];
-        Gfx_SetupFrame(gfxCtx, color->r, color->g, color->b);
+        f32 brightness = this->alpha / 100.0f;
+
+        Gfx_SetupFrame(gfxCtx, color->r * brightness, color->g * brightness, color->b * brightness);
     } else {
         Gfx_SetupFrame(gfxCtx, 0, 0, 0);
     }
@@ -89,16 +107,24 @@ void Sample_Draw(SampleState* this) {
         GfxPrint_Printf(&printer, "Input Delay Tester by Fig");
 
         GfxPrint_SetPos(&printer, 2, 7);
-        GfxPrint_Printf(&printer, "FPS: %f", this->fps);
 
-        GfxPrint_SetPos(&printer, 2, 20);
+        if (this->fpsReady) {
+            GfxPrint_Printf(&printer, "FPS: %f", this->fps);
+        } else {
+            GfxPrint_Printf(&printer, "FPS: calculating...");
+        }
+
+        GfxPrint_SetPos(&printer, 2, 14);
         GfxPrint_Printf(&printer, "A/B/C: Flash screen");
 
-        GfxPrint_SetPos(&printer, 2, 22);
+        GfxPrint_SetPos(&printer, 2, 16);
         GfxPrint_Printf(&printer, "L/R/Z: Toggle text display");
 
-        GfxPrint_SetPos(&printer, 2, 24);
+        GfxPrint_SetPos(&printer, 2, 18);
         GfxPrint_Printf(&printer, "Start: Change flash color");
+
+        GfxPrint_SetPos(&printer, 2, 22);
+        GfxPrint_Printf(&printer, "DLeft/DRight: Brightness %.0f%%", this->alpha);
 
         POLY_OPA_DISP = GfxPrint_Close(&printer);
         GfxPrint_Destroy(&printer);
@@ -157,5 +183,7 @@ void Sample_Init(GameState* thisx) {
 
     this->color = 0;
     this->showInfo = true;
+    this->fpsReady = false;
     this->frame = 0;
+    this->alpha = 100.0f;
 }
