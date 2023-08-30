@@ -10520,6 +10520,7 @@ void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
     }
 
     Math_Vec3f_Copy(&this->actor.prevPos, &this->actor.home.pos);
+    this->actor.minVelocityY = 0.0f;
 
     if (this->unk_A73 != 0) {
         this->unk_A73--;
