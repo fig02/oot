@@ -25,7 +25,7 @@ void osSyncPrintf(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
 
-    _Printf(is_proutSyncPrintf, NULL, fmt, args);
+    // _Printf(is_proutSyncPrintf, NULL, fmt, args);
 
     va_end(args);
 }
