@@ -1020,7 +1020,7 @@ f32 func_8002DCE4(Player* player) {
 }
 
 int func_8002DD6C(Player* player) {
-    return player->stateFlags1 & PLAYER_STATE1_3;
+    return player->stateFlags1 & PLAYER_STATE1_USING_FIRST_PERSON_ITEM;
 }
 
 int func_8002DD78(Player* player) {

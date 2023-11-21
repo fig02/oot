@@ -152,17 +152,17 @@ s32 func_8083485C(Player* this, PlayState* play);
 s32 Player_UpperAction_Sword(Player* this, PlayState* play);
 s32 func_80834B5C(Player* this, PlayState* play);
 s32 func_80834C74(Player* this, PlayState* play);
-s32 func_8083501C(Player* this, PlayState* play);
+s32 Player_UpperAction_FirstPersonItemIdle(Player* this, PlayState* play);
 s32 func_808351D4(Player* this, PlayState* play);
 s32 func_808353D8(Player* this, PlayState* play);
 s32 func_80835588(Player* this, PlayState* play);
 s32 Player_UpperAction_CarryActor(Player* this, PlayState* play);
-s32 func_80835800(Player* this, PlayState* play);
-s32 func_80835884(Player* this, PlayState* play);
-s32 func_808358F0(Player* this, PlayState* play);
-s32 func_808359FC(Player* this, PlayState* play);
-s32 func_80835B60(Player* this, PlayState* play);
-s32 func_80835C08(Player* this, PlayState* play);
+s32 Player_UpperAction_BoomerangIdle(Player* this, PlayState* play);
+s32 Player_UpperAction_StartAimingBoomerang(Player* this, PlayState* play);
+s32 Player_UpperAction_AimBoomerang(Player* this, PlayState* play);
+s32 Player_UpperAction_ThrowBoomerang(Player* this, PlayState* play);
+s32 Player_UpperAction_WaitForBoomerang(Player* this, PlayState* play);
+s32 Player_UpperAction_CatchBoomerang(Player* this, PlayState* play);
 
 void Player_UseItem(PlayState* play, Player* this, s32 item);
 void func_80839F90(Player* this, PlayState* play);
@@ -1247,73 +1247,73 @@ static s8 sItemActions[] = {
 };
 
 static s32 (*sItemActionUpdateFuncs[])(Player* this, PlayState* play) = {
-    func_8083485C,                 // PLAYER_IA_NONE
-    func_8083485C,                 // PLAYER_IA_SWORD_CS
-    func_8083485C,                 // PLAYER_IA_FISHING_POLE
-    Player_UpperAction_Sword,      // PLAYER_IA_SWORD_MASTER
-    Player_UpperAction_Sword,      // PLAYER_IA_SWORD_KOKIRI
-    Player_UpperAction_Sword,      // PLAYER_IA_SWORD_BIGGORON
-    func_8083485C,                 // PLAYER_IA_DEKU_STICK
-    func_8083485C,                 // PLAYER_IA_HAMMER
-    func_8083501C,                 // PLAYER_IA_BOW
-    func_8083501C,                 // PLAYER_IA_BOW_FIRE
-    func_8083501C,                 // PLAYER_IA_BOW_ICE
-    func_8083501C,                 // PLAYER_IA_BOW_LIGHT
-    func_8083501C,                 // PLAYER_IA_BOW_0C
-    func_8083501C,                 // PLAYER_IA_BOW_0D
-    func_8083501C,                 // PLAYER_IA_BOW_0E
-    func_8083501C,                 // PLAYER_IA_SLINGSHOT
-    func_8083501C,                 // PLAYER_IA_HOOKSHOT
-    func_8083501C,                 // PLAYER_IA_LONGSHOT
-    Player_UpperAction_CarryActor, // PLAYER_IA_BOMB
-    Player_UpperAction_CarryActor, // PLAYER_IA_BOMBCHU
-    func_80835800,                 // PLAYER_IA_BOOMERANG
-    func_8083485C,                 // PLAYER_IA_MAGIC_SPELL_15
-    func_8083485C,                 // PLAYER_IA_MAGIC_SPELL_16
-    func_8083485C,                 // PLAYER_IA_MAGIC_SPELL_17
-    func_8083485C,                 // PLAYER_IA_FARORES_WIND
-    func_8083485C,                 // PLAYER_IA_NAYRUS_LOVE
-    func_8083485C,                 // PLAYER_IA_DINS_FIRE
-    func_8083485C,                 // PLAYER_IA_DEKU_NUT
-    func_8083485C,                 // PLAYER_IA_OCARINA_FAIRY
-    func_8083485C,                 // PLAYER_IA_OCARINA_OF_TIME
-    func_8083485C,                 // PLAYER_IA_BOTTLE
-    func_8083485C,                 // PLAYER_IA_BOTTLE_FISH
-    func_8083485C,                 // PLAYER_IA_BOTTLE_FIRE
-    func_8083485C,                 // PLAYER_IA_BOTTLE_BUG
-    func_8083485C,                 // PLAYER_IA_BOTTLE_POE
-    func_8083485C,                 // PLAYER_IA_BOTTLE_BIG_POE
-    func_8083485C,                 // PLAYER_IA_BOTTLE_RUTOS_LETTER
-    func_8083485C,                 // PLAYER_IA_BOTTLE_POTION_RED
-    func_8083485C,                 // PLAYER_IA_BOTTLE_POTION_BLUE
-    func_8083485C,                 // PLAYER_IA_BOTTLE_POTION_GREEN
-    func_8083485C,                 // PLAYER_IA_BOTTLE_MILK_FULL
-    func_8083485C,                 // PLAYER_IA_BOTTLE_MILK_HALF
-    func_8083485C,                 // PLAYER_IA_BOTTLE_FAIRY
-    func_8083485C,                 // PLAYER_IA_ZELDAS_LETTER
-    func_8083485C,                 // PLAYER_IA_WEIRD_EGG
-    func_8083485C,                 // PLAYER_IA_CHICKEN
-    func_8083485C,                 // PLAYER_IA_MAGIC_BEAN
-    func_8083485C,                 // PLAYER_IA_POCKET_EGG
-    func_8083485C,                 // PLAYER_IA_POCKET_CUCCO
-    func_8083485C,                 // PLAYER_IA_COJIRO
-    func_8083485C,                 // PLAYER_IA_ODD_MUSHROOM
-    func_8083485C,                 // PLAYER_IA_ODD_POTION
-    func_8083485C,                 // PLAYER_IA_POACHERS_SAW
-    func_8083485C,                 // PLAYER_IA_BROKEN_GORONS_SWORD
-    func_8083485C,                 // PLAYER_IA_PRESCRIPTION
-    func_8083485C,                 // PLAYER_IA_FROG
-    func_8083485C,                 // PLAYER_IA_EYEDROPS
-    func_8083485C,                 // PLAYER_IA_CLAIM_CHECK
-    func_8083485C,                 // PLAYER_IA_MASK_KEATON
-    func_8083485C,                 // PLAYER_IA_MASK_SKULL
-    func_8083485C,                 // PLAYER_IA_MASK_SPOOKY
-    func_8083485C,                 // PLAYER_IA_MASK_BUNNY_HOOD
-    func_8083485C,                 // PLAYER_IA_MASK_GORON
-    func_8083485C,                 // PLAYER_IA_MASK_ZORA
-    func_8083485C,                 // PLAYER_IA_MASK_GERUDO
-    func_8083485C,                 // PLAYER_IA_MASK_TRUTH
-    func_8083485C,                 // PLAYER_IA_LENS_OF_TRUTH
+    func_8083485C,                          // PLAYER_IA_NONE
+    func_8083485C,                          // PLAYER_IA_SWORD_CS
+    func_8083485C,                          // PLAYER_IA_FISHING_POLE
+    Player_UpperAction_Sword,               // PLAYER_IA_SWORD_MASTER
+    Player_UpperAction_Sword,               // PLAYER_IA_SWORD_KOKIRI
+    Player_UpperAction_Sword,               // PLAYER_IA_SWORD_BIGGORON
+    func_8083485C,                          // PLAYER_IA_DEKU_STICK
+    func_8083485C,                          // PLAYER_IA_HAMMER
+    Player_UpperAction_FirstPersonItemIdle, // PLAYER_IA_BOW
+    Player_UpperAction_FirstPersonItemIdle, // PLAYER_IA_BOW_FIRE
+    Player_UpperAction_FirstPersonItemIdle, // PLAYER_IA_BOW_ICE
+    Player_UpperAction_FirstPersonItemIdle, // PLAYER_IA_BOW_LIGHT
+    Player_UpperAction_FirstPersonItemIdle, // PLAYER_IA_BOW_0C
+    Player_UpperAction_FirstPersonItemIdle, // PLAYER_IA_BOW_0D
+    Player_UpperAction_FirstPersonItemIdle, // PLAYER_IA_BOW_0E
+    Player_UpperAction_FirstPersonItemIdle, // PLAYER_IA_SLINGSHOT
+    Player_UpperAction_FirstPersonItemIdle, // PLAYER_IA_HOOKSHOT
+    Player_UpperAction_FirstPersonItemIdle, // PLAYER_IA_LONGSHOT
+    Player_UpperAction_CarryActor,          // PLAYER_IA_BOMB
+    Player_UpperAction_CarryActor,          // PLAYER_IA_BOMBCHU
+    Player_UpperAction_BoomerangIdle,       // PLAYER_IA_BOOMERANG
+    func_8083485C,                          // PLAYER_IA_MAGIC_SPELL_15
+    func_8083485C,                          // PLAYER_IA_MAGIC_SPELL_16
+    func_8083485C,                          // PLAYER_IA_MAGIC_SPELL_17
+    func_8083485C,                          // PLAYER_IA_FARORES_WIND
+    func_8083485C,                          // PLAYER_IA_NAYRUS_LOVE
+    func_8083485C,                          // PLAYER_IA_DINS_FIRE
+    func_8083485C,                          // PLAYER_IA_DEKU_NUT
+    func_8083485C,                          // PLAYER_IA_OCARINA_FAIRY
+    func_8083485C,                          // PLAYER_IA_OCARINA_OF_TIME
+    func_8083485C,                          // PLAYER_IA_BOTTLE
+    func_8083485C,                          // PLAYER_IA_BOTTLE_FISH
+    func_8083485C,                          // PLAYER_IA_BOTTLE_FIRE
+    func_8083485C,                          // PLAYER_IA_BOTTLE_BUG
+    func_8083485C,                          // PLAYER_IA_BOTTLE_POE
+    func_8083485C,                          // PLAYER_IA_BOTTLE_BIG_POE
+    func_8083485C,                          // PLAYER_IA_BOTTLE_RUTOS_LETTER
+    func_8083485C,                          // PLAYER_IA_BOTTLE_POTION_RED
+    func_8083485C,                          // PLAYER_IA_BOTTLE_POTION_BLUE
+    func_8083485C,                          // PLAYER_IA_BOTTLE_POTION_GREEN
+    func_8083485C,                          // PLAYER_IA_BOTTLE_MILK_FULL
+    func_8083485C,                          // PLAYER_IA_BOTTLE_MILK_HALF
+    func_8083485C,                          // PLAYER_IA_BOTTLE_FAIRY
+    func_8083485C,                          // PLAYER_IA_ZELDAS_LETTER
+    func_8083485C,                          // PLAYER_IA_WEIRD_EGG
+    func_8083485C,                          // PLAYER_IA_CHICKEN
+    func_8083485C,                          // PLAYER_IA_MAGIC_BEAN
+    func_8083485C,                          // PLAYER_IA_POCKET_EGG
+    func_8083485C,                          // PLAYER_IA_POCKET_CUCCO
+    func_8083485C,                          // PLAYER_IA_COJIRO
+    func_8083485C,                          // PLAYER_IA_ODD_MUSHROOM
+    func_8083485C,                          // PLAYER_IA_ODD_POTION
+    func_8083485C,                          // PLAYER_IA_POACHERS_SAW
+    func_8083485C,                          // PLAYER_IA_BROKEN_GORONS_SWORD
+    func_8083485C,                          // PLAYER_IA_PRESCRIPTION
+    func_8083485C,                          // PLAYER_IA_FROG
+    func_8083485C,                          // PLAYER_IA_EYEDROPS
+    func_8083485C,                          // PLAYER_IA_CLAIM_CHECK
+    func_8083485C,                          // PLAYER_IA_MASK_KEATON
+    func_8083485C,                          // PLAYER_IA_MASK_SKULL
+    func_8083485C,                          // PLAYER_IA_MASK_SPOOKY
+    func_8083485C,                          // PLAYER_IA_MASK_BUNNY_HOOD
+    func_8083485C,                          // PLAYER_IA_MASK_GORON
+    func_8083485C,                          // PLAYER_IA_MASK_ZORA
+    func_8083485C,                          // PLAYER_IA_MASK_GERUDO
+    func_8083485C,                          // PLAYER_IA_MASK_TRUTH
+    func_8083485C,                          // PLAYER_IA_LENS_OF_TRUTH
 };
 
 static void (*sItemActionInitFuncs[])(PlayState* play, Player* this) = {
@@ -2048,8 +2048,8 @@ int func_808332B8(Player* this) {
     return (this->stateFlags1 & PLAYER_STATE1_27) && (this->currentBoots != PLAYER_BOOTS_IRON);
 }
 
-s32 func_808332E4(Player* this) {
-    return (this->stateFlags1 & PLAYER_STATE1_24);
+s32 Player_IsUsingBoomerang(Player* this) {
+    return (this->stateFlags1 & PLAYER_STATE1_USING_BOOMERANG);
 }
 
 void func_808332F4(Player* this, PlayState* play) {
@@ -2095,12 +2095,12 @@ LinkAnimationHeader* func_80833438(Player* this) {
     }
 }
 
-int func_808334B4(Player* this) {
-    return func_808332E4(this) && (this->unk_834 != 0);
+int Player_IsAimingBoomerang(Player* this) {
+    return Player_IsUsingBoomerang(this) && (this->unk_834 != 0);
 }
 
 LinkAnimationHeader* func_808334E4(Player* this) {
-    if (func_808334B4(this)) {
+    if (Player_IsAimingBoomerang(this)) {
         return &gPlayerAnim_link_boom_throw_waitR;
     } else {
         return GET_PLAYER_ANIM(PLAYER_ANIMGROUP_waitR, this->modelAnimType);
@@ -2108,7 +2108,7 @@ LinkAnimationHeader* func_808334E4(Player* this) {
 }
 
 LinkAnimationHeader* func_80833528(Player* this) {
-    if (func_808334B4(this)) {
+    if (Player_IsAimingBoomerang(this)) {
         return &gPlayerAnim_link_boom_throw_waitL;
     } else {
         return GET_PLAYER_ANIM(PLAYER_ANIMGROUP_waitL, this->modelAnimType);
@@ -2124,7 +2124,7 @@ LinkAnimationHeader* func_8083356C(Player* this) {
 }
 
 LinkAnimationHeader* func_808335B0(Player* this) {
-    if (func_808334B4(this)) {
+    if (Player_IsAimingBoomerang(this)) {
         return &gPlayerAnim_link_boom_throw_side_walkR;
     } else {
         return GET_PLAYER_ANIM(PLAYER_ANIMGROUP_side_walkR, this->modelAnimType);
@@ -2132,7 +2132,7 @@ LinkAnimationHeader* func_808335B0(Player* this) {
 }
 
 LinkAnimationHeader* func_808335F4(Player* this) {
-    if (func_808334B4(this)) {
+    if (Player_IsAimingBoomerang(this)) {
         return &gPlayerAnim_link_boom_throw_side_walkL;
     } else {
         return GET_PLAYER_ANIM(PLAYER_ANIMGROUP_side_walkL, this->modelAnimType);
@@ -2151,7 +2151,7 @@ void Player_InitItemActionWithAnim(PlayState* play, Player* this, s8 itemAction)
     LinkAnimationHeader** iter = D_80853914 + this->modelAnimType;
     u32 animGroup;
 
-    this->stateFlags1 &= ~(PLAYER_STATE1_3 | PLAYER_STATE1_24);
+    this->stateFlags1 &= ~(PLAYER_STATE1_USING_FIRST_PERSON_ITEM | PLAYER_STATE1_USING_BOOMERANG);
 
     for (animGroup = 0; animGroup < PLAYER_ANIMGROUP_MAX; animGroup++) {
         if (current == *iter) {
@@ -2190,7 +2190,7 @@ void Player_InitHammerIA(PlayState* play, Player* this) {
 }
 
 void Player_InitBowOrSlingshotIA(PlayState* play, Player* this) {
-    this->stateFlags1 |= PLAYER_STATE1_3;
+    this->stateFlags1 |= PLAYER_STATE1_USING_FIRST_PERSON_ITEM;
 
     if (this->heldItemAction != PLAYER_IA_SLINGSHOT) {
         this->unk_860 = -1;
@@ -2234,7 +2234,7 @@ void Player_InitExplosiveIA(PlayState* play, Player* this) {
 }
 
 void Player_InitHookshotIA(PlayState* play, Player* this) {
-    this->stateFlags1 |= PLAYER_STATE1_3;
+    this->stateFlags1 |= PLAYER_STATE1_USING_FIRST_PERSON_ITEM;
     this->unk_860 = -3;
 
     this->heldActor =
@@ -2243,7 +2243,7 @@ void Player_InitHookshotIA(PlayState* play, Player* this) {
 }
 
 void Player_InitBoomerangIA(PlayState* play, Player* this) {
-    this->stateFlags1 |= PLAYER_STATE1_24;
+    this->stateFlags1 |= PLAYER_STATE1_USING_BOOMERANG;
 }
 
 void Player_InitItemAction(PlayState* play, Player* this, s8 itemAction) {
@@ -2254,7 +2254,7 @@ void Player_InitItemAction(PlayState* play, Player* this, s8 itemAction) {
     this->heldItemAction = this->itemAction = itemAction;
     this->modelGroup = this->nextModelGroup;
 
-    this->stateFlags1 &= ~(PLAYER_STATE1_3 | PLAYER_STATE1_24);
+    this->stateFlags1 &= ~(PLAYER_STATE1_USING_FIRST_PERSON_ITEM | PLAYER_STATE1_USING_BOOMERANG);
 
     sItemActionInitFuncs[itemAction](play, this);
 
@@ -2735,12 +2735,16 @@ s32 func_80834C74(Player* this, PlayState* play) {
     return 1;
 }
 
-s32 func_80834D2C(Player* this, PlayState* play) {
+/**
+ * Gets a projectile ready to use. This is used for Bow, Slingshot, Hookshot, and Boomerang.
+ * @return  True if the projectile was properly initialized, false otherwise
+*/
+s32 Player_InitProjectile(Player* this, PlayState* play) {
     LinkAnimationHeader* anim;
 
     if (this->heldItemAction != PLAYER_IA_BOOMERANG) {
         if (!func_8083442C(this, play)) {
-            return 0;
+            return false;
         }
 
         if (!Player_HoldsHookshot(this)) {
@@ -2748,9 +2752,10 @@ s32 func_80834D2C(Player* this, PlayState* play) {
         } else {
             anim = &gPlayerAnim_link_hook_shot_ready;
         }
+
         LinkAnimation_PlayOnce(play, &this->upperSkelAnime, anim);
     } else {
-        Player_SetUpperActionFunc(this, func_80835884);
+        Player_SetUpperActionFunc(this, Player_UpperAction_StartAimingBoomerang);
         this->unk_834 = 10;
         LinkAnimation_PlayOnce(play, &this->upperSkelAnime, &gPlayerAnim_link_boom_throw_wait2waitR);
     }
@@ -2761,10 +2766,10 @@ s32 func_80834D2C(Player* this, PlayState* play) {
         Player_AnimPlayLoop(play, this, GET_PLAYER_ANIM(PLAYER_ANIMGROUP_wait, this->modelAnimType));
     }
 
-    return 1;
+    return true;
 }
 
-int func_80834E44(PlayState* play) {
+int Player_ShootingGalleryPressedB(PlayState* play) {
     return (play->shootingGalleryStatus > 0) && CHECK_BTN_ALL(sControlInput->press.button, BTN_B);
 }
 
@@ -2774,7 +2779,7 @@ int func_80834E7C(PlayState* play) {
             CHECK_BTN_ANY(sControlInput->cur.button, BTN_A | BTN_B | BTN_CUP | BTN_CLEFT | BTN_CRIGHT | BTN_CDOWN));
 }
 
-s32 func_80834EB8(Player* this, PlayState* play) {
+s32 Player_SetAimMode(Player* this, PlayState* play) {
     if ((this->unk_6AD == 0) || (this->unk_6AD == 2)) {
         if (func_80833BCC(this) ||
             (Camera_CheckValidMode(Play_GetCamera(play, CAM_ID_MAIN), CAM_MODE_AIM_ADULT) == 0)) {
@@ -2786,11 +2791,11 @@ s32 func_80834EB8(Player* this, PlayState* play) {
     return 0;
 }
 
-s32 func_80834F2C(Player* this, PlayState* play) {
-    if ((this->doorType == PLAYER_DOORTYPE_NONE) && !(this->stateFlags1 & PLAYER_STATE1_25)) {
-        if (sUseHeldItem || func_80834E44(play)) {
-            if (func_80834D2C(this, play)) {
-                return func_80834EB8(this, play);
+s32 Player_UseProjectile(Player* this, PlayState* play) {
+    if ((this->doorType == PLAYER_DOORTYPE_NONE) && !(this->stateFlags1 & PLAYER_STATE1_BOOMERANG_ACTIVE)) {
+        if (sUseHeldItem || Player_ShootingGalleryPressedB(play)) {
+            if (Player_InitProjectile(this, play)) {
+                return Player_SetAimMode(this, play);
             }
         }
     }
@@ -2812,13 +2817,19 @@ s32 func_80834FBC(Player* this) {
     return 0;
 }
 
-s32 func_8083501C(Player* this, PlayState* play) {
+/**
+ * Handles the idle state for the Hookshot, Bow or Slingshot.
+ * The item is in Player's hand and ready to use.
+ *
+ * For the boomerang equivalent of this function, see `Player_UpperAction_BoomerangIdle`
+ */
+s32 Player_UpperAction_FirstPersonItemIdle(Player* this, PlayState* play) {
     if (this->unk_860 >= 0) {
         this->unk_860 = -this->unk_860;
     }
 
     if ((!Player_HoldsHookshot(this) || func_80834FBC(this)) && !func_80834758(play, this) &&
-        !func_80834F2C(this, play)) {
+        !Player_UseProjectile(this, play)) {
         return 0;
     }
 
@@ -2890,7 +2901,7 @@ s32 func_808351D4(Player* this, PlayState* play) {
         this->unk_834--;
     }
 
-    func_80834EB8(this, play);
+    Player_SetAimMode(this, play);
 
     if ((this->unk_836 > 0) && ((this->unk_860 < 0) || (!sHeldItemButtonIsHeldDown && !func_80834E7C(play)))) {
         Player_SetUpperActionFunc(this, func_808353D8);
@@ -2920,7 +2931,7 @@ s32 func_808353D8(Player* this, PlayState* play) {
     }
 
     if (!func_80834758(play, this) &&
-        (sUseHeldItem || ((this->unk_860 < 0) && sHeldItemButtonIsHeldDown) || func_80834E44(play))) {
+        (sUseHeldItem || ((this->unk_860 < 0) && sHeldItemButtonIsHeldDown) || Player_ShootingGalleryPressedB(play))) {
         this->unk_860 = ABS(this->unk_860);
 
         if (func_8083442C(this, play)) {
@@ -2943,7 +2954,7 @@ s32 func_808353D8(Player* this, PlayState* play) {
         }
 
         if (Player_HoldsHookshot(this)) {
-            Player_SetUpperActionFunc(this, func_8083501C);
+            Player_SetUpperActionFunc(this, Player_UpperAction_FirstPersonItemIdle);
         } else {
             Player_SetUpperActionFunc(this, func_80835588);
             LinkAnimation_PlayOnce(play, &this->upperSkelAnime, &gPlayerAnim_link_bow_bow_shoot_end);
@@ -2957,7 +2968,7 @@ s32 func_808353D8(Player* this, PlayState* play) {
 
 s32 func_80835588(Player* this, PlayState* play) {
     if (!(this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) || LinkAnimation_Update(play, &this->upperSkelAnime)) {
-        Player_SetUpperActionFunc(this, func_8083501C);
+        Player_SetUpperActionFunc(this, Player_UpperAction_FirstPersonItemIdle);
     }
 
     return 1;
@@ -3019,50 +3030,50 @@ s32 Player_UpperAction_CarryActor(Player* this, PlayState* play) {
     return func_8083485C(this, play);
 }
 
-void func_808357E8(Player* this, Gfx** dLists) {
+void Player_SetLeftHadndDLists(Player* this, Gfx** dLists) {
     this->leftHandDLists = dLists + gSaveContext.save.linkAge;
 }
 
-s32 func_80835800(Player* this, PlayState* play) {
+s32 Player_UpperAction_BoomerangIdle(Player* this, PlayState* play) {
     if (func_80834758(play, this)) {
         return 1;
     }
 
-    if (this->stateFlags1 & PLAYER_STATE1_25) {
-        Player_SetUpperActionFunc(this, func_80835B60);
-    } else if (func_80834F2C(this, play)) {
+    if (this->stateFlags1 & PLAYER_STATE1_BOOMERANG_ACTIVE) {
+        Player_SetUpperActionFunc(this, Player_UpperAction_WaitForBoomerang);
+    } else if (Player_UseProjectile(this, play)) {
         return 1;
     }
 
     return 0;
 }
 
-s32 func_80835884(Player* this, PlayState* play) {
+s32 Player_UpperAction_StartAimingBoomerang(Player* this, PlayState* play) {
     if (LinkAnimation_Update(play, &this->upperSkelAnime)) {
-        Player_SetUpperActionFunc(this, func_808358F0);
+        Player_SetUpperActionFunc(this, Player_UpperAction_AimBoomerang);
         LinkAnimation_PlayLoop(play, &this->upperSkelAnime, &gPlayerAnim_link_boom_throw_waitR);
     }
 
-    func_80834EB8(this, play);
+    Player_SetAimMode(this, play);
 
     return 1;
 }
 
-s32 func_808358F0(Player* this, PlayState* play) {
-    LinkAnimationHeader* animSeg = this->skelAnime.animation;
+s32 Player_UpperAction_AimBoomerang(Player* this, PlayState* play) {
+    LinkAnimationHeader* curAnim = this->skelAnime.animation;
 
-    if ((func_808334E4(this) == animSeg) || (func_80833528(this) == animSeg) || (func_808335B0(this) == animSeg) ||
-        (func_808335F4(this) == animSeg)) {
+    if ((func_808334E4(this) == curAnim) || (func_80833528(this) == curAnim) || (func_808335B0(this) == curAnim) ||
+        (func_808335F4(this) == curAnim)) {
         AnimationContext_SetCopyAll(play, this->skelAnime.limbCount, this->upperSkelAnime.jointTable,
                                     this->skelAnime.jointTable);
     } else {
         LinkAnimation_Update(play, &this->upperSkelAnime);
     }
 
-    func_80834EB8(this, play);
+    Player_SetAimMode(this, play);
 
     if (!sHeldItemButtonIsHeldDown) {
-        Player_SetUpperActionFunc(this, func_808359FC);
+        Player_SetUpperActionFunc(this, Player_UpperAction_ThrowBoomerang);
         LinkAnimation_PlayOnce(play, &this->upperSkelAnime,
                                (this->unk_870 < 0.5f) ? &gPlayerAnim_link_boom_throwR : &gPlayerAnim_link_boom_throwL);
     }
@@ -3070,9 +3081,9 @@ s32 func_808358F0(Player* this, PlayState* play) {
     return 1;
 }
 
-s32 func_808359FC(Player* this, PlayState* play) {
+s32 Player_UpperAction_ThrowBoomerang(Player* this, PlayState* play) {
     if (LinkAnimation_Update(play, &this->upperSkelAnime)) {
-        Player_SetUpperActionFunc(this, func_80835B60);
+        Player_SetUpperActionFunc(this, Player_UpperAction_WaitForBoomerang);
         this->unk_834 = 0;
     } else if (LinkAnimation_OnFrame(&this->upperSkelAnime, 6.0f)) {
         f32 posX = (Math_SinS(this->actor.shape.rot.y) * 10.0f) + this->actor.world.pos.x;
@@ -3083,14 +3094,19 @@ s32 func_808359FC(Player* this, PlayState* play) {
                                  this->actor.focus.rot.x, yaw, 0, 0);
 
         this->boomerangActor = &boomerang->actor;
+
         if (boomerang != NULL) {
             boomerang->moveTo = this->unk_664;
             boomerang->returnTimer = 20;
-            this->stateFlags1 |= PLAYER_STATE1_25;
+
+            this->stateFlags1 |= PLAYER_STATE1_BOOMERANG_ACTIVE;
+
             if (!func_8008E9C4(this)) {
                 func_808355DC(this);
             }
+
             this->unk_A73 = 4;
+
             Player_PlaySfx(this, NA_SE_IT_BOOMERANG_THROW);
             func_80832698(this, NA_SE_VO_LI_SWORD_N);
         }
@@ -3099,15 +3115,16 @@ s32 func_808359FC(Player* this, PlayState* play) {
     return 1;
 }
 
-s32 func_80835B60(Player* this, PlayState* play) {
+s32 Player_UpperAction_WaitForBoomerang(Player* this, PlayState* play) {
     if (func_80834758(play, this)) {
         return 1;
     }
 
-    if (!(this->stateFlags1 & PLAYER_STATE1_25)) {
-        Player_SetUpperActionFunc(this, func_80835C08);
+    // The boomerang actor unsets `PLAYER_STATE1_BOOMERANG_ACTIVE` when it has returned
+    if (!(this->stateFlags1 & PLAYER_STATE1_BOOMERANG_ACTIVE)) {
+        Player_SetUpperActionFunc(this, Player_UpperAction_CatchBoomerang);
         LinkAnimation_PlayOnce(play, &this->upperSkelAnime, &gPlayerAnim_link_boom_catch);
-        func_808357E8(this, gPlayerLeftHandBoomerangDLs);
+        Player_SetLeftHadndDLists(this, gPlayerLeftHandBoomerangDLs);
         Player_PlaySfx(this, NA_SE_PL_CATCH_BOOMERANG);
         func_80832698(this, NA_SE_VO_LI_SWORD_N);
         return 1;
@@ -3116,9 +3133,9 @@ s32 func_80835B60(Player* this, PlayState* play) {
     return 0;
 }
 
-s32 func_80835C08(Player* this, PlayState* play) {
-    if (!func_80835800(this, play) && LinkAnimation_Update(play, &this->upperSkelAnime)) {
-        Player_SetUpperActionFunc(this, func_80835800);
+s32 Player_UpperAction_CatchBoomerang(Player* this, PlayState* play) {
+    if (!Player_UpperAction_BoomerangIdle(this, play) && LinkAnimation_Update(play, &this->upperSkelAnime)) {
+        Player_SetUpperActionFunc(this, Player_UpperAction_BoomerangIdle);
     }
 
     return 1;
@@ -3505,9 +3522,9 @@ void func_80836BEC(Player* this, PlayState* play) {
     }
 
     cond = func_8083224C(play);
-    if (cond || (this->unk_66C != 0) || (this->stateFlags1 & (PLAYER_STATE1_12 | PLAYER_STATE1_25))) {
+    if (cond || (this->unk_66C != 0) || (this->stateFlags1 & (PLAYER_STATE1_12 | PLAYER_STATE1_BOOMERANG_ACTIVE))) {
         if (!cond) {
-            if (!(this->stateFlags1 & PLAYER_STATE1_25) &&
+            if (!(this->stateFlags1 & PLAYER_STATE1_BOOMERANG_ACTIVE) &&
                 ((this->heldItemAction != PLAYER_IA_FISHING_POLE) || (this->unk_860 == 0)) &&
                 CHECK_BTN_ALL(sControlInput->press.button, BTN_Z)) {
 
@@ -6510,7 +6527,7 @@ void func_8083DC54(Player* this, PlayState* play) {
     Vec3f sp34;
 
     if (this->unk_664 != NULL) {
-        if (func_8002DD78(this) || func_808334B4(this)) {
+        if (func_8002DD78(this) || Player_IsAimingBoomerang(this)) {
             func_8083DB98(this, 1);
         } else {
             func_8083DB98(this, 0);
@@ -6531,14 +6548,14 @@ void func_8083DC54(Player* this, PlayState* play) {
         Math_SmoothStepToS(&this->actor.focus.rot.x, sp46, 14, 4000, 30);
     }
 
-    func_80836AB8(this, func_8002DD78(this) || func_808334B4(this));
+    func_80836AB8(this, func_8002DD78(this) || Player_IsAimingBoomerang(this));
 }
 
 void func_8083DDC8(Player* this, PlayState* play) {
     s16 temp1;
     s16 temp2;
 
-    if (!func_8002DD78(this) && !func_808334B4(this) && (this->speedXZ > 5.0f)) {
+    if (!func_8002DD78(this) && !Player_IsAimingBoomerang(this) && (this->speedXZ > 5.0f)) {
         temp1 = this->speedXZ * 200.0f;
         temp2 = (s16)(this->yaw - this->actor.shape.rot.y) * this->speedXZ * 0.1f;
         temp1 = CLAMP(temp1, -4000, 4000);
@@ -7271,7 +7288,7 @@ s32 func_8083FC68(Player* this, f32 arg1, s16 arg2) {
     f32 temp;
 
     if (this->unk_664 != NULL) {
-        func_8083DB98(this, func_8002DD78(this) || func_808334B4(this));
+        func_8083DB98(this, func_8002DD78(this) || Player_IsAimingBoomerang(this));
     }
 
     temp = fabsf(sp1C) / 32768.0f;
@@ -7289,7 +7306,7 @@ s32 func_8083FD78(Player* this, f32* arg1, s16* arg2, PlayState* play) {
     s16 sp2E = *arg2 - this->zTargetYaw;
     u16 sp2C = ABS(sp2E);
 
-    if ((func_8002DD78(this) || func_808334B4(this)) && (this->unk_664 == NULL)) {
+    if ((func_8002DD78(this) || Player_IsAimingBoomerang(this)) && (this->unk_664 == NULL)) {
         *arg1 *= Math_SinS(sp2C);
 
         if (*arg1 != 0.0f) {
@@ -10613,7 +10630,7 @@ void Player_UpdateCamAndSeqModes(PlayState* play, Player* this) {
                 if (CHECK_FLAG_ALL(this->actor.flags, ACTOR_FLAG_TALK)) {
                     camMode = CAM_MODE_TALK;
                 } else if (this->stateFlags1 & PLAYER_STATE1_16) {
-                    if (this->stateFlags1 & PLAYER_STATE1_25) {
+                    if (this->stateFlags1 & PLAYER_STATE1_BOOMERANG_ACTIVE) {
                         camMode = CAM_MODE_FOLLOW_BOOMERANG;
                     } else {
                         camMode = CAM_MODE_Z_TARGET_FRIENDLY;
@@ -10624,7 +10641,7 @@ void Player_UpdateCamAndSeqModes(PlayState* play, Player* this) {
                 Camera_SetViewParam(Play_GetCamera(play, CAM_ID_MAIN), CAM_VIEW_TARGET, unk_664);
             } else if (this->stateFlags1 & PLAYER_STATE1_12) {
                 camMode = CAM_MODE_CHARGE;
-            } else if (this->stateFlags1 & PLAYER_STATE1_25) {
+            } else if (this->stateFlags1 & PLAYER_STATE1_BOOMERANG_ACTIVE) {
                 camMode = CAM_MODE_FOLLOW_BOOMERANG;
                 Camera_SetViewParam(Play_GetCamera(play, CAM_ID_MAIN), CAM_VIEW_TARGET, this->boomerangActor);
             } else if (this->stateFlags1 & (PLAYER_STATE1_13 | PLAYER_STATE1_14)) {
@@ -10634,7 +10651,7 @@ void Player_UpdateCamAndSeqModes(PlayState* play, Player* this) {
                     camMode = CAM_MODE_LEDGE_HANG;
                 }
             } else if (this->stateFlags1 & (PLAYER_STATE1_17 | PLAYER_STATE1_30)) {
-                if (func_8002DD78(this) || func_808334B4(this)) {
+                if (func_8002DD78(this) || Player_IsAimingBoomerang(this)) {
                     camMode = CAM_MODE_Z_AIM;
                 } else if (this->stateFlags1 & PLAYER_STATE1_21) {
                     camMode = CAM_MODE_Z_WALL_CLIMB;
@@ -11580,7 +11597,7 @@ s16 func_8084ABD8(PlayState* play, Player* this, s32 arg2, s16 arg3) {
     s16 temp2;
     s16 temp3;
 
-    if (!func_8002DD78(this) && !func_808334B4(this) && (arg2 == 0)) {
+    if (!func_8002DD78(this) && !Player_IsAimingBoomerang(this) && (arg2 == 0)) {
         temp2 = sControlInput->rel.stick_y * 240.0f;
         Math_SmoothStepToS(&this->actor.focus.rot.x, temp2, 14, 4000, 30);
 
@@ -11603,7 +11620,7 @@ s16 func_8084ABD8(PlayState* play, Player* this, s32 arg2, s16 arg3) {
     }
 
     this->unk_6AE |= 2;
-    return func_80836AB8(this, (play->shootingGalleryStatus != 0) || func_8002DD78(this) || func_808334B4(this)) - arg3;
+    return func_80836AB8(this, (play->shootingGalleryStatus != 0) || func_8002DD78(this) || Player_IsAimingBoomerang(this)) - arg3;
 }
 
 void func_8084AEEC(Player* this, f32* arg1, f32 arg2, s16 arg3) {
@@ -11704,14 +11721,14 @@ void Player_Action_8084B1D8(Player* this, PlayState* play) {
         func_8083721C(this);
     }
 
-    if ((this->unk_6AD == 2) && (func_8002DD6C(this) || func_808332E4(this))) {
+    if ((this->unk_6AD == 2) && (func_8002DD6C(this) || Player_IsUsingBoomerang(this))) {
         Player_UpdateUpperBody(this, play);
     }
 
     if ((this->csAction != PLAYER_CSACTION_NONE) || (this->unk_6AD == 0) || (this->unk_6AD >= 4) ||
         func_80833B54(this) || (this->unk_664 != NULL) || (func_8083AD4C(play, this) == CAM_MODE_NORMAL) ||
         (((this->unk_6AD == 2) && (CHECK_BTN_ANY(sControlInput->press.button, BTN_A | BTN_B | BTN_R) ||
-                                   func_80833B2C(this) || (!func_8002DD78(this) && !func_808334B4(this)))) ||
+                                   func_80833B2C(this) || (!func_8002DD78(this) && !Player_IsAimingBoomerang(this)))) ||
          ((this->unk_6AD == 1) &&
           CHECK_BTN_ANY(sControlInput->press.button,
                         BTN_A | BTN_B | BTN_R | BTN_CUP | BTN_CLEFT | BTN_CRIGHT | BTN_CDOWN)))) {
@@ -14566,7 +14583,7 @@ void func_80851750(PlayState* play, Player* this, CsCmdActorCue* cue) {
 }
 
 void func_80851788(PlayState* play, Player* this, CsCmdActorCue* cue) {
-    this->stateFlags1 &= ~PLAYER_STATE1_25;
+    this->stateFlags1 &= ~PLAYER_STATE1_BOOMERANG_ACTIVE;
 
     this->yaw = this->actor.shape.rot.y = this->actor.world.rot.y =
         Math_Vec3f_Yaw(&this->actor.world.pos, &this->unk_450);
