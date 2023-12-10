@@ -627,7 +627,7 @@ typedef struct {
 #define PLAYER_STATE1_31 (1 << 31)
 
 #define PLAYER_STATE2_0 (1 << 0)
-#define PLAYER_STATE2_1 (1 << 1)
+#define PLAYER_STATE2_CAN_ACCEPT_TALK_OFFER (1 << 1)
 #define PLAYER_STATE2_2 (1 << 2)
 #define PLAYER_STATE2_3 (1 << 3)
 #define PLAYER_STATE2_4 (1 << 4)
@@ -647,7 +647,7 @@ typedef struct {
 #define PLAYER_STATE2_CRAWLING (1 << 18) // Crawling through a crawlspace
 #define PLAYER_STATE2_19 (1 << 19)
 #define PLAYER_STATE2_20 (1 << 20)
-#define PLAYER_STATE2_21 (1 << 21)
+#define PLAYER_STATE2_CAN_TALK_TO_NAVI (1 << 21)
 #define PLAYER_STATE2_22 (1 << 22)
 #define PLAYER_STATE2_23 (1 << 23)
 #define PLAYER_STATE2_24 (1 << 24)

@@ -262,7 +262,7 @@ s32 func_80852F38(PlayState* play, Player* this);
 s32 Player_TryCsAction(PlayState* play, Actor* actor, s32 csAction);
 void func_80853080(Player* this, PlayState* play);
 s32 Player_InflictDamage(PlayState* play, s32 damage);
-void func_80853148(PlayState* play, Actor* actor);
+void Player_StartTalking(PlayState* play, Actor* actor);
 
 void Player_Action_80840450(Player* this, PlayState* play);
 void Player_Action_808407CC(Player* this, PlayState* play);
@@ -353,13 +353,10 @@ void Player_Action_80850C68(Player* this, PlayState* play);
 void Player_Action_80850E84(Player* this, PlayState* play);
 void Player_Action_CsAction(Player* this, PlayState* play);
 
-// .bss part 1
 static s32 D_80858AA0;
-static s32 D_80858AA4;
+static s32 sSavedCurrentMask; // See usage in `Player_ActionChange_TryTalking` for details
 static Vec3f sInteractWallCheckResult;
 static Input* sControlInput;
-
-// .data
 
 static u8 sUpperBodyLimbCopyMap[PLAYER_LIMB_MAX] = {
     false, // PLAYER_LIMB_NONE
@@ -3531,7 +3528,7 @@ void func_80836BEC(Player* this, PlayState* play) {
                         }
                         this->unk_664 = actorToTarget;
                         this->unk_66C = 15;
-                        this->stateFlags2 &= ~(PLAYER_STATE2_1 | PLAYER_STATE2_21);
+                        this->stateFlags2 &= ~(PLAYER_STATE2_CAN_ACCEPT_TALK_OFFER | PLAYER_STATE2_CAN_TALK_TO_NAVI);
                     } else {
                         if (!holdTarget) {
                             func_8008EDF0(this);
@@ -3781,7 +3778,7 @@ s32 Player_ActionChange_0(Player* this, PlayState* play);
 s32 Player_ActionChange_1(Player* this, PlayState* play);
 s32 Player_ActionChange_2(Player* this, PlayState* play);
 s32 Player_ActionChange_3(Player* this, PlayState* play);
-s32 Player_ActionChange_4(Player* this, PlayState* play);
+s32 Player_ActionChange_TryTalking(Player* this, PlayState* play);
 s32 Player_ActionChange_5(Player* this, PlayState* play);
 s32 Player_ActionChange_6(Player* this, PlayState* play);
 s32 Player_ActionChange_7(Player* this, PlayState* play);
@@ -3797,7 +3794,7 @@ static s32 (*sActionChangeFuncs[])(Player* this, PlayState* play) = {
     /* PLAYER_ACTION_CHG_1  */ Player_ActionChange_1,
     /* PLAYER_ACTION_CHG_2  */ Player_ActionChange_2,
     /* PLAYER_ACTION_CHG_3  */ Player_ActionChange_3,
-    /* PLAYER_ACTION_CHG_4  */ Player_ActionChange_4,
+    /* PLAYER_ACTION_CHG_4  */ Player_ActionChange_TryTalking,
     /* PLAYER_ACTION_CHG_5  */ Player_ActionChange_5,
     /* PLAYER_ACTION_CHG_6  */ Player_ActionChange_6,
     /* PLAYER_ACTION_CHG_7  */ Player_ActionChange_7,
@@ -4873,7 +4870,7 @@ s32 Player_ActionChange_1(Player* this, PlayState* play) {
 
             if (this->doorType <= PLAYER_DOORTYPE_AJAR) {
                 doorActor->textId = 0xD0;
-                func_80853148(play, doorActor);
+                Player_StartTalking(play, doorActor);
                 return 0;
             }
 
@@ -5648,69 +5645,98 @@ s32 Player_ActionChange_13(Player* this, PlayState* play) {
     return 0;
 }
 
-s32 Player_ActionChange_4(Player* this, PlayState* play) {
-    Actor* sp34 = this->targetActor;
-    Actor* sp30 = this->unk_664;
-    Actor* sp2C = NULL;
-    s32 sp28 = 0;
-    s32 sp24;
+s32 Player_ActionChange_TryTalking(Player* this, PlayState* play) {
+    Actor* talkOfferActor = this->targetActor;
+    Actor* lockOnActor = this->unk_664;
+    Actor* cUpTalkActor = NULL;
+    s32 forceTalkToNavi = false;
+    s32 canTalkToLockonWithCUp;
 
-    sp24 = (sp30 != NULL) &&
-           (CHECK_FLAG_ALL(sp30->flags, ACTOR_FLAG_0 | ACTOR_FLAG_18) || (sp30->naviEnemyId != NAVI_ENEMY_NONE));
+    // If the locked on actor has `ACTOR_FLAG_18` set, or has a navi enemy id, the conversation can
+    // be triggered by pressing the C-Up button (and a Navi button will appear on the HUD)
+    canTalkToLockonWithCUp =
+        (lockOnActor != NULL) && (CHECK_FLAG_ALL(lockOnActor->flags, ACTOR_FLAG_0 | ACTOR_FLAG_18) ||
+                                  (lockOnActor->naviEnemyId != NAVI_ENEMY_NONE));
 
-    if (sp24 || (this->naviTextId != 0)) {
-        sp28 = (this->naviTextId < 0) && ((ABS(this->naviTextId) & 0xFF00) != 0x200);
-        if (sp28 || !sp24) {
-            sp2C = this->naviActor;
-            if (sp28) {
-                sp30 = NULL;
-                sp34 = NULL;
+    if (canTalkToLockonWithCUp || (this->naviTextId != 0)) {
+        // If `naviTextId` is negative and outside the 0x2XX range, talk to navi instantly
+        forceTalkToNavi = (this->naviTextId < 0) && ((ABS(this->naviTextId) & 0xFF00) != 0x200);
+
+        if (forceTalkToNavi || !canTalkToLockonWithCUp) {
+            // If `lockOnActor` can't be talked to with c-up, the only option left is navi.
+            cUpTalkActor = this->naviActor;
+
+            if (forceTalkToNavi) {
+                // clearing both pointers gurantees that `cUpTalkActor` will take priority in the event that
+                // `forceTalkToNavi` is true.
+                lockOnActor = NULL;
+                talkOfferActor = NULL;
             }
         } else {
-            sp2C = sp30;
+            // Navi is not the talk actor, so the only option left for talking with c-up is `lockOnActor`.
+            // (Though, `lockOnActor` may be NULL at this point).
+            cUpTalkActor = lockOnActor;
         }
     }
 
-    if ((sp34 != NULL) || (sp2C != NULL)) {
-        if ((sp30 == NULL) || (sp30 == sp34) || (sp30 == sp2C)) {
+    if ((talkOfferActor != NULL) || (cUpTalkActor != NULL)) {
+        // Cannot talk if locked on and the actor is different from `talkOfferActor` or `cUpTalkActor`.
+        if ((lockOnActor == NULL) || (lockOnActor == talkOfferActor) || (lockOnActor == cUpTalkActor)) {
+            // Cannot talk if carrying an actor, unless it is the actor that is being carried 
+            // (or if a navi talk is being forced).
             if (!(this->stateFlags1 & PLAYER_STATE1_11) ||
-                ((this->heldActor != NULL) && (sp28 || (sp34 == this->heldActor) || (sp2C == this->heldActor) ||
-                                               ((sp34 != NULL) && (sp34->flags & ACTOR_FLAG_16))))) {
+                ((this->heldActor != NULL) &&
+                 (forceTalkToNavi || (talkOfferActor == this->heldActor) || (cUpTalkActor == this->heldActor) ||
+                  ((talkOfferActor != NULL) && (talkOfferActor->flags & ACTOR_FLAG_16))))) {
+                // Can only talk if standing on ground, standing idle on a horse, or swimming on the water surface
                 if ((this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) || (this->stateFlags1 & PLAYER_STATE1_23) ||
                     (func_808332B8(this) && !(this->stateFlags2 & PLAYER_STATE2_10))) {
 
-                    if (sp34 != NULL) {
-                        this->stateFlags2 |= PLAYER_STATE2_1;
-                        if (CHECK_BTN_ALL(sControlInput->press.button, BTN_A) || (sp34->flags & ACTOR_FLAG_16)) {
-                            sp2C = NULL;
-                        } else if (sp2C == NULL) {
+                    if (talkOfferActor != NULL) {
+                        // At this point if all the above conditions are met, the talk offer can be accepted
+                        // (and "Speak" or "Check" will appear on the A button in the HUD)
+                        this->stateFlags2 |= PLAYER_STATE2_CAN_ACCEPT_TALK_OFFER;
+
+                        // If either the A button is pressed, or the talk offer actor has `ACTOR_FLAG_16` set,
+                        // the talk offer has been accepted
+                        if (CHECK_BTN_ALL(sControlInput->press.button, BTN_A) ||
+                            (talkOfferActor->flags & ACTOR_FLAG_16)) {
+                            // clearing `cUpTalkActor` gurantees that `talkOfferActor` is the actor that will be talked
+                            // to
+                            cUpTalkActor = NULL;
+                        } else if (cUpTalkActor == NULL) {
                             return 0;
                         }
                     }
 
-                    if (sp2C != NULL) {
-                        if (!sp28) {
-                            this->stateFlags2 |= PLAYER_STATE2_21;
+                    if (cUpTalkActor != NULL) {
+                        if (!forceTalkToNavi) {
+                            this->stateFlags2 |= PLAYER_STATE2_CAN_TALK_TO_NAVI;
                         }
 
-                        if (!CHECK_BTN_ALL(sControlInput->press.button, BTN_CUP) && !sp28) {
+                        if (!CHECK_BTN_ALL(sControlInput->press.button, BTN_CUP) && !forceTalkToNavi) {
                             return 0;
                         }
 
-                        sp34 = sp2C;
+                        talkOfferActor = cUpTalkActor;
                         this->targetActor = NULL;
 
-                        if (sp28 || !sp24) {
-                            sp2C->textId = ABS(this->naviTextId);
+                        if (forceTalkToNavi || !canTalkToLockonWithCUp) {
+                            cUpTalkActor->textId = ABS(this->naviTextId);
                         } else {
-                            if (sp2C->naviEnemyId != NAVI_ENEMY_NONE) {
-                                sp2C->textId = sp2C->naviEnemyId + 0x600;
+                            if (cUpTalkActor->naviEnemyId != NAVI_ENEMY_NONE) {
+                                cUpTalkActor->textId = cUpTalkActor->naviEnemyId + 0x600;
                             }
                         }
                     }
 
-                    this->currentMask = D_80858AA4;
-                    func_80853148(play, sp34);
+                    // `sSavedCurrentMask` saves the mask currently worn right before `this->actionFunc()` runs on this
+                    // frame. The purpose of this is to restore the current mask value when talking to an actor, if some
+                    // code cleared the current mask value before this function had a chance to run on this frame.
+                    this->currentMask = sSavedCurrentMask;
+
+                    Player_StartTalking(play, talkOfferActor);
+
                     return 1;
                 }
             }
@@ -5741,7 +5767,7 @@ s32 Player_ActionChange_0(Player* this, PlayState* play) {
 
     if ((this->unk_664 != NULL) && (CHECK_FLAG_ALL(this->unk_664->flags, ACTOR_FLAG_0 | ACTOR_FLAG_18) ||
                                     (this->unk_664->naviEnemyId != NAVI_ENEMY_NONE))) {
-        this->stateFlags2 |= PLAYER_STATE2_21;
+        this->stateFlags2 |= PLAYER_STATE2_CAN_TALK_TO_NAVI;
     } else if ((this->naviTextId == 0) && !func_8008E9C4(this) && CHECK_BTN_ALL(sControlInput->press.button, BTN_CUP) &&
                (R_SCENE_CAM_TYPE != SCENE_CAM_TYPE_FIXED_SHOP_VIEWPOINT) &&
                (R_SCENE_CAM_TYPE != SCENE_CAM_TYPE_FIXED_TOGGLE_VIEWPOINT) && !func_8083B8F4(this, play)) {
@@ -8290,7 +8316,8 @@ s32 func_808428D8(Player* this, PlayState* play) {
 }
 
 int func_80842964(Player* this, PlayState* play) {
-    return Player_ActionChange_13(this, play) || Player_ActionChange_4(this, play) || Player_ActionChange_2(this, play);
+    return Player_ActionChange_13(this, play) || Player_ActionChange_TryTalking(this, play) ||
+           Player_ActionChange_2(this, play);
 }
 
 void Player_RequestQuake(PlayState* play, s32 speed, s32 y, s32 duration) {
@@ -9529,7 +9556,7 @@ void Player_Action_80845CA4(Player* this, PlayState* play) {
                 Camera_SetFinishedFlag(Play_GetCamera(play, CAM_ID_MAIN));
                 func_80845C68(play, gSaveContext.respawn[RESPAWN_MODE_DOWN].data);
 
-                if (!Player_ActionChange_4(this, play)) {
+                if (!Player_ActionChange_TryTalking(this, play)) {
                     func_8083CF5C(this, play);
                 }
             }
@@ -9974,7 +10001,7 @@ void Player_Init(Actor* thisx, PlayState* play2) {
     play->tryPlayerCsAction = Player_TryCsAction;
     play->func_11D54 = func_80853080;
     play->damagePlayer = Player_InflictDamage;
-    play->talkWithPlayer = func_80853148;
+    play->talkWithPlayer = Player_StartTalking;
 
     thisx->room = -1;
     this->ageProperties = &sAgeProperties[gSaveContext.save.linkAge];
@@ -10172,7 +10199,7 @@ void func_808473D4(PlayState* play, Player* this) {
                     doAction = DO_ACTION_CLIMB;
                 } else if ((this->stateFlags1 & PLAYER_STATE1_23) && !EN_HORSE_CHECK_4((EnHorse*)this->rideActor) &&
                            (Player_Action_8084D3E4 != this->actionFunc)) {
-                    if ((this->stateFlags2 & PLAYER_STATE2_1) && (this->targetActor != NULL)) {
+                    if ((this->stateFlags2 & PLAYER_STATE2_CAN_ACCEPT_TALK_OFFER) && (this->targetActor != NULL)) {
                         if (this->targetActor->category == ACTORCAT_NPC) {
                             doAction = DO_ACTION_SPEAK;
                         } else {
@@ -10181,7 +10208,7 @@ void func_808473D4(PlayState* play, Player* this) {
                     } else if (!func_8002DD78(this) && !(this->stateFlags1 & PLAYER_STATE1_20)) {
                         doAction = DO_ACTION_FASTER;
                     }
-                } else if ((this->stateFlags2 & PLAYER_STATE2_1) && (this->targetActor != NULL)) {
+                } else if ((this->stateFlags2 & PLAYER_STATE2_CAN_ACCEPT_TALK_OFFER) && (this->targetActor != NULL)) {
                     if (this->targetActor->category == ACTORCAT_NPC) {
                         doAction = DO_ACTION_SPEAK;
                     } else {
@@ -10239,7 +10266,7 @@ void func_808473D4(PlayState* play, Player* this) {
 
         Interface_SetDoAction(play, doAction);
 
-        if (this->stateFlags2 & PLAYER_STATE2_21) {
+        if (this->stateFlags2 & PLAYER_STATE2_CAN_TALK_TO_NAVI) {
             if (this->unk_664 != NULL) {
                 Interface_SetNaviCall(play, 0x1E);
             } else {
@@ -11191,7 +11218,7 @@ void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
         func_8083D6EC(play, this);
 
         if ((this->unk_664 == NULL) && (this->naviTextId == 0)) {
-            this->stateFlags2 &= ~(PLAYER_STATE2_1 | PLAYER_STATE2_21);
+            this->stateFlags2 &= ~(PLAYER_STATE2_CAN_ACCEPT_TALK_OFFER | PLAYER_STATE2_CAN_TALK_TO_NAVI);
         }
 
         this->stateFlags1 &= ~(PLAYER_STATE1_SWINGING_BOTTLE | PLAYER_STATE1_9 | PLAYER_STATE1_12 | PLAYER_STATE1_22);
@@ -11211,7 +11238,10 @@ void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
 
         D_808535EC = 1.0f / D_808535E8;
         sUseHeldItem = sHeldItemButtonIsHeldDown = 0;
-        D_80858AA4 = this->currentMask;
+
+        // Save the currently worn mask before the action function runs for this frame.
+        // See usage in `Player_ActionChange_TryTalking` for details.
+        sSavedCurrentMask = this->currentMask;
 
         if (!(this->stateFlags3 & PLAYER_STATE3_2)) {
             this->actionFunc(this, play);
@@ -12516,7 +12546,7 @@ void Player_Action_8084CC98(Player* this, PlayState* play) {
     this->yaw = this->actor.shape.rot.y = rideActor->actor.shape.rot.y;
 
     if ((this->csAction != PLAYER_CSACTION_NONE) ||
-        (!func_8083224C(play) && ((rideActor->actor.speed != 0.0f) || !Player_ActionChange_4(this, play)) &&
+        (!func_8083224C(play) && ((rideActor->actor.speed != 0.0f) || !Player_ActionChange_TryTalking(this, play)) &&
          !Player_ActionChange_6(this, play))) {
         if (D_808535E0 == 0) {
             if (this->av1.actionVar1 != 0) {
@@ -13003,11 +13033,11 @@ void Player_Action_8084E3C4(Player* this, PlayState* play) {
         Camera_SetFinishedFlag(Play_GetCamera(play, CAM_ID_MAIN));
 
         if ((this->targetActor != NULL) && (this->targetActor == this->unk_6A8)) {
-            func_80853148(play, this->targetActor);
+            Player_StartTalking(play, this->targetActor);
         } else if (this->naviTextId < 0) {
             this->targetActor = this->naviActor;
             this->naviActor->textId = -this->naviTextId;
-            func_80853148(play, this->targetActor);
+            Player_StartTalking(play, this->targetActor);
         } else if (!Player_ActionChange_13(this, play)) {
             func_8083A098(this, &gPlayerAnim_link_normal_okarina_end, play);
         }
@@ -13078,7 +13108,7 @@ void Player_Action_8084E6D4(Player* this, PlayState* play) {
                         this->exchangeItemId = EXCH_ITEM_NONE;
 
                         if (func_8084B4D4(play, this) == 0) {
-                            func_80853148(play, this->targetActor);
+                            Player_StartTalking(play, this->targetActor);
                         }
                     } else {
                         func_8084DFAC(play, this);
@@ -13368,7 +13398,7 @@ void Player_Action_8084F104(Player* this, PlayState* play) {
                 this->actor.flags |= ACTOR_FLAG_TALK;
             }
 
-            func_80853148(play, targetActor);
+            Player_StartTalking(play, targetActor);
         } else {
             GetItemEntry* giEntry = &sGetItemTable[D_80854528[this->exchangeItemId - 1] - 1];
 
@@ -15062,7 +15092,7 @@ void func_80852944(PlayState* play, Player* this, CsCmdActorCue* cue) {
         func_80832340(play, this);
     } else {
         func_8083C148(this, play);
-        if (!Player_ActionChange_4(this, play)) {
+        if (!Player_ActionChange_TryTalking(this, play)) {
             Player_ActionChange_2(this, play);
         }
     }
@@ -15245,8 +15275,7 @@ s32 Player_InflictDamage(PlayState* play, s32 damage) {
     return 0;
 }
 
-// Start talking with the given actor
-void func_80853148(PlayState* play, Actor* actor) {
+void Player_StartTalking(PlayState* play, Actor* actor) {
     Player* this = GET_PLAYER(play);
     s32 pad;
 
