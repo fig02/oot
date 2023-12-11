@@ -7,12 +7,16 @@
 #include "global.h"
 
 void TitleSetup_SetupTitleScreen(TitleSetupState* this) {
-    gSaveContext.gameMode = GAMEMODE_TITLE_SCREEN;
-    this->state.running = false;
-    gSaveContext.save.linkAge = LINK_AGE_ADULT;
+    // boot the game in hyrule field as adult (change as needed)
     Sram_InitDebugSave();
-    gSaveContext.save.cutsceneIndex = 0xFFF3;
-    gSaveContext.sceneLayer = 7;
+
+    gSaveContext.magicFillTarget = gSaveContext.save.info.playerData.magic;
+    gSaveContext.save.info.playerData.magicLevel = gSaveContext.save.info.playerData.magic = 0;
+
+    gSaveContext.gameMode = GAMEMODE_NORMAL;
+    gSaveContext.save.linkAge = LINK_AGE_ADULT;
+    gSaveContext.save.entranceIndex = ENTR_HYRULE_FIELD_0;
+    this->state.running = false;
     SET_NEXT_GAMESTATE(&this->state, Play_Init, PlayState);
 }
 
