@@ -127,6 +127,7 @@ static const char *const stmtNames[] =
     [STMT_after]     = "after",
     [STMT_align]     = "align",
     [STMT_beginseg]  = "beginseg",
+    [STMT_compress]  = "compress",
     [STMT_endseg]    = "endseg",
     [STMT_entry]     = "entry",
     [STMT_flags]     = "flags",
@@ -153,7 +154,7 @@ STMTId get_stmt_id_by_stmt_name(const char *stmtName, int lineNum) {
 
 bool parse_segment_statement(struct Segment *currSeg, STMTId stmt, char* args, int lineNum) {
     // ensure no duplicates (except for 'include' or 'pad_text')
-    if (stmt != STMT_include && stmt != STMT_include_data_with_rodata && stmt != STMT_pad_text && 
+    if (stmt != STMT_include && stmt != STMT_include_data_with_rodata && stmt != STMT_pad_text &&
         (currSeg->fields & (1 << stmt)))
         util_fatal_error("line %i: duplicate '%s' statement", lineNum, stmtNames[stmt]);
 
@@ -216,9 +217,12 @@ bool parse_segment_statement(struct Segment *currSeg, STMTId stmt, char* args, i
         currSeg->includes[currSeg->includesCount - 1].linkerPadding = 0;
         currSeg->includes[currSeg->includesCount - 1].dataWithRodata = (stmt == STMT_include_data_with_rodata);
         break;
-        case STMT_increment:
+    case STMT_increment:
         if (!parse_number(args, &currSeg->increment))
             util_fatal_error("line %i: expected number after 'increment'", lineNum);
+        break;
+    case STMT_compress:
+        currSeg->compress = true;
         break;
     case STMT_pad_text:
         currSeg->includes[currSeg->includesCount - 1].linkerPadding += 0x10;
@@ -292,7 +296,7 @@ void parse_rom_spec(char *spec, struct Segment **segments, int *segment_count)
 /**
  * @brief Parses the spec, looking only for the segment with the name `segmentName`.
  * Returns true if the segment was found, false otherwise
- * 
+ *
  * @param[out] dstSegment The Segment to be filled. Will only contain the data of the searched segment, or garbage if the segment was not found. dstSegment must be previously allocated, a stack variable is recommended
  * @param[in,out] spec A null-terminated string containing the whole spec file. This string will be modified by this function
  * @param[in] segmentName The name of the segment being searched
@@ -344,8 +348,8 @@ bool get_single_segment_by_name(struct Segment* dstSegment, char *spec, const ch
 
 /**
  * @brief Frees the elements of the passed Segment. Will not free the pointer itself
- * 
- * @param segment 
+ *
+ * @param segment
  */
 void free_single_segment_elements(struct Segment *segment) {
     if (segment->includes != NULL) {

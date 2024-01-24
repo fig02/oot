@@ -137,7 +137,7 @@
     CMD_W(cmdType), CMD_W(entries)
 
 /**
- * Defines a cue that an actor can listen for. 
+ * Defines a cue that an actor can listen for.
  * The actor can choose whether or not to use the position and rotation data supplied to it.
  * The cue `id` is a number that has an actor-specific meaning.
  */
@@ -154,7 +154,7 @@
     CS_CMD_PLAYER_CUE, CMD_W(entries)
 
 /**
- * A player cue is the same as `CS_ACTOR_CUE` but is specifically for player. 
+ * A player cue is the same as `CS_ACTOR_CUE` but is specifically for player.
  */
 #define CS_PLAYER_CUE(id, startFrame, endFrame, rotX, rotY, rotZ, startX, startY, startZ, endX, endY, endZ, unused0, unused1, unused2) \
     CS_ACTOR_CUE(id, startFrame, endFrame, rotX, rotY, rotZ, startX, startY, startZ, endX, endY, endZ, unused0, unused1, unused2)
@@ -166,7 +166,7 @@
     CS_CMD_TEXT, CMD_W(entries)
 
 /**
- * Starts a textbox at the specified time. 
+ * Starts a textbox at the specified time.
  * For `CS_TEXT_OCARINA_ACTION`, `textId` is used as an ocarina action.
  * For a choice textbox, `altTextId1` is the top text id to branch to and `altTextId2` is the bottom.
  */
@@ -246,11 +246,11 @@
     CMD_HH(unused0, startFrame), CMD_HBB(endFrame, hour, min), CMD_W(0)
 
 /**
- * Sends the player to a new destination. 
+ * Sends the player to a new destination.
  * `destination` maps to a custom block of code that must implement the scene transition on its own.
  * This custom code can also do other tasks like changing age, setting flags, or any other setup that is needed
  * before going to the next destination.
- * 
+ *
  * @see `CutsceneDestination`
  * @note `endFrame` is not used in the implementation of the command, so its value does not matter
  */
@@ -270,51 +270,5 @@
 #define CS_UNK_DATA(unk1, unk2, unk3, unk4, unk5, unk6, unk7, unk8, unk9, unk10, unk11, unk12) \
     CMD_W(unk1), CMD_W(unk2), CMD_W(unk3), CMD_W(unk4), CMD_W(unk5), CMD_W(unk6), \
     CMD_W(unk7), CMD_W(unk8), CMD_W(unk9), CMD_W(unk10), CMD_W(unk11), CMD_W(unk12)
-
-// TODO: Fix ZAPD and delete these (everything to the end of the file)
-#define CS_CAM_POS_LIST                CS_CAM_EYE_SPLINE
-#define CS_CAM_POS                     CS_CAM_POINT
-#define CS_CAM_FOCUS_POINT_LIST        CS_CAM_AT_SPLINE
-#define CS_CAM_FOCUS_POINT             CS_CAM_POINT
-#define CS_CAM_POS_PLAYER_LIST         CS_CAM_EYE_SPLINE_REL_TO_PLAYER
-#define CS_CAM_POS_PLAYER              CS_CAM_POINT
-#define CS_CAM_FOCUS_POINT_PLAYER_LIST CS_CAM_AT_SPLINE_REL_TO_PLAYER
-#define CS_CAM_FOCUS_POINT_PLAYER      CS_CAM_POINT
-#define CS_NPC_ACTION_LIST             CS_ACTOR_CUE_LIST
-#define CS_NPC_ACTION                  CS_ACTOR_CUE
-#define CS_PLAYER_ACTION_LIST          CS_PLAYER_CUE_LIST
-#define CS_PLAYER_ACTION               CS_PLAYER_CUE
-#define CS_LIGHTING_LIST               CS_LIGHT_SETTING_LIST
-#define CS_CMD_09_LIST                 CS_RUMBLE_CONTROLLER_LIST
-#define CS_CMD_09                      CS_RUMBLE_CONTROLLER
-#define CS_TEXT_DISPLAY_TEXTBOX        CS_TEXT
-#define CS_TEXT_LEARN_SONG             CS_TEXT_OCARINA_ACTION
-#define CS_SCENE_TRANS_FX              CS_TRANSITION
-#define CS_PLAY_BGM_LIST               CS_START_SEQ_LIST
-#define CS_STOP_BGM_LIST               CS_STOP_SEQ_LIST
-#define CS_FADE_BGM_LIST               CS_FADE_OUT_SEQ_LIST
-#define CS_FADE_BGM                    CS_FADE_OUT_SEQ
-#define CS_TERMINATOR                  CS_DESTINATION
-
-// CS_TIME macro:
-// The last argument of the macro was removed, but ZAPD isn't aware
-// Passing 6 arguments to a 5-arguments macro works fine with IDO, so ignore this hack for IDO
-#ifndef __sgi
-// Only spot06_scene uses CS_TIME. Limit the hack to that file, so everything else can use the new macro
-#  ifdef SPOT06_SCENE_H
-#    undef CS_TIME
-#    define CS_TIME(unused0, startFrame, endFrame, hour, min, _unusedZapdCompatibilityArg) \
-        CMD_HH(unused0, startFrame), CMD_HBB(endFrame, hour, min), CMD_W(0)
-#  endif
-#endif
-
-#define CS_PLAY_BGM(seqId, startFrame, endFrame, unused0, unused1, unused2, unused3, unused4, unused5, unused6, unused7) \
-CS_START_SEQ((seqId)-1, startFrame, endFrame, unused0, unused1, unused2, unused3, unused4, unused5, unused6, unused7)
-
-#define CS_STOP_BGM(seqId, frame, unused0, unused1, unused2, unused3, unused4, unused5, unused6, unused7, unused8) \
-CS_STOP_SEQ((seqId)-1, frame, unused0, unused1, unused2, unused3, unused4, unused5, unused6, unused7, unused8)
-
-#define CS_LIGHTING(lightSetting, frame, unused0, unused1, unused2, unused3, unused4, unused5, unused6, unused7, unused8) \
-CS_LIGHT_SETTING((lightSetting)-1, frame, unused0, unused1, unused2, unused3, unused4, unused5, unused6, unused7, unused8)
 
 #endif

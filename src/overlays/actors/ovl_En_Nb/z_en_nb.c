@@ -121,10 +121,10 @@ void EnNb_UpdatePath(EnNb* this, PlayState* play) {
         this->pathYaw =
             RAD_TO_BINANG(Math_FAtan2F(this->finalPos.x - this->initialPos.x, this->finalPos.z - this->initialPos.z));
         // "En_Nb_Get_path_info Rail Data Get! = %d!!!!!!!!!!!!!!"
-        osSyncPrintf("En_Nb_Get_path_info レールデータをゲットだぜ = %d!!!!!!!!!!!!!!\n", path);
+        PRINTF("En_Nb_Get_path_info レールデータをゲットだぜ = %d!!!!!!!!!!!!!!\n", path);
     } else {
         // "En_Nb_Get_path_info Rail Data Doesn't Exist!!!!!!!!!!!!!!!!!!!!"
-        osSyncPrintf("En_Nb_Get_path_info レールデータが無い!!!!!!!!!!!!!!!!!!!!\n");
+        PRINTF("En_Nb_Get_path_info レールデータが無い!!!!!!!!!!!!!!!!!!!!\n");
     }
 }
 
@@ -341,7 +341,7 @@ void EnNb_SetupChamberCsImpl(EnNb* this, PlayState* play) {
     s32 pad[2];
     Player* player;
 
-    if ((gSaveContext.chamberCutsceneNum == 3) && !IS_CUTSCENE_LAYER) {
+    if ((gSaveContext.chamberCutsceneNum == CHAMBER_CS_SPIRIT) && !IS_CUTSCENE_LAYER) {
         player = GET_PLAYER(play);
         this->action = NB_CHAMBER_UNDERGROUND;
         play->csCtx.script = D_80AB431C;
@@ -460,7 +460,7 @@ void EnNb_SetupLightArrowOrSealingCs(EnNb* this, PlayState* play) {
 }
 
 void EnNb_PlaySealingSfx(void) {
-    func_800788CC(NA_SE_SY_WHITE_OUT_T);
+    Sfx_PlaySfxCentered2(NA_SE_SY_WHITE_OUT_T);
 }
 
 void EnNb_InitializeDemo6K(EnNb* this, PlayState* play) {
@@ -575,13 +575,13 @@ void EnNb_InitKidnap(EnNb* this, PlayState* play) {
 
 void EnNb_PlayCrySFX(EnNb* this, PlayState* play) {
     if (play->csCtx.curFrame == 3) {
-        func_80078914(&this->actor.projectedPos, NA_SE_VO_NB_CRY_0);
+        Sfx_PlaySfxAtPos(&this->actor.projectedPos, NA_SE_VO_NB_CRY_0);
     }
 }
 
 void EnNb_PlayAgonySFX(EnNb* this, PlayState* play) {
     if (play->csCtx.curFrame == 420) {
-        func_80078914(&this->actor.projectedPos, NA_SE_VO_NB_AGONY);
+        Sfx_PlaySfxAtPos(&this->actor.projectedPos, NA_SE_VO_NB_AGONY);
     }
 }
 
@@ -666,7 +666,7 @@ void EnNb_CheckKidnapCsMode(EnNb* this, PlayState* play) {
                     break;
                 default:
                     // "Operation Doesn't Exist!!!!!!!!"
-                    osSyncPrintf("En_Nb_Kidnap_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
+                    PRINTF("En_Nb_Kidnap_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
                     break;
             }
             this->cueId = nextCueId;
@@ -709,8 +709,8 @@ void EnNb_PlayKnuckleDefeatSFX(EnNb* this, PlayState* play) {
     s32 pad[2];
 
     if (play->csCtx.curFrame == 548) {
-        func_80078914(&this->actor.projectedPos, NA_SE_VO_NB_CRY_0);
-        func_80078914(&this->actor.projectedPos, NA_SE_EN_FANTOM_HIT_THUNDER);
+        Sfx_PlaySfxAtPos(&this->actor.projectedPos, NA_SE_VO_NB_CRY_0);
+        Sfx_PlaySfxAtPos(&this->actor.projectedPos, NA_SE_EN_FANTOM_HIT_THUNDER);
     }
 }
 
@@ -719,7 +719,7 @@ void EnNb_PlayKneelingOnGroundSFX(EnNb* this) {
 
     if ((this->skelAnime.mode == 2) &&
         (Animation_OnFrame(&this->skelAnime, 18.0f) || Animation_OnFrame(&this->skelAnime, 25.0f))) {
-        func_80078914(&this->actor.projectedPos, NA_SE_EV_HUMAN_BOUND);
+        Sfx_PlaySfxAtPos(&this->actor.projectedPos, NA_SE_EV_HUMAN_BOUND);
     }
 }
 
@@ -727,7 +727,7 @@ void EnNb_PlayLookRightSFX(EnNb* this) {
     s32 pad[2];
 
     if ((this->skelAnime.mode == 2) && Animation_OnFrame(&this->skelAnime, 9.0f)) {
-        func_80078914(&this->actor.projectedPos, NA_SE_PL_WALK_GROUND + SURFACE_SFX_OFFSET_STONE);
+        Sfx_PlaySfxAtPos(&this->actor.projectedPos, NA_SE_PL_WALK_GROUND + SURFACE_SFX_OFFSET_STONE);
     }
 }
 
@@ -735,7 +735,7 @@ void EnNb_PlayLookLeftSFX(EnNb* this) {
     s32 pad[2];
 
     if (Animation_OnFrame(&this->skelAnime, 9.0f) || Animation_OnFrame(&this->skelAnime, 13.0f)) {
-        func_80078914(&this->actor.projectedPos, NA_SE_PL_WALK_GROUND + SURFACE_SFX_OFFSET_STONE);
+        Sfx_PlaySfxAtPos(&this->actor.projectedPos, NA_SE_PL_WALK_GROUND + SURFACE_SFX_OFFSET_STONE);
     }
 }
 
@@ -745,7 +745,7 @@ void EnNb_InitDemo6KInConfrontation(EnNb* this, PlayState* play) {
 }
 
 void func_80AB2688(EnNb* this, PlayState* play) {
-    this->skelAnime.moveFlags |= 1;
+    this->skelAnime.moveFlags |= ANIM_FLAG_0;
     AnimationContext_SetMoveActor(play, &this->actor, &this->skelAnime, 1.0f);
 }
 
@@ -885,7 +885,7 @@ void EnNb_CheckConfrontationCsMode(EnNb* this, PlayState* play) {
                     break;
                 default:
                     // "En_Nb_Confrontion_Check_DemoMode: Operation doesn't exist!!!!!!!!"
-                    osSyncPrintf("En_Nb_Confrontion_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
+                    PRINTF("En_Nb_Confrontion_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
                     break;
             }
             this->cueId = nextCueId;
@@ -1073,7 +1073,7 @@ void EnNb_CheckCreditsCsModeImpl(EnNb* this, PlayState* play) {
                     break;
                 default:
                     // "En_Nb_inEnding_Check_DemoMode: Operation doesn't exist!!!!!!!!"
-                    osSyncPrintf("En_Nb_inEnding_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
+                    PRINTF("En_Nb_inEnding_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
                     break;
             }
             this->cueId = nextCueId;
@@ -1154,7 +1154,7 @@ void func_80AB359C(EnNb* this) {
 }
 
 void EnNb_SetNoticeSFX(EnNb* this) {
-    func_80078914(&this->actor.projectedPos, NA_SE_VO_NB_NOTICE);
+    Sfx_PlaySfxAtPos(&this->actor.projectedPos, NA_SE_VO_NB_NOTICE);
 }
 
 s32 EnNb_GetNoticedStatus(EnNb* this, PlayState* play) {
@@ -1207,7 +1207,7 @@ void EnNb_SetupIdleCrawlspace(EnNb* this, s32 animFinished) {
 }
 
 void func_80AB3838(EnNb* this, PlayState* play) {
-    if (Actor_ProcessTalkRequest(&this->actor, play)) {
+    if (Actor_TalkOfferAccepted(&this->actor, play)) {
         this->action = NB_IN_DIALOG;
     } else {
         this->actor.flags |= ACTOR_FLAG_0 | ACTOR_FLAG_3;
@@ -1218,7 +1218,7 @@ void func_80AB3838(EnNb* this, PlayState* play) {
             this->actor.textId = 0x6024;
         }
 
-        func_8002F2F4(&this->actor, play);
+        Actor_OfferTalkNearColChkInfoCylinder(&this->actor, play);
     }
 }
 
@@ -1299,17 +1299,17 @@ void func_80AB3A7C(EnNb* this, PlayState* play, s32 animFinished) {
 }
 
 void func_80AB3B04(EnNb* this, PlayState* play) {
-    if (Actor_ProcessTalkRequest(&this->actor, play)) {
+    if (Actor_TalkOfferAccepted(&this->actor, play)) {
         this->action = NB_ACTION_30;
     } else {
         this->actor.flags |= ACTOR_FLAG_0 | ACTOR_FLAG_3;
-        this->actor.textId = Text_GetFaceReaction(play, 0x23);
+        this->actor.textId = MaskReaction_GetTextId(play, MASK_REACTION_SET_NABOORU);
 
-        if ((this->actor.textId) == 0) {
+        if (this->actor.textId == 0) {
             this->actor.textId = 0x6026;
         }
 
-        func_8002F2F4(&this->actor, play);
+        Actor_OfferTalkNearColChkInfoCylinder(&this->actor, play);
     }
 }
 
@@ -1426,7 +1426,7 @@ void EnNb_Update(Actor* thisx, PlayState* play) {
 
     if (this->action < 0 || this->action > 30 || sActionFuncs[this->action] == NULL) {
         // "Main mode is wrong!!!!!!!!!!!!!!!!!!!!!!!!!"
-        osSyncPrintf(VT_FGCOL(RED) "メインモードがおかしい!!!!!!!!!!!!!!!!!!!!!!!!!\n" VT_RST);
+        PRINTF(VT_FGCOL(RED) "メインモードがおかしい!!!!!!!!!!!!!!!!!!!!!!!!!\n" VT_RST);
         return;
     }
 
@@ -1532,7 +1532,7 @@ void EnNb_Draw(Actor* thisx, PlayState* play) {
 
     if (this->drawMode < 0 || this->drawMode >= 5 || sDrawFuncs[this->drawMode] == NULL) {
         // "Draw mode is wrong!!!!!!!!!!!!!!!!!!!!!!!!!"
-        osSyncPrintf(VT_FGCOL(RED) "描画モードがおかしい!!!!!!!!!!!!!!!!!!!!!!!!!\n" VT_RST);
+        PRINTF(VT_FGCOL(RED) "描画モードがおかしい!!!!!!!!!!!!!!!!!!!!!!!!!\n" VT_RST);
         return;
     }
 
@@ -1540,13 +1540,13 @@ void EnNb_Draw(Actor* thisx, PlayState* play) {
 }
 
 ActorInit En_Nb_InitVars = {
-    ACTOR_EN_NB,
-    ACTORCAT_NPC,
-    FLAGS,
-    OBJECT_NB,
-    sizeof(EnNb),
-    (ActorFunc)EnNb_Init,
-    (ActorFunc)EnNb_Destroy,
-    (ActorFunc)EnNb_Update,
-    (ActorFunc)EnNb_Draw,
+    /**/ ACTOR_EN_NB,
+    /**/ ACTORCAT_NPC,
+    /**/ FLAGS,
+    /**/ OBJECT_NB,
+    /**/ sizeof(EnNb),
+    /**/ EnNb_Init,
+    /**/ EnNb_Destroy,
+    /**/ EnNb_Update,
+    /**/ EnNb_Draw,
 };

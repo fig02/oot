@@ -86,15 +86,15 @@ static EnZl2DrawFunc sDrawFuncs[] = {
 };
 
 ActorInit En_Zl2_InitVars = {
-    ACTOR_EN_ZL2,
-    ACTORCAT_NPC,
-    FLAGS,
-    OBJECT_ZL2,
-    sizeof(EnZl2),
-    (ActorFunc)EnZl2_Init,
-    (ActorFunc)EnZl2_Destroy,
-    (ActorFunc)EnZl2_Update,
-    (ActorFunc)EnZl2_Draw,
+    /**/ ACTOR_EN_ZL2,
+    /**/ ACTORCAT_NPC,
+    /**/ FLAGS,
+    /**/ OBJECT_ZL2,
+    /**/ sizeof(EnZl2),
+    /**/ EnZl2_Init,
+    /**/ EnZl2_Destroy,
+    /**/ EnZl2_Update,
+    /**/ EnZl2_Draw,
 };
 
 void EnZl2_Destroy(Actor* thisx, PlayState* play) {
@@ -369,7 +369,7 @@ void func_80B4F230(EnZl2* this, s16 arg1, s32 arg2) {
     s32 temp_t3;
     s32 phi_v0;
     s32 index1AC;
-    s32 phi_t5;
+    int phi_t5;
 
     if (this->unk_24C != 0) {
         temp_v1 = this->unk_1DC[arg2] - arg1;
@@ -443,7 +443,7 @@ s32 func_80B4F45C(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s
     s16* unk_1DC = this->unk_1DC;
 
     if (limbIndex == 14) {
-        sp74 = Graph_Alloc(play->state.gfxCtx, sizeof(Mtx) * 7);
+        sp74 = GRAPH_ALLOC(play->state.gfxCtx, sizeof(Mtx) * 7);
         gSPSegment((*gfx)++, 0x0C, sp74);
 
         Matrix_Push();
@@ -460,7 +460,7 @@ s32 func_80B4F45C(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s
         }
         Matrix_RotateZYX(unk_1DC[0] + kREG(31), unk_1DC[1] + kREG(32), unk_1DC[2] + kREG(33), MTXMODE_APPLY);
         Matrix_Translate(-188.0f, -184.0f, 0.0f, MTXMODE_APPLY);
-        Matrix_ToMtx(&sp74[0], "../z_en_zl2.c", 1056);
+        MATRIX_TO_MTX(&sp74[0], "../z_en_zl2.c", 1056);
         Matrix_Get(&sp34);
         Matrix_MtxFToYXZRotS(&sp34, &sp2C, 0);
         if (!FrameAdvance_IsEnabled(play)) {
@@ -469,7 +469,7 @@ s32 func_80B4F45C(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s
         }
         Matrix_RotateZYX(unk_1DC[3] + kREG(34), unk_1DC[4] + kREG(35), unk_1DC[5] + kREG(36), MTXMODE_APPLY);
         Matrix_Translate(-410.0f, -184.0f, 0.0f, MTXMODE_APPLY);
-        Matrix_ToMtx(&sp74[1], "../z_en_zl2.c", 1100);
+        MATRIX_TO_MTX(&sp74[1], "../z_en_zl2.c", 1100);
         Matrix_Get(&sp34);
         Matrix_MtxFToYXZRotS(&sp34, &sp2C, 0);
         if (!FrameAdvance_IsEnabled(play)) {
@@ -478,7 +478,7 @@ s32 func_80B4F45C(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s
         }
         Matrix_RotateZYX(unk_1DC[6] + kREG(37), unk_1DC[7] + kREG(38), unk_1DC[8] + kREG(39), MTXMODE_APPLY);
         Matrix_Translate(-1019.0f, -26.0f, 0.0f, MTXMODE_APPLY);
-        Matrix_ToMtx(&sp74[2], "../z_en_zl2.c", 1120);
+        MATRIX_TO_MTX(&sp74[2], "../z_en_zl2.c", 1120);
         Matrix_Pop();
         Matrix_Push();
         Matrix_Translate(467.0f, 265.0f, 389.0f, MTXMODE_APPLY);
@@ -491,7 +491,7 @@ s32 func_80B4F45C(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s
         }
         Matrix_RotateZYX(unk_1DC[9] + kREG(40), unk_1DC[10] + kREG(41), unk_1DC[11] + kREG(42), MTXMODE_APPLY);
         Matrix_Translate(-427.0f, -1.0f, -3.0f, MTXMODE_APPLY);
-        Matrix_ToMtx(&sp74[3], "../z_en_zl2.c", 1145);
+        MATRIX_TO_MTX(&sp74[3], "../z_en_zl2.c", 1145);
         Matrix_Get(&sp34);
         Matrix_MtxFToYXZRotS(&sp34, &sp2C, 0);
         if (!FrameAdvance_IsEnabled(play)) {
@@ -501,7 +501,7 @@ s32 func_80B4F45C(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s
         }
         Matrix_RotateZYX(unk_1DC[12] + kREG(43), unk_1DC[13] + kREG(44), unk_1DC[14] + kREG(45), MTXMODE_APPLY);
         Matrix_Translate(-446.0f, -52.0f, 84.0f, MTXMODE_APPLY);
-        Matrix_ToMtx(&sp74[4], "../z_en_zl2.c", 1164);
+        MATRIX_TO_MTX(&sp74[4], "../z_en_zl2.c", 1164);
         Matrix_Pop();
         Matrix_Push();
         Matrix_Translate(467.0f, 265.0f, -389.0f, MTXMODE_APPLY);
@@ -514,7 +514,7 @@ s32 func_80B4F45C(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s
         }
         Matrix_RotateZYX(unk_1DC[15] + kREG(46), unk_1DC[16] + kREG(47), unk_1DC[17] + kREG(48), MTXMODE_APPLY);
         Matrix_Translate(-427.0f, -1.0f, 3.0f, MTXMODE_APPLY);
-        Matrix_ToMtx(&sp74[5], "../z_en_zl2.c", 1189);
+        MATRIX_TO_MTX(&sp74[5], "../z_en_zl2.c", 1189);
         Matrix_Get(&sp34);
         Matrix_MtxFToYXZRotS(&sp34, &sp2C, 0);
         if (!FrameAdvance_IsEnabled(play)) {
@@ -524,7 +524,7 @@ s32 func_80B4F45C(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s
         }
         Matrix_RotateZYX(unk_1DC[18] + kREG(49), unk_1DC[19] + kREG(50), unk_1DC[20] + kREG(51), MTXMODE_APPLY);
         Matrix_Translate(-446.0f, -52.0f, -84.0f, MTXMODE_APPLY);
-        Matrix_ToMtx(&sp74[6], "../z_en_zl2.c", 1208);
+        MATRIX_TO_MTX(&sp74[6], "../z_en_zl2.c", 1208);
         Matrix_Pop();
         Matrix_Pop();
         this->unk_24C = 1;
@@ -549,7 +549,7 @@ void EnZl2_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot,
                 Matrix_Translate(180.0f, 979.0f, -375.0f, MTXMODE_APPLY);
                 Matrix_RotateZYX(-0x5DE7, -0x53E9, 0x3333, MTXMODE_APPLY);
                 Matrix_Scale(1.2f, 1.2f, 1.2f, MTXMODE_APPLY);
-                gSPMatrix((*gfx)++, Matrix_NewMtx(play->state.gfxCtx, "../z_en_zl2.c", 1253),
+                gSPMatrix((*gfx)++, MATRIX_NEW(play->state.gfxCtx, "../z_en_zl2.c", 1253),
                           G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
                 gSPDisplayList((*gfx)++, gZelda2OcarinaDL);
             }
@@ -559,9 +559,9 @@ void EnZl2_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot,
 }
 
 void func_80B4FCCC(EnZl2* this, PlayState* play) {
-    s32 unk_274 = this->unk_274;
+    s32 objectSlot = this->zl2Anime1ObjectSlot;
 
-    gSegments[6] = VIRTUAL_TO_PHYSICAL(play->objectCtx.status[unk_274].segment);
+    gSegments[6] = VIRTUAL_TO_PHYSICAL(play->objectCtx.slots[objectSlot].segment);
 }
 
 void func_80B4FD00(EnZl2* this, AnimationHeader* animation, u8 arg2, f32 morphFrames, s32 arg4) {
@@ -590,34 +590,34 @@ void func_80B4FD90(EnZl2* this, PlayState* play) {
 
 void func_80B4FDD4(EnZl2* this) {
     if (Animation_OnFrame(&this->skelAnime, 14.0f)) {
-        func_80078914(&this->actor.projectedPos, NA_SE_PL_WALK_GROUND + SURFACE_SFX_OFFSET_STONE);
+        Sfx_PlaySfxAtPos(&this->actor.projectedPos, NA_SE_PL_WALK_GROUND + SURFACE_SFX_OFFSET_STONE);
     }
 }
 
 void func_80B4FE10(PlayState* play) {
     if ((play->csCtx.curFrame >= 830) && (play->csCtx.curFrame < 1081)) {
-        func_800788CC(NA_SE_EV_EARTHQUAKE - SFX_FLAG);
+        Sfx_PlaySfxCentered2(NA_SE_EV_EARTHQUAKE - SFX_FLAG);
     }
 }
 
 void func_80B4FE48(EnZl2* this) {
-    func_80078914(&this->actor.projectedPos, NA_SE_EV_GOTO_HEAVEN - SFX_FLAG);
+    Sfx_PlaySfxAtPos(&this->actor.projectedPos, NA_SE_EV_GOTO_HEAVEN - SFX_FLAG);
 }
 
 void func_80B4FE6C(EnZl2* this) {
-    func_80078914(&this->actor.projectedPos, NA_SE_EN_GANON_LAUGH);
+    Sfx_PlaySfxAtPos(&this->actor.projectedPos, NA_SE_EN_GANON_LAUGH);
 }
 
 void func_80B4FE90(EnZl2* this) {
-    func_80078914(&this->actor.projectedPos, NA_SE_VO_Z1_SURPRISE);
+    Sfx_PlaySfxAtPos(&this->actor.projectedPos, NA_SE_VO_Z1_SURPRISE);
 }
 
 void func_80B4FEB4(EnZl2* this) {
-    func_80078914(&this->actor.projectedPos, NA_SE_VO_Z1_PAIN);
+    Sfx_PlaySfxAtPos(&this->actor.projectedPos, NA_SE_VO_Z1_PAIN);
 }
 
 void func_80B4FED8(EnZl2* this) {
-    func_80078914(&this->actor.projectedPos, NA_SE_VO_Z1_CRY_0);
+    Sfx_PlaySfxAtPos(&this->actor.projectedPos, NA_SE_VO_Z1_CRY_0);
 }
 
 void EnZl2_GiveLightArrows(EnZl2* this, PlayState* play) {
@@ -974,7 +974,7 @@ void func_80B50A04(EnZl2* this, PlayState* play) {
                     func_80B50644(this, play);
                     break;
                 default:
-                    osSyncPrintf("En_Zl2_inAgain_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
+                    PRINTF("En_Zl2_inAgain_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
             }
             this->cueId = nextCueId;
         }
@@ -1233,9 +1233,9 @@ void func_80B5154C(EnZl2* this, PlayState* play) {
         EnZl2_UpdateEyes(this);
     } else {
         csCtx = &play->csCtx;
-        if (csCtx->curFrame < 0x5F0) {
+        if (csCtx->curFrame < 1520) {
             func_80B4EBB8(this);
-        } else if (csCtx->curFrame == 0x5F0) {
+        } else if (csCtx->curFrame == 1520) {
             this->unk_27C = 0.0f;
         } else {
             func_80B4EC48(this);
@@ -1365,7 +1365,7 @@ void func_80B51948(EnZl2* this, PlayState* play) {
                     func_80B513A8(this, play);
                     break;
                 default:
-                    osSyncPrintf("En_Zl2_inEnding_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
+                    PRINTF("En_Zl2_inEnding_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
             }
             this->cueId = nextCueId;
         }
@@ -1446,7 +1446,7 @@ void func_80B51D24(EnZl2* this, PlayState* play) {
         if (this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) {
             sfxId = NA_SE_PL_WALK_GROUND;
             sfxId += SurfaceType_GetSfxOffset(&play->colCtx, this->actor.floorPoly, this->actor.floorBgId);
-            func_80078914(&this->actor.projectedPos, sfxId);
+            Sfx_PlaySfxAtPos(&this->actor.projectedPos, sfxId);
         }
     }
 }
@@ -1529,7 +1529,7 @@ void func_80B51FA8(EnZl2* this, PlayState* play) {
                     Actor_Kill(&this->actor);
                     break;
                 default:
-                    osSyncPrintf("En_Zl2_inRunning_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
+                    PRINTF("En_Zl2_inRunning_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
                     break;
             }
             this->cueId = nextCueId;
@@ -1567,7 +1567,7 @@ void func_80B52114(EnZl2* this, PlayState* play) {
             func_80B4FD90(this, play);
             break;
         default:
-            osSyncPrintf(VT_FGCOL(RED) " En_Oa2 の arg_data がおかしい!!!!!!!!!!!!!!!!!!!!!!!!!\n" VT_RST);
+            PRINTF(VT_FGCOL(RED) " En_Oa2 の arg_data がおかしい!!!!!!!!!!!!!!!!!!!!!!!!!\n" VT_RST);
             func_80B4FD90(this, play);
     }
 }
@@ -1575,16 +1575,16 @@ void func_80B52114(EnZl2* this, PlayState* play) {
 void func_80B521A0(EnZl2* this, PlayState* play) {
     s32 pad;
     ObjectContext* objectCtx = &play->objectCtx;
-    s32 bankIndex = Object_GetIndex(objectCtx, OBJECT_ZL2_ANIME1);
+    s32 objectSlot = Object_GetSlot(objectCtx, OBJECT_ZL2_ANIME1);
     s32 pad2;
 
-    if (bankIndex < 0) {
-        osSyncPrintf(VT_FGCOL(RED) "En_Zl2_main_bankアニメーションのバンクを読めない!!!!!!!!!!!!\n" VT_RST);
+    if (objectSlot < 0) {
+        PRINTF(VT_FGCOL(RED) "En_Zl2_main_bankアニメーションのバンクを読めない!!!!!!!!!!!!\n" VT_RST);
         return;
     }
 
-    if (Object_IsLoaded(objectCtx, bankIndex)) {
-        this->unk_274 = bankIndex;
+    if (Object_IsLoaded(objectCtx, objectSlot)) {
+        this->zl2Anime1ObjectSlot = objectSlot;
         func_80B4FCCC(this, play);
         this->unk_278 = Animation_GetLastFrame(&gZelda2Anime1Anim_0022D0);
         func_80B52114(this, play);
@@ -1595,7 +1595,7 @@ void EnZl2_Update(Actor* thisx, PlayState* play) {
     EnZl2* this = (EnZl2*)thisx;
 
     if (this->action < 0 || this->action >= 0x24 || sActionFuncs[this->action] == NULL) {
-        osSyncPrintf(VT_FGCOL(RED) "メインモードがおかしい!!!!!!!!!!!!!!!!!!!!!!!!!\n" VT_RST);
+        PRINTF(VT_FGCOL(RED) "メインモードがおかしい!!!!!!!!!!!!!!!!!!!!!!!!!\n" VT_RST);
         return;
     }
     sActionFuncs[this->action](this, play);
@@ -1626,7 +1626,7 @@ s32 EnZl2_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* p
 
     if (this->overrideLimbDrawConfig < 0 || this->overrideLimbDrawConfig > 0 ||
         sOverrideLimbDrawFuncs[this->overrideLimbDrawConfig] == NULL) {
-        osSyncPrintf(VT_FGCOL(RED) "描画前処理モードがおかしい!!!!!!!!!!!!!!!!!!!!!!!!!\n" VT_RST);
+        PRINTF(VT_FGCOL(RED) "描画前処理モードがおかしい!!!!!!!!!!!!!!!!!!!!!!!!!\n" VT_RST);
         return 0;
     }
     return sOverrideLimbDrawFuncs[this->overrideLimbDrawConfig](play, limbIndex, dList, pos, rot, thisx, gfx);
@@ -1691,7 +1691,7 @@ void EnZl2_Draw(Actor* thisx, PlayState* play) {
     EnZl2* this = (EnZl2*)thisx;
 
     if ((this->drawConfig < 0) || (this->drawConfig >= 3) || (sDrawFuncs[this->drawConfig] == NULL)) {
-        osSyncPrintf(VT_FGCOL(RED) "描画モードがおかしい!!!!!!!!!!!!!!!!!!!!!!!!!\n" VT_RST);
+        PRINTF(VT_FGCOL(RED) "描画モードがおかしい!!!!!!!!!!!!!!!!!!!!!!!!!\n" VT_RST);
         return;
     }
     sDrawFuncs[this->drawConfig](this, play);

@@ -24,15 +24,15 @@ void func_80A68AF0(EnHorseGanon* this, PlayState* play);
 void func_80A68DB0(EnHorseGanon* this, PlayState* play);
 
 ActorInit En_Horse_Ganon_InitVars = {
-    ACTOR_EN_HORSE_GANON,
-    ACTORCAT_BG,
-    FLAGS,
-    OBJECT_HORSE_GANON,
-    sizeof(EnHorseGanon),
-    (ActorFunc)EnHorseGanon_Init,
-    (ActorFunc)EnHorseGanon_Destroy,
-    (ActorFunc)EnHorseGanon_Update,
-    (ActorFunc)EnHorseGanon_Draw,
+    /**/ ACTOR_EN_HORSE_GANON,
+    /**/ ACTORCAT_BG,
+    /**/ FLAGS,
+    /**/ OBJECT_HORSE_GANON,
+    /**/ sizeof(EnHorseGanon),
+    /**/ EnHorseGanon_Init,
+    /**/ EnHorseGanon_Destroy,
+    /**/ EnHorseGanon_Update,
+    /**/ EnHorseGanon_Draw,
 };
 
 static AnimationHeader* sAnimations[] = {
@@ -120,7 +120,7 @@ void func_80A686A8(EnHorseGanon* this, PlayState* play) {
 
     func_80A68660(D_80A69248, this->unk_1EC, &vec);
     if (Math3D_Vec3f_DistXYZ(&vec, &this->actor.world.pos) <= 400.0f) {
-        this->unk_1EC += 1;
+        this->unk_1EC++;
         if (this->unk_1EC >= 14) {
             this->unk_1EC = 0;
             func_80A68660(D_80A69248, 0, &vec);

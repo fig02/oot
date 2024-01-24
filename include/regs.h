@@ -48,6 +48,7 @@
 #define R_ENV_TIME_SPEED_OLD                     REG(15) // Most likely used during development. Unused in the final game.
 #define R_RUN_SPEED_LIMIT                        REG(45)
 #define R_ENABLE_ARENA_DBG                       SREG(0)
+#define R_AUDIOMGR_DEBUG_LEVEL                   SREG(20)
 #define R_ROOM_IMAGE_NODRAW_FLAGS                SREG(25)
 #define R_ROOM_BG2D_FORCE_SCALEBG                SREG(26)
 #define R_UPDATE_RATE                            SREG(30)
@@ -106,6 +107,7 @@
 #define R_MESSAGE_DEBUGGER_TEXTID                YREG(79)
 #define R_C_UP_ICON_X                            YREG(88)
 #define R_C_UP_ICON_Y                            YREG(89)
+#define R_EPONAS_SONG_PLAYED                     DREG(53)
 #define R_MAGIC_FILL_COLOR(i)                    ZREG(0 + (i))
 #define R_C_BTN_COLOR(i)                         ZREG(39 + (i))
 #define R_B_BTN_COLOR(i)                         ZREG(43 + (i))

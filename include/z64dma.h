@@ -22,6 +22,18 @@ typedef struct {
     /* 0x0C */ uintptr_t romEnd;
 } DmaEntry;
 
+typedef struct {
+    /* 0x00 */ uintptr_t vromStart;
+    /* 0x04 */ uintptr_t vromEnd;
+} RomFile; // size = 0x8
+
+#define ROM_FILE(name) \
+    { (uintptr_t)_##name##SegmentRomStart, (uintptr_t)_##name##SegmentRomEnd }
+#define ROM_FILE_EMPTY(name) \
+    { (uintptr_t)_##name##SegmentRomStart, (uintptr_t)_##name##SegmentRomStart }
+#define ROM_FILE_UNSET \
+    { 0 }
+
 extern DmaEntry gDmaDataTable[];
 
 extern u32 gDmaMgrVerbose;
@@ -31,10 +43,12 @@ extern size_t gDmaMgrDmaBuffSize;
 
 // Standard DMA Requests
 
-s32 DmaMgr_RequestSync(void* ram, uintptr_t vrom, size_t size);
-s32 DmaMgr_RequestSyncDebug(void* ram, uintptr_t vrom, size_t size, const char* file, s32 line);
 s32 DmaMgr_RequestAsync(DmaRequest* req, void* ram, uintptr_t vrom, size_t size, u32 unk5, OSMesgQueue* queue,
-                        OSMesg msg, const char* file, s32 line);
+                        OSMesg msg);
+s32 DmaMgr_RequestSync(void* ram, uintptr_t vrom, size_t size);
+s32 DmaMgr_RequestAsyncDebug(DmaRequest* req, void* ram, uintptr_t vrom, size_t size, u32 unk5, OSMesgQueue* queue,
+                             OSMesg msg, const char* file, s32 line);
+s32 DmaMgr_RequestSyncDebug(void* ram, uintptr_t vrom, size_t size, const char* file, s32 line);
 
 // Special-purpose DMA Requests
 
