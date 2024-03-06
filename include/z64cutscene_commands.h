@@ -37,9 +37,10 @@
 #endif
 
 /**
- * Marks the beginning of a cutscene script.
+ * Describes the total number of commands and the length (in frames) of the cutscene
  */
-#define CS_BEGIN_CUTSCENE(totalEntries, frameCount) CMD_W(totalEntries), CMD_W(frameCount)
+#define CS_HEADER(totalEntries, frameCount) \
+    CMD_W(totalEntries), CMD_W(frameCount)
 
 /**
  * Defines data for `CutsceneCameraPoint`, which can be used with any of the `eye` or `at` camera commands.
@@ -267,9 +268,12 @@
     CS_CMD_DESTINATION, 1, CMD_HH(destination, startFrame), CMD_HH(endFrame, endFrame)
 
 /**
- * Marks the end of a cutscene script.
+ * Stops the cutscene script from being processed for the current frame.
+ * This does not stop the cutscene from playing in general. 
+ * Any cutscene commands listed below this one will never be processed at any point during the cutscene.
  */
-#define CS_END() 0xFFFFFFFF, 0x00000000
+#define CS_STOP_PROCESSING() \
+    CS_CMD_STOP_PROCESSING, 0
 
 
 // most instances of this look like unimplemented actor cues.
@@ -279,5 +283,9 @@
 #define CS_UNK_DATA(unk1, unk2, unk3, unk4, unk5, unk6, unk7, unk8, unk9, unk10, unk11, unk12) \
     CMD_W(unk1), CMD_W(unk2), CMD_W(unk3), CMD_W(unk4), CMD_W(unk5), CMD_W(unk6), \
     CMD_W(unk7), CMD_W(unk8), CMD_W(unk9), CMD_W(unk10), CMD_W(unk11), CMD_W(unk12)
+
+// TODO: ZAPD Compatability Defines
+#define CS_BEGIN_CUTSCENE CS_HEADER
+#define CS_END            CS_STOP_PROCESSING
 
 #endif

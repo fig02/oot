@@ -484,7 +484,7 @@ Argument format:
 """
 cutscene_command_macros = {
     -1:
-        ("CS_END()", 1, None, None,
+        ("CS_STOP_PROCESSING()", 1, None, None,
               None, None),
     3:
         ("CS_MISC_LIST(%w1:1:s)", 2, None, 0,
@@ -551,7 +551,7 @@ cutscene_command_macros = {
               None, None),
 }
 
-begin_cutscene_entry = ("CS_BEGIN_CUTSCENE(%w1:0:s, %w1:1:s)", 2, None, None,
+header_entry = ("CS_HEADER(%w1:0:s, %w1:1:s)", 2, None, None,
                             None, None)
 
 unk_data_entry = ("CS_UNK_DATA_LIST(%w1:0:x, %w1:1:s)", 2, None, 0,
@@ -721,7 +721,7 @@ def disassemble_cutscene(cs_in):
         print("This cutscene would abort if played in-engine")
         if total_entries < 0:
             return "Could not disassemble cutscene: Number of commands is negative"
-    macros = format_cmd(begin_cutscene_entry[0], [total_entries, cutscene_end_frame])+line_end
+    macros = format_cmd(header_entry[0], [total_entries, cutscene_end_frame])+line_end
     for k in range(0,total_entries+1):
         cmd_type = cs_in[i]
         if (cmd_type == 0xFFFFFFFF):
@@ -757,7 +757,7 @@ def disassemble_cutscene(cs_in):
                     i += n_words_list_item
         else:
             i += n_words
-    print("Warning: cutscene reached maximum entries without encountering a CS_END command")
+    print("Warning: cutscene reached maximum entries without encountering a CS_STOP_PROCESSING command")
     return macros
 
 def hex_parse(s):
