@@ -1780,6 +1780,7 @@ void Cutscene_ProcessScript(PlayState* play, CutsceneContext* csCtx, u8* script)
     s32 csFrameCount;
     s16 j;
 
+    // Process the cutscene header to obtain entry count and frame count
     MemCpy(&totalEntries, script, sizeof(totalEntries));
     script += sizeof(totalEntries);
 
@@ -1803,6 +1804,7 @@ void Cutscene_ProcessScript(PlayState* play, CutsceneContext* csCtx, u8* script)
         script += sizeof(cmdType);
 
         if (cmdType == CS_CMD_STOP_PROCESSING) {
+            // Stop processing any more commands for this frame
             return;
         }
 
