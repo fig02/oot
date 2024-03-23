@@ -813,41 +813,94 @@ s32 Player_GetEnvironmentalHazard(PlayState* play) {
     return envHazard + 1;
 }
 
-u8 sEyeMouthIndices[][2] = {
-    { 0, 0 }, { 1, 0 }, { 2, 0 }, { 0, 0 }, { 1, 0 }, { 2, 0 }, { 4, 0 }, { 5, 1 },
-    { 7, 2 }, { 0, 2 }, { 3, 0 }, { 4, 0 }, { 2, 2 }, { 1, 1 }, { 0, 2 }, { 0, 0 },
+u8 sPlayerFaces[PLAYER_FACE_MAX][PLAYER_FACEPART_MAX] = {
+    // The first 6 faces defined must be default blinking faces. See relevant code in `Player_UpdateCommon`.
+    { PLAYER_EYES_OPEN, PLAYER_MOUTH_CLOSED },   // PLAYER_FACE_NEUTRAL
+    { PLAYER_EYES_HALF, PLAYER_MOUTH_CLOSED },   // PLAYER_FACE_NEUTRAL_BLINKING_HALF
+    { PLAYER_EYES_CLOSED, PLAYER_MOUTH_CLOSED }, // PLAYER_FACE_NEUTRAL_BLINKING_CLOSED
+
+    // This duplicate set of blinking faces is defined because Player will choose between the first and second set
+    // based on gameplayFrames. See relevant code in `Player_UpdateCommon`.
+    // This, in theory, allows for psuedo-random variance in the faces used. But in practice, duplicate faces are used.
+    { PLAYER_EYES_OPEN, PLAYER_MOUTH_CLOSED },   // PLAYER_FACE_NEUTRAL_2
+    { PLAYER_EYES_HALF, PLAYER_MOUTH_CLOSED },   // PLAYER_FACE_NEUTRAL_BLINKING_HALF_2
+    { PLAYER_EYES_CLOSED, PLAYER_MOUTH_CLOSED }, // PLAYER_FACE_NEUTRAL_BLINKING_CLOSED_2
+
+    // The rest of these faces go unused. Face data encoded within animations handles all other faces.
+    { PLAYER_EYES_RIGHT, PLAYER_MOUTH_CLOSED }, // PLAYER_FACE_LOOK_RIGHT
+    { PLAYER_EYES_WIDE, PLAYER_MOUTH_HALF },    // PLAYER_FACE_SURPRISED
+    { PLAYER_EYES_WINCING, PLAYER_MOUTH_OPEN }, // PLAYER_FACE_HURT
+    { PLAYER_EYES_OPEN, PLAYER_MOUTH_OPEN },    // PLAYER_FACE_GASP
+    { PLAYER_EYES_LEFT, PLAYER_MOUTH_CLOSED },  // PLAYER_FACE_LOOK_LEFT
+    { PLAYER_EYES_RIGHT, PLAYER_MOUTH_CLOSED }, // PLAYER_FACE_LOOK_RIGHT_2
+    { PLAYER_EYES_CLOSED, PLAYER_MOUTH_OPEN },  // PLAYER_FACE_EYES_CLOSED_MOUTH_OPEN
+    { PLAYER_EYES_HALF, PLAYER_MOUTH_HALF },    // PLAYER_FACE_OPENING
+    { PLAYER_EYES_OPEN, PLAYER_MOUTH_OPEN },    // PLAYER_FACE_EYES_AND_MOUTH_OPEN
+    { PLAYER_EYES_OPEN, PLAYER_MOUTH_CLOSED },  // PLAYER_FACE_NEUTRAL_3
 };
 
 /**
- * Link's eye and mouth textures are placed at the exact same place in adult and child Link's respective object files.
+ * Link's eyes and mouth textures are placed at the exact same place in adult and child Link's respective object files.
  * This allows the array to only contain the symbols for one file and have it apply to both. This is a problem for
  * shiftability, and changes will need to be made in the code to account for this in a modding scenario. The symbols
  * from adult Link's object are used here.
  */
 #ifndef AVOID_UB
-void* sEyeTextures[] = {
-    gLinkAdultEyesOpenTex,      gLinkAdultEyesHalfTex,  gLinkAdultEyesClosedfTex, gLinkAdultEyesRollLeftTex,
-    gLinkAdultEyesRollRightTex, gLinkAdultEyesShockTex, gLinkAdultEyesUnk1Tex,    gLinkAdultEyesUnk2Tex,
+void* sEyeTextures[PLAYER_EYES_MAX] = {
+    gLinkAdultEyesOpenTex,    // PLAYER_EYES_OPEN
+    gLinkAdultEyesHalfTex,    // PLAYER_EYES_HALF
+    gLinkAdultEyesClosedfTex, // PLAYER_EYES_CLOSED
+    gLinkAdultEyesLeftTex,    // PLAYER_EYES_LEFT
+    gLinkAdultEyesRightTex,   // PLAYER_EYES_RIGHT
+    gLinkAdultEyesWideTex,    // PLAYER_EYES_WIDE
+    gLinkAdultEyesDownTex,    // PLAYER_EYES_DOWN
+    gLinkAdultEyesWincingTex, // PLAYER_EYES_WINCING
 };
 
-void* sMouthTextures[] = {
-    gLinkAdultMouth1Tex,
-    gLinkAdultMouth2Tex,
-    gLinkAdultMouth3Tex,
-    gLinkAdultMouth4Tex,
+void* sMouthTextures[PLAYER_MOUTH_MAX] = {
+    gLinkAdultMouthClosedTex, // PLAYER_MOUTH_CLOSED
+    gLinkAdultMouthHalfTex,   // PLAYER_MOUTH_HALF
+    gLinkAdultMouthOpenTex,   // PLAYER_MOUTH_OPEN
+    gLinkAdultMouthSmileTex,  // PLAYER_MOUTH_SMILE
 };
 #else
 // Defining `AVOID_UB` will use a 2D array instead and properly use the child link pointers to allow for shifting.
-void* sEyeTextures[][8] = {
-    { gLinkAdultEyesOpenTex, gLinkAdultEyesHalfTex, gLinkAdultEyesClosedfTex, gLinkAdultEyesRollLeftTex,
-      gLinkAdultEyesRollRightTex, gLinkAdultEyesShockTex, gLinkAdultEyesUnk1Tex, gLinkAdultEyesUnk2Tex },
-    { gLinkChildEyesOpenTex, gLinkChildEyesHalfTex, gLinkChildEyesClosedfTex, gLinkChildEyesRollLeftTex,
-      gLinkChildEyesRollRightTex, gLinkChildEyesShockTex, gLinkChildEyesUnk1Tex, gLinkChildEyesUnk2Tex },
+void* sEyeTextures[][PLAYER_EYES_MAX] = {
+    {
+        gLinkAdultEyesOpenTex,    // PLAYER_EYES_OPEN
+        gLinkAdultEyesHalfTex,    // PLAYER_EYES_HALF
+        gLinkAdultEyesClosedfTex, // PLAYER_EYES_CLOSED
+        gLinkAdultEyesLeftTex,    // PLAYER_EYES_LEFT
+        gLinkAdultEyesRightTex,   // PLAYER_EYES_RIGHT
+        gLinkAdultEyesWideTex,    // PLAYER_EYES_WIDE
+        gLinkAdultEyesDownTex,    // PLAYER_EYES_DOWN
+        gLinkAdultEyesWincingTex, // PLAYER_EYES_WINCING
+    },
+    {
+        gLinkChildEyesOpenTex,    // PLAYER_EYES_OPEN
+        gLinkChildEyesHalfTex,    // PLAYER_EYES_HALF
+        gLinkChildEyesClosedfTex, // PLAYER_EYES_CLOSED
+        gLinkChildEyesLeftTex,    // PLAYER_EYES_LEFT
+        gLinkChildEyesRightTex,   // PLAYER_EYES_RIGHT
+        gLinkChildEyesWideTex,    // PLAYER_EYES_WIDE
+        gLinkChildEyesDownTex,    // PLAYER_EYES_DOWN
+        gLinkChildEyesWincingTex, // PLAYER_EYES_WINCING
+    },
 };
 
-void* sMouthTextures[][4] = {
-    { gLinkAdultMouth1Tex, gLinkAdultMouth2Tex, gLinkAdultMouth3Tex, gLinkAdultMouth4Tex },
-    { gLinkChildMouth1Tex, gLinkChildMouth2Tex, gLinkChildMouth3Tex, gLinkChildMouth4Tex },
+void* sMouthTextures[][PLAYER_MOUTH_MAX] = {
+    {
+        gLinkAdultMouthClosedTex, // PLAYER_MOUTH_CLOSED
+        gLinkAdultMouthHalfTex,   // PLAYER_MOUTH_HALF
+        gLinkAdultMouthOpenTex,   // PLAYER_MOUTH_OPEN
+        gLinkAdultMouthSmileTex,  // PLAYER_MOUTH_SMILE
+    },
+    {
+        gLinkChildMouthClosedTex, // PLAYER_MOUTH_CLOSED
+        gLinkChildMouthHalfTex,   // PLAYER_MOUTH_HALF
+        gLinkChildMouthOpenTex,   // PLAYER_MOUTH_OPEN
+        gLinkChildMouthSmileTex,  // PLAYER_MOUTH_SMILE
+    },
 };
 #endif
 
@@ -870,23 +923,31 @@ Gfx* sBootDListGroups[][2] = {
 void Player_DrawImpl(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dListCount, s32 lod, s32 tunic, s32 boots,
                      s32 face, OverrideLimbDrawOpa overrideLimbDraw, PostLimbDrawOpa postLimbDraw, void* data) {
     Color_RGB8* color;
-    s32 eyeIndex = (jointTable[22].x & 0xF) - 1;
-    s32 mouthIndex = (jointTable[22].x >> 4) - 1;
+    s32 eyesIndex;
+    s32 mouthIndex;
+
+    // Player's animation data includes eyes and mouth indices for which texture to use on a given frame.
+    // Despite being accessed as "the x component of the 22nd limb", the eyes and mouth indices are stored in 2
+    // additional bytes tacked onto the end of the limb rotation data for a given animation frame.
+    eyesIndex = (jointTable[22].x & 0xF) - 1;
+    mouthIndex = (jointTable[22].x >> 4) - 1;
 
     OPEN_DISPS(play->state.gfxCtx, "../z_player_lib.c", 1721);
 
-    if (eyeIndex < 0) {
-        eyeIndex = sEyeMouthIndices[face][0];
+    // If the eyes index provided by the animation is negative, use the value provided by the `face` argument instead
+    if (eyesIndex < 0) {
+        eyesIndex = sPlayerFaces[face][PLAYER_FACEPART_EYES];
     }
 
 #ifndef AVOID_UB
-    gSPSegment(POLY_OPA_DISP++, 0x08, SEGMENTED_TO_VIRTUAL(sEyeTextures[eyeIndex]));
+    gSPSegment(POLY_OPA_DISP++, 0x08, SEGMENTED_TO_VIRTUAL(sEyeTextures[eyesIndex]));
 #else
-    gSPSegment(POLY_OPA_DISP++, 0x08, SEGMENTED_TO_VIRTUAL(sEyeTextures[gSaveContext.save.linkAge][eyeIndex]));
+    gSPSegment(POLY_OPA_DISP++, 0x08, SEGMENTED_TO_VIRTUAL(sEyeTextures[gSaveContext.save.linkAge][eyesIndex]));
 #endif
 
+    // If the mouth index provided by the animation is negative, use the value provided by the `face` argument instead
     if (mouthIndex < 0) {
-        mouthIndex = sEyeMouthIndices[face][1];
+        mouthIndex = sPlayerFaces[face][PLAYER_FACEPART_MOUTH];
     }
 
 #ifndef AVOID_UB
@@ -1107,9 +1168,13 @@ s32 Player_OverrideLimbDrawGameplayCommon(PlayState* play, s32 limbIndex, Gfx** 
                 Matrix_RotateZ(BINANG_TO_RAD(this->unk_6C0), MTXMODE_APPLY);
             }
         } else if (limbIndex == PLAYER_LIMB_L_THIGH) {
+            s32 pad;
+
             func_8008F87C(play, this, &this->skelAnime, pos, rot, PLAYER_LIMB_L_THIGH, PLAYER_LIMB_L_SHIN,
                           PLAYER_LIMB_L_FOOT);
         } else if (limbIndex == PLAYER_LIMB_R_THIGH) {
+            s32 pad;
+
             func_8008F87C(play, this, &this->skelAnime, pos, rot, PLAYER_LIMB_R_THIGH, PLAYER_LIMB_R_SHIN,
                           PLAYER_LIMB_R_FOOT);
         } else {
@@ -1368,7 +1433,7 @@ void Player_DrawHookshotReticle(PlayState* play, Player* this, f32 arg2) {
         Matrix_Translate(sp74.x, sp74.y, sp74.z, MTXMODE_NEW);
         Matrix_Scale(sp60, sp60, sp60, MTXMODE_APPLY);
 
-        gSPMatrix(OVERLAY_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_player_lib.c", 2587),
+        gSPMatrix(OVERLAY_DISP++, MATRIX_NEW(play->state.gfxCtx, "../z_player_lib.c", 2587),
                   G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
         gSPSegment(OVERLAY_DISP++, 0x06, play->objectCtx.slots[this->actor.objectSlot].segment);
         gSPDisplayList(OVERLAY_DISP++, gLinkAdultHookshotReticleDL);
@@ -1407,42 +1472,6 @@ Color_RGB8 sBottleColors[] = {
     { 80, 80, 255 },   // Fairy
 };
 
-Vec3f D_80126128 = { 398.0f, 1419.0f, 244.0f };
-
-BowSlingshotStringData sBowSlingshotStringData[] = {
-    { gLinkAdultBowStringDL, { 0.0f, -360.4f, 0.0f } },        // Bow
-    { gLinkChildSlingshotStringDL, { 606.0f, 236.0f, 0.0f } }, // Slingshot
-};
-
-// Coordinates of the shield quad collider vertices, in the right hand limb's own model space.
-Vec3f sRightHandLimbModelShieldQuadVertices[] = {
-    { -4500.0f, -3000.0f, -600.0f },
-    { 1500.0f, -3000.0f, -600.0f },
-    { -4500.0f, 3000.0f, -600.0f },
-    { 1500.0f, 3000.0f, -600.0f },
-};
-
-Vec3f D_80126184 = { 100.0f, 1500.0f, 0.0f };
-Vec3f D_80126190 = { 100.0f, 1640.0f, 0.0f };
-
-// Coordinates of the shield quad collider vertices, in the sheath limb's own model space.
-Vec3f sSheathLimbModelShieldQuadVertices[] = {
-    { -3000.0f, -3000.0f, -900.0f },
-    { 3000.0f, -3000.0f, -900.0f },
-    { -3000.0f, 3000.0f, -900.0f },
-    { 3000.0f, 3000.0f, -900.0f },
-};
-
-// Position and rotation of the shield on Link's back, in the sheath limb's own model space.
-Vec3f sSheathLimbModelShieldOnBackPos = { 630.0f, 100.0f, -30.0f };
-Vec3s sSheathLimbModelShieldOnBackZyxRot = { 0, 0, 0x7FFF };
-
-// Position of Link's foot, in the foot limb's own model space.
-Vec3f sLeftRightFootLimbModelFootPos[] = {
-    { 200.0f, 300.0f, 0.0f },
-    { 200.0f, 200.0f, 0.0f },
-};
-
 void Player_PostLimbDrawGameplay(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, void* thisx) {
     Player* this = (Player*)thisx;
 
@@ -1475,7 +1504,7 @@ void Player_PostLimbDrawGameplay(PlayState* play, s32 limbIndex, Gfx** dList, Ve
             Matrix_RotateZYX(-0x8000, 0, 0x4000, MTXMODE_APPLY);
             Matrix_Scale(1.0f, this->unk_85C, 1.0f, MTXMODE_APPLY);
 
-            gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_player_lib.c", 2653),
+            gSPMatrix(POLY_OPA_DISP++, MATRIX_NEW(play->state.gfxCtx, "../z_player_lib.c", 2653),
                       G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gSPDisplayList(POLY_OPA_DISP++, gLinkChildLinkDekuStickDL);
 
@@ -1496,7 +1525,7 @@ void Player_PostLimbDrawGameplay(PlayState* play, s32 limbIndex, Gfx** dList, Ve
 
             OPEN_DISPS(play->state.gfxCtx, "../z_player_lib.c", 2710);
 
-            gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_player_lib.c", 2712),
+            gSPMatrix(POLY_XLU_DISP++, MATRIX_NEW(play->state.gfxCtx, "../z_player_lib.c", 2712),
                       G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gDPSetEnvColor(POLY_XLU_DISP++, bottleColor->r, bottleColor->g, bottleColor->b, 0);
             gSPDisplayList(POLY_XLU_DISP++, sBottleDLists[((void)0, gSaveContext.save.linkAge)]);
@@ -1507,6 +1536,8 @@ void Player_PostLimbDrawGameplay(PlayState* play, s32 limbIndex, Gfx** dList, Ve
         if (this->actor.scale.y >= 0.0f) {
             if (!Player_HoldsHookshot(this) && ((hookedActor = this->heldActor) != NULL)) {
                 if (this->stateFlags1 & PLAYER_STATE1_9) {
+                    static Vec3f D_80126128 = { 398.0f, 1419.0f, 244.0f };
+
                     Matrix_MultVec3f(&D_80126128, &hookedActor->world.pos);
                     Matrix_RotateZYX(0x69E8, -0x5708, 0x458E, MTXMODE_APPLY);
                     Matrix_Get(&sp14C);
@@ -1536,6 +1567,10 @@ void Player_PostLimbDrawGameplay(PlayState* play, s32 limbIndex, Gfx** dList, Ve
             Matrix_Get(&this->shieldMf);
         } else if ((this->rightHandType == PLAYER_MODELTYPE_RH_BOW_SLINGSHOT) ||
                    (this->rightHandType == PLAYER_MODELTYPE_RH_BOW_SLINGSHOT_2)) {
+            static BowSlingshotStringData sBowSlingshotStringData[] = {
+                { gLinkAdultBowStringDL, { 0.0f, -360.4f, 0.0f } },        // Bow
+                { gLinkChildSlingshotStringDL, { 606.0f, 236.0f, 0.0f } }, // Slingshot
+            };
             BowSlingshotStringData* stringData = &sBowSlingshotStringData[gSaveContext.save.linkAge];
 
             OPEN_DISPS(play->state.gfxCtx, "../z_player_lib.c", 2783);
@@ -1569,7 +1604,7 @@ void Player_PostLimbDrawGameplay(PlayState* play, s32 limbIndex, Gfx** dList, Ve
                 Matrix_RotateZ(this->unk_858 * -0.2f, MTXMODE_APPLY);
             }
 
-            gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_player_lib.c", 2804),
+            gSPMatrix(POLY_XLU_DISP++, MATRIX_NEW(play->state.gfxCtx, "../z_player_lib.c", 2804),
                       G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gSPDisplayList(POLY_XLU_DISP++, stringData->dList);
 
@@ -1577,15 +1612,26 @@ void Player_PostLimbDrawGameplay(PlayState* play, s32 limbIndex, Gfx** dList, Ve
 
             CLOSE_DISPS(play->state.gfxCtx, "../z_player_lib.c", 2809);
         } else if ((this->actor.scale.y >= 0.0f) && (this->rightHandType == PLAYER_MODELTYPE_RH_SHIELD)) {
+            // Coordinates of the shield quad collider vertices, in the right hand limb's own model space.
+            static Vec3f sRightHandLimbModelShieldQuadVertices[] = {
+                { -4500.0f, -3000.0f, -600.0f },
+                { 1500.0f, -3000.0f, -600.0f },
+                { -4500.0f, 3000.0f, -600.0f },
+                { 1500.0f, 3000.0f, -600.0f },
+            };
+
             Matrix_Get(&this->shieldMf);
             Player_UpdateShieldCollider(play, this, &this->shieldQuad, sRightHandLimbModelShieldQuadVertices);
         }
 
         if (this->actor.scale.y >= 0.0f) {
             if ((this->heldItemAction == PLAYER_IA_HOOKSHOT) || (this->heldItemAction == PLAYER_IA_LONGSHOT)) {
+                static Vec3f D_80126184 = { 100.0f, 1500.0f, 0.0f };
+
                 Matrix_MultVec3f(&D_80126184, &this->unk_3C8);
 
                 if (heldActor != NULL) {
+                    static Vec3f D_80126190 = { 100.0f, 1640.0f, 0.0f };
                     MtxF sp44;
                     s32 pad;
 
@@ -1622,6 +1668,17 @@ void Player_PostLimbDrawGameplay(PlayState* play, s32 limbIndex, Gfx** dList, Ve
         if (limbIndex == PLAYER_LIMB_SHEATH) {
             if ((this->rightHandType != PLAYER_MODELTYPE_RH_SHIELD) &&
                 (this->rightHandType != PLAYER_MODELTYPE_RH_FF)) {
+                // Coordinates of the shield quad collider vertices, in the sheath limb's own model space.
+                static Vec3f sSheathLimbModelShieldQuadVertices[] = {
+                    { -3000.0f, -3000.0f, -900.0f },
+                    { 3000.0f, -3000.0f, -900.0f },
+                    { -3000.0f, 3000.0f, -900.0f },
+                    { 3000.0f, 3000.0f, -900.0f },
+                };
+                // Position and rotation of the shield on Link's back, in the sheath limb's own model space.
+                static Vec3f sSheathLimbModelShieldOnBackPos = { 630.0f, 100.0f, -30.0f };
+                static Vec3s sSheathLimbModelShieldOnBackZyxRot = { 0, 0, 0x7FFF };
+
                 if (Player_IsChildWithHylianShield(this)) {
                     Player_UpdateShieldCollider(play, this, &this->shieldQuad, sSheathLimbModelShieldQuadVertices);
                 }
@@ -1632,6 +1689,11 @@ void Player_PostLimbDrawGameplay(PlayState* play, s32 limbIndex, Gfx** dList, Ve
         } else if (limbIndex == PLAYER_LIMB_HEAD) {
             Matrix_MultVec3f(&sPlayerFocusHeadLimbModelPos, &this->actor.focus.pos);
         } else {
+            // Position of Link's foot, in the foot limb's own model space.
+            static Vec3f sLeftRightFootLimbModelFootPos[] = {
+                { 200.0f, 300.0f, 0.0f },
+                { 200.0f, 200.0f, 0.0f },
+            };
             Vec3f* footPos = &sLeftRightFootLimbModelFootPos[((void)0, gSaveContext.save.linkAge)];
 
             // The same model position is used for both feet,
@@ -1648,11 +1710,11 @@ u32 Player_InitPauseDrawData(PlayState* play, u8* segment, SkelAnime* skelAnime)
 
     size = gObjectTable[OBJECT_GAMEPLAY_KEEP].vromEnd - gObjectTable[OBJECT_GAMEPLAY_KEEP].vromStart;
     ptr = segment + PAUSE_EQUIP_BUFFER_SIZE;
-    DmaMgr_RequestSyncDebug(ptr, gObjectTable[OBJECT_GAMEPLAY_KEEP].vromStart, size, "../z_player_lib.c", 2982);
+    DMA_REQUEST_SYNC(ptr, gObjectTable[OBJECT_GAMEPLAY_KEEP].vromStart, size, "../z_player_lib.c", 2982);
 
     size = gObjectTable[linkObjectId].vromEnd - gObjectTable[linkObjectId].vromStart;
     ptr = segment + PAUSE_EQUIP_BUFFER_SIZE + PAUSE_PLAYER_SEGMENT_GAMEPLAY_KEEP_BUFFER_SIZE;
-    DmaMgr_RequestSyncDebug(ptr, gObjectTable[linkObjectId].vromStart, size, "../z_player_lib.c", 2988);
+    DMA_REQUEST_SYNC(ptr, gObjectTable[linkObjectId].vromStart, size, "../z_player_lib.c", 2988);
 
     ptr = (void*)ALIGN16((uintptr_t)ptr + size);
 
@@ -1728,12 +1790,10 @@ void Player_DrawPauseImpl(PlayState* play, void* gameplayKeep, void* linkObject,
     Gfx* opaRef;
     Gfx* xluRef;
     u16 perspNorm;
-    Mtx* perspMtx = Graph_Alloc(play->state.gfxCtx, sizeof(Mtx));
-    Mtx* lookAtMtx = Graph_Alloc(play->state.gfxCtx, sizeof(Mtx));
+    Mtx* perspMtx = GRAPH_ALLOC(play->state.gfxCtx, sizeof(Mtx));
+    Mtx* lookAtMtx = GRAPH_ALLOC(play->state.gfxCtx, sizeof(Mtx));
 
     OPEN_DISPS(play->state.gfxCtx, "../z_player_lib.c", 3129);
-
-    { s32 pad[2]; }
 
     opaRef = POLY_OPA_DISP;
     POLY_OPA_DISP++;
@@ -1743,6 +1803,8 @@ void Player_DrawPauseImpl(PlayState* play, void* gameplayKeep, void* linkObject,
 
     gSPDisplayList(WORK_DISP++, POLY_OPA_DISP);
     gSPDisplayList(WORK_DISP++, POLY_XLU_DISP);
+
+    { s32 pad[2]; }
 
     gSPSegment(POLY_OPA_DISP++, 0x00, NULL);
 
@@ -1809,8 +1871,8 @@ void Player_DrawPauseImpl(PlayState* play, void* gameplayKeep, void* linkObject,
 
     gSPSegment(POLY_OPA_DISP++, 0x0C, gCullBackDList);
 
-    Player_DrawImpl(play, skelAnime->skeleton, skelAnime->jointTable, skelAnime->dListCount, 0, tunic, boots, 0,
-                    Player_OverrideLimbDrawPause, NULL, &playerSwordAndShield);
+    Player_DrawImpl(play, skelAnime->skeleton, skelAnime->jointTable, skelAnime->dListCount, 0, tunic, boots,
+                    PLAYER_FACE_NEUTRAL, Player_OverrideLimbDrawPause, NULL, &playerSwordAndShield);
 
     gSPEndDisplayList(POLY_OPA_DISP++);
     gSPEndDisplayList(POLY_XLU_DISP++);
