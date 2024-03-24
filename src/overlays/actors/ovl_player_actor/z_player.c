@@ -353,7 +353,7 @@ void Player_Action_80850E84(Player* this, PlayState* play);
 void Player_Action_CsAction(Player* this, PlayState* play);
 
 static s32 D_80858AA0;
-static s32 sSavedCurrentMask; // See usage in `Player_ActionChange_TryTalking` for details
+static s32 sSavedCurrentMask; // See usage in `Player_ActionChange_HandleTalking` for details
 static Vec3f sInteractWallCheckResult;
 static Input* sControlInput;
 
@@ -3778,7 +3778,7 @@ s32 Player_ActionChange_0(Player* this, PlayState* play);
 s32 Player_ActionChange_1(Player* this, PlayState* play);
 s32 Player_ActionChange_2(Player* this, PlayState* play);
 s32 Player_ActionChange_3(Player* this, PlayState* play);
-s32 Player_ActionChange_TryTalking(Player* this, PlayState* play);
+s32 Player_ActionChange_HandleTalking(Player* this, PlayState* play);
 s32 Player_ActionChange_5(Player* this, PlayState* play);
 s32 Player_ActionChange_6(Player* this, PlayState* play);
 s32 Player_ActionChange_7(Player* this, PlayState* play);
@@ -3794,7 +3794,7 @@ static s32 (*sActionChangeFuncs[])(Player* this, PlayState* play) = {
     /* PLAYER_ACTION_CHG_1  */ Player_ActionChange_1,
     /* PLAYER_ACTION_CHG_2  */ Player_ActionChange_2,
     /* PLAYER_ACTION_CHG_3  */ Player_ActionChange_3,
-    /* PLAYER_ACTION_CHG_4  */ Player_ActionChange_TryTalking,
+    /* PLAYER_ACTION_CHG_4  */ Player_ActionChange_HandleTalking,
     /* PLAYER_ACTION_CHG_5  */ Player_ActionChange_5,
     /* PLAYER_ACTION_CHG_6  */ Player_ActionChange_6,
     /* PLAYER_ACTION_CHG_7  */ Player_ActionChange_7,
@@ -5638,7 +5638,7 @@ s32 Player_ActionChange_13(Player* this, PlayState* play) {
     return 0;
 }
 
-s32 Player_ActionChange_TryTalking(Player* this, PlayState* play) {
+s32 Player_ActionChange_HandleTalking(Player* this, PlayState* play) {
     Actor* talkOfferActor = this->talkActor;
     Actor* lockOnActor = this->unk_664;
     Actor* cUpTalkActor = NULL;
@@ -5673,7 +5673,7 @@ s32 Player_ActionChange_TryTalking(Player* this, PlayState* play) {
     }
 
     if ((talkOfferActor != NULL) || (cUpTalkActor != NULL)) {
-        // Cannot talk if locked on and the actor is different from `talkOfferActor` or `cUpTalkActor`.
+        // Cannot talk if locked onto an actor that is different from `talkOfferActor` or `cUpTalkActor`.
         if ((lockOnActor == NULL) || (lockOnActor == talkOfferActor) || (lockOnActor == cUpTalkActor)) {
             // Cannot talk if carrying an actor, unless it is the actor that is being carried 
             // (or if a navi talk is being forced).
@@ -5686,16 +5686,16 @@ s32 Player_ActionChange_TryTalking(Player* this, PlayState* play) {
                     (func_808332B8(this) && !(this->stateFlags2 & PLAYER_STATE2_10))) {
 
                     if (talkOfferActor != NULL) {
-                        // At this point if all the above conditions are met, the talk offer can be accepted
-                        // (and "Speak" or "Check" will appear on the A button in the HUD)
+                        // At this point if all the above conditions are met, the talk offer is able to be accepted
+                        // and "Speak" or "Check" will appear on the A button in the HUD.
                         this->stateFlags2 |= PLAYER_STATE2_CAN_ACCEPT_TALK_OFFER;
 
                         // If either the A button is pressed, or the talk offer actor has `ACTOR_FLAG_16` set,
-                        // the talk offer has been accepted
+                        // the talk offer has been accepted.
                         if (CHECK_BTN_ALL(sControlInput->press.button, BTN_A) ||
                             (talkOfferActor->flags & ACTOR_FLAG_16)) {
-                            // clearing `cUpTalkActor` gurantees that `talkOfferActor` is the actor that will be talked
-                            // to
+                            // clearing `cUpTalkActor` gurantees that `talkOfferActor` is 
+                            // the actor that will be talked to.
                             cUpTalkActor = NULL;
                         } else if (cUpTalkActor == NULL) {
                             return 0;
@@ -8323,7 +8323,7 @@ s32 func_808428D8(Player* this, PlayState* play) {
 }
 
 int func_80842964(Player* this, PlayState* play) {
-    return Player_ActionChange_13(this, play) || Player_ActionChange_TryTalking(this, play) ||
+    return Player_ActionChange_13(this, play) || Player_ActionChange_HandleTalking(this, play) ||
            Player_ActionChange_2(this, play);
 }
 
@@ -9559,7 +9559,7 @@ void Player_Action_80845CA4(Player* this, PlayState* play) {
                 Camera_SetFinishedFlag(Play_GetCamera(play, CAM_ID_MAIN));
                 func_80845C68(play, gSaveContext.respawn[RESPAWN_MODE_DOWN].data);
 
-                if (!Player_ActionChange_TryTalking(this, play)) {
+                if (!Player_ActionChange_HandleTalking(this, play)) {
                     func_8083CF5C(this, play);
                 }
             }
@@ -11223,7 +11223,7 @@ void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
         sUseHeldItem = sHeldItemButtonIsHeldDown = 0;
 
         // Save the currently worn mask before the action function runs for this frame.
-        // See usage in `Player_ActionChange_TryTalking` for details.
+        // See usage in `Player_ActionChange_HandleTalking` for details.
         sSavedCurrentMask = this->currentMask;
 
         if (!(this->stateFlags3 & PLAYER_STATE3_2)) {
@@ -12548,7 +12548,7 @@ void Player_Action_8084CC98(Player* this, PlayState* play) {
     this->yaw = this->actor.shape.rot.y = rideActor->actor.shape.rot.y;
 
     if ((this->csAction != PLAYER_CSACTION_NONE) ||
-        (!func_8083224C(play) && ((rideActor->actor.speed != 0.0f) || !Player_ActionChange_TryTalking(this, play)) &&
+        (!func_8083224C(play) && ((rideActor->actor.speed != 0.0f) || !Player_ActionChange_HandleTalking(this, play)) &&
          !Player_ActionChange_6(this, play))) {
         if (D_808535E0 == 0) {
             if (this->av1.actionVar1 != 0) {
@@ -15108,7 +15108,7 @@ void func_80852944(PlayState* play, Player* this, CsCmdActorCue* cue) {
         func_80832340(play, this);
     } else {
         func_8083C148(this, play);
-        if (!Player_ActionChange_TryTalking(this, play)) {
+        if (!Player_ActionChange_HandleTalking(this, play)) {
             Player_ActionChange_2(this, play);
         }
     }
