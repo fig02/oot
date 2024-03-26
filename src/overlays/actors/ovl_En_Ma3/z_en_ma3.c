@@ -77,7 +77,7 @@ u16 EnMa3_GetTextId(PlayState* play, Actor* thisx) {
 
     if (GET_EVENTINF(EVENTINF_HORSES_0A)) {
         gSaveContext.timerSeconds = gSaveContext.timerSeconds;
-        thisx->flags |= ACTOR_FLAG_16;
+        thisx->flags |= ACTOR_FLAG_TALK_UNPROMPTED;
 
         if (((void)0, gSaveContext.timerSeconds) > 210) {
             return 0x208E;
@@ -155,7 +155,7 @@ s16 EnMa3_UpdateTalkState(PlayState* play, Actor* thisx) {
                     FALLTHROUGH;
                 case 0x208E:
                     CLEAR_EVENTINF(EVENTINF_HORSES_0A);
-                    thisx->flags &= ~ACTOR_FLAG_16;
+                    thisx->flags &= ~ACTOR_FLAG_TALK_UNPROMPTED;
                     talkState = NPC_TALK_STATE_IDLE;
                     gSaveContext.timerState = TIMER_STATE_STOP;
                     break;
@@ -282,7 +282,7 @@ void EnMa3_Destroy(Actor* thisx, PlayState* play) {
 
 void func_80AA3200(EnMa3* this, PlayState* play) {
     if (this->interactInfo.talkState == NPC_TALK_STATE_ACTION) {
-        this->actor.flags &= ~ACTOR_FLAG_16;
+        this->actor.flags &= ~ACTOR_FLAG_TALK_UNPROMPTED;
         this->interactInfo.talkState = NPC_TALK_STATE_IDLE;
     }
 }

@@ -190,14 +190,16 @@ typedef struct {
 // 
 #define ACTOR_FLAG_15 (1 << 15)
 
-// 
-#define ACTOR_FLAG_16 (1 << 16)
+// Forces player to accept a Talk Offer without needing to press the A button.
+// Player still has to meet all conditions to be able to accept a talk offer (for example, being in range).
+#define ACTOR_FLAG_TALK_UNPROMPTED (1 << 16)
 
 // 
 #define ACTOR_FLAG_17 (1 << 17)
 
-// 
-#define ACTOR_FLAG_18 (1 << 18)
+// When locked onto an actor with this flag set, the C Up button can be used to talk to this actor.
+// A Navi button will also appear on the HUD.
+#define ACTOR_FLAG_TALK_WITH_C_UP (1 << 18)
 
 // 
 #define ACTOR_FLAG_19 (1 << 19)

@@ -324,9 +324,9 @@ void EnHintnuts_BeginFreeze(EnHintnuts* this, PlayState* play) {
 void EnHintnuts_CheckProximity(EnHintnuts* this, PlayState* play) {
     if (this->actor.category != ACTORCAT_ENEMY) {
         if ((this->collider.base.ocFlags1 & OC1_HIT) || this->actor.isTargeted) {
-            this->actor.flags |= ACTOR_FLAG_16;
+            this->actor.flags |= ACTOR_FLAG_TALK_UNPROMPTED;
         } else {
-            this->actor.flags &= ~ACTOR_FLAG_16;
+            this->actor.flags &= ~ACTOR_FLAG_TALK_UNPROMPTED;
         }
         if (this->actor.xzDistToPlayer < 130.0f) {
             this->actor.textId = this->textIdCopy;
@@ -377,7 +377,7 @@ void EnHintnuts_Run(EnHintnuts* this, PlayState* play) {
                fabsf(this->actor.world.pos.y - this->actor.home.pos.y) < 2.0f) {
         this->actor.speed = 0.0f;
         if (this->actor.category == ACTORCAT_BG) {
-            this->actor.flags &= ~(ACTOR_FLAG_0 | ACTOR_FLAG_3 | ACTOR_FLAG_16);
+            this->actor.flags &= ~(ACTOR_FLAG_0 | ACTOR_FLAG_3 | ACTOR_FLAG_TALK_UNPROMPTED);
             this->actor.flags |= ACTOR_FLAG_0 | ACTOR_FLAG_2;
             Actor_ChangeCategory(play, &play->actorCtx, &this->actor, ACTORCAT_ENEMY);
         }

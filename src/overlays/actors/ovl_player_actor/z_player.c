@@ -5645,10 +5645,10 @@ s32 Player_ActionChange_HandleTalking(Player* this, PlayState* play) {
     s32 forceTalkToNavi = false;
     s32 canTalkToLockOnWithCUp;
 
-    // If the locked on actor has `ACTOR_FLAG_18` set, or has a navi enemy id, the conversation can
+    // If the locked on actor has `ACTOR_FLAG_TALK_WITH_C_UP` set, or has a navi enemy id, the conversation can
     // be triggered by pressing the C-Up button (and a Navi button will appear on the HUD)
     canTalkToLockOnWithCUp =
-        (lockOnActor != NULL) && (CHECK_FLAG_ALL(lockOnActor->flags, ACTOR_FLAG_0 | ACTOR_FLAG_18) ||
+        (lockOnActor != NULL) && (CHECK_FLAG_ALL(lockOnActor->flags, ACTOR_FLAG_0 | ACTOR_FLAG_TALK_WITH_C_UP) ||
                                   (lockOnActor->naviEnemyId != NAVI_ENEMY_NONE));
 
     if (canTalkToLockOnWithCUp || (this->naviTextId != 0)) {
@@ -5660,7 +5660,7 @@ s32 Player_ActionChange_HandleTalking(Player* this, PlayState* play) {
             cUpTalkActor = this->naviActor;
 
             if (forceTalkToNavi) {
-                // clearing both pointers gurantees that `cUpTalkActor` will take priority in the event that
+                // Clearing these pointers gurantees that `cUpTalkActor` will take priority in the event that
                 // `forceTalkToNavi` is true.
                 lockOnActor = NULL;
                 talkOfferActor = NULL;
@@ -5681,7 +5681,7 @@ s32 Player_ActionChange_HandleTalking(Player* this, PlayState* play) {
         if (this->stateFlags1 & PLAYER_STATE1_11) {
             if ((this->heldActor == NULL) ||
                 (!forceTalkToNavi && (talkOfferActor != this->heldActor) && (cUpTalkActor != this->heldActor) &&
-                 ((talkOfferActor == NULL) || !(talkOfferActor->flags & ACTOR_FLAG_16)))) {
+                 ((talkOfferActor == NULL) || !(talkOfferActor->flags & ACTOR_FLAG_TALK_UNPROMPTED)))) {
                 // Cannot talk if currently carrying another actor, unless:
                 // 1) The carried actor is the actor trying to talk
                 // or
@@ -5707,9 +5707,10 @@ s32 Player_ActionChange_HandleTalking(Player* this, PlayState* play) {
             // "Speak" or "Check" will appear on the A button in the HUD.
             this->stateFlags2 |= PLAYER_STATE2_CAN_ACCEPT_TALK_OFFER;
 
-            // If either the A button is pressed, or the talk offer actor has `ACTOR_FLAG_16` set,
+            // If either the A button is pressed, or the talk offer actor has `ACTOR_FLAG_TALK_UNPROMPTED` set,
             // the talk offer has been accepted.
-            if (CHECK_BTN_ALL(sControlInput->press.button, BTN_A) || (talkOfferActor->flags & ACTOR_FLAG_16)) {
+            if (CHECK_BTN_ALL(sControlInput->press.button, BTN_A) ||
+                (talkOfferActor->flags & ACTOR_FLAG_TALK_UNPROMPTED)) {
                 // Clearing `cUpTalkActor` gurantees that `talkOfferActor` is the actor that will be spoken to.
                 cUpTalkActor = NULL;
             } else if (cUpTalkActor == NULL) {
@@ -5740,12 +5741,12 @@ s32 Player_ActionChange_HandleTalking(Player* this, PlayState* play) {
 
         // `sSavedCurrentMask` saves the worn mask just before the current action runs on this frame.
         // This saved mask value is then restored just before starting a conversation.
-        // This is done to handle an edge case where a conversation is started on the same frame that 
+        // This is done to handle an edge case where a conversation is started on the same frame that
         // a C button was pressed to take a mask on or off.
-        // Because of the actor update order relative to Player, the text ID being offered comes from the previous frame.
-        // If a mask was taken on or off this frame, the actor offering to talk would not have had a chance to see this
-        // state change and offer a new, more appropriate text ID.
-        // This is especially important to prevent adverse behavior with regards to mask trading.
+        // Because of the actor update order relative to Player, the text ID being offered comes from the previous
+        // frame. If a mask was taken on or off this frame, the actor offering to talk would not have had a chance to
+        // see this state change and offer a new, more appropriate text ID. This is especially important to prevent
+        // adverse behavior with regards to mask trading.
         this->currentMask = sSavedCurrentMask;
 
         Player_StartTalking(play, talkOfferActor);
@@ -5776,7 +5777,7 @@ s32 Player_ActionChange_0(Player* this, PlayState* play) {
         return 1;
     }
 
-    if ((this->unk_664 != NULL) && (CHECK_FLAG_ALL(this->unk_664->flags, ACTOR_FLAG_0 | ACTOR_FLAG_18) ||
+    if ((this->unk_664 != NULL) && (CHECK_FLAG_ALL(this->unk_664->flags, ACTOR_FLAG_0 | ACTOR_FLAG_TALK_WITH_C_UP) ||
                                     (this->unk_664->naviEnemyId != NAVI_ENEMY_NONE))) {
         this->stateFlags2 |= PLAYER_STATE2_CAN_TALK_TO_NAVI;
     } else if ((this->naviTextId == 0) && !func_8008E9C4(this) && CHECK_BTN_ALL(sControlInput->press.button, BTN_CUP) &&
@@ -15309,19 +15310,29 @@ s32 Player_InflictDamage(PlayState* play, s32 damage) {
     return 0;
 }
 
+/**
+ * Initialize the process for talking to an actor.
+ * This function does not concern trading exchange items.
+ * For item exchanges see relevant code in `Player_ActionChange_13` and `Player_Action_8084F104`.
+ */
 void Player_StartTalking(PlayState* play, Actor* actor) {
     Player* this = GET_PLAYER(play);
     s32 pad;
 
     if ((this->talkActor != NULL) || (actor == this->naviActor) ||
-        CHECK_FLAG_ALL(actor->flags, ACTOR_FLAG_0 | ACTOR_FLAG_18)) {
+        CHECK_FLAG_ALL(actor->flags, ACTOR_FLAG_0 | ACTOR_FLAG_TALK_WITH_C_UP)) {
         actor->flags |= ACTOR_FLAG_TALK;
     }
 
+    // At this point, `talkActor` now represents the actor currently being spoken to, not the actor offering to talk
     this->talkActor = actor;
+
+    // No exchange item, normal talk
     this->exchangeItemId = EXCH_ITEM_NONE;
 
     if (actor->textId == 0xFFFF) {
+        // Player will stand and look at the actor with no text appearing.
+        // This is useful for delaying text for other actions to occur during a cutscene.
         Player_SetCsActionWithHaltedActors(play, actor, PLAYER_CSACTION_1);
         actor->flags |= ACTOR_FLAG_TALK;
         func_80832528(play, this);

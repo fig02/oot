@@ -347,9 +347,9 @@ void EnDns_Idle(EnDns* this, PlayState* play) {
         this->actionFunc = EnDns_Talk;
     } else {
         if ((this->collider.base.ocFlags1 & OC1_HIT) || this->actor.isTargeted) {
-            this->actor.flags |= ACTOR_FLAG_16;
+            this->actor.flags |= ACTOR_FLAG_TALK_UNPROMPTED;
         } else {
-            this->actor.flags &= ~ACTOR_FLAG_16;
+            this->actor.flags &= ~ACTOR_FLAG_TALK_UNPROMPTED;
         }
         if (this->actor.xzDistToPlayer < 130.0f) {
             Actor_OfferTalkNearColChkInfoCylinder(&this->actor, play);
