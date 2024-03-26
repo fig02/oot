@@ -5643,19 +5643,19 @@ s32 Player_ActionChange_HandleTalking(Player* this, PlayState* play) {
     Actor* lockOnActor = this->unk_664;
     Actor* cUpTalkActor = NULL;
     s32 forceTalkToNavi = false;
-    s32 canTalkToLockonWithCUp;
+    s32 canTalkToLockOnWithCUp;
 
     // If the locked on actor has `ACTOR_FLAG_18` set, or has a navi enemy id, the conversation can
     // be triggered by pressing the C-Up button (and a Navi button will appear on the HUD)
-    canTalkToLockonWithCUp =
+    canTalkToLockOnWithCUp =
         (lockOnActor != NULL) && (CHECK_FLAG_ALL(lockOnActor->flags, ACTOR_FLAG_0 | ACTOR_FLAG_18) ||
                                   (lockOnActor->naviEnemyId != NAVI_ENEMY_NONE));
 
-    if (canTalkToLockonWithCUp || (this->naviTextId != 0)) {
+    if (canTalkToLockOnWithCUp || (this->naviTextId != 0)) {
         // If `naviTextId` is negative and outside the 0x2XX range, talk to navi instantly
         forceTalkToNavi = (this->naviTextId < 0) && ((ABS(this->naviTextId) & 0xFF00) != 0x200);
 
-        if (forceTalkToNavi || !canTalkToLockonWithCUp) {
+        if (forceTalkToNavi || !canTalkToLockOnWithCUp) {
             // If `lockOnActor` can't be talked to with c-up, the only option left is navi.
             cUpTalkActor = this->naviActor;
 
@@ -5666,76 +5666,94 @@ s32 Player_ActionChange_HandleTalking(Player* this, PlayState* play) {
                 talkOfferActor = NULL;
             }
         } else {
-            // Navi is not the talk actor, so the only option left for talking with c-up is `lockOnActor`.
-            // (Though, `lockOnActor` may be NULL at this point).
+            // Navi is not the talk actor, so the only option left for talking with c-up is `lockOnActor`
+            // (though, `lockOnActor` may be NULL at this point).
             cUpTalkActor = lockOnActor;
         }
     }
 
     if ((talkOfferActor != NULL) || (cUpTalkActor != NULL)) {
-        // Cannot talk if locked onto an actor that is different from `talkOfferActor` or `cUpTalkActor`.
-        if ((lockOnActor == NULL) || (lockOnActor == talkOfferActor) || (lockOnActor == cUpTalkActor)) {
-            // Cannot talk if carrying an actor, unless it is the actor that is being carried 
-            // (or if a navi talk is being forced).
-            if (!(this->stateFlags1 & PLAYER_STATE1_11) ||
-                ((this->heldActor != NULL) &&
-                 (forceTalkToNavi || (talkOfferActor == this->heldActor) || (cUpTalkActor == this->heldActor) ||
-                  ((talkOfferActor != NULL) && (talkOfferActor->flags & ACTOR_FLAG_16))))) {
-                // Can only talk if standing on ground, standing idle on a horse, or swimming on the water surface
-                if ((this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) || (this->stateFlags1 & PLAYER_STATE1_23) ||
-                    (func_808332B8(this) && !(this->stateFlags2 & PLAYER_STATE2_10))) {
+        if ((lockOnActor != NULL) && (lockOnActor != talkOfferActor) && (lockOnActor != cUpTalkActor)) {
+            // Cannot talk if currently locked onto an actor that is different from `talkOfferActor` or `cUpTalkActor`
+            goto dont_talk;
+        }
 
-                    if (talkOfferActor != NULL) {
-                        // At this point if all the above conditions are met, the talk offer is able to be accepted
-                        // and "Speak" or "Check" will appear on the A button in the HUD.
-                        this->stateFlags2 |= PLAYER_STATE2_CAN_ACCEPT_TALK_OFFER;
+        if (this->stateFlags1 & PLAYER_STATE1_11) {
+            if ((this->heldActor == NULL) ||
+                (!forceTalkToNavi && (talkOfferActor != this->heldActor) && (cUpTalkActor != this->heldActor) &&
+                 ((talkOfferActor == NULL) || !(talkOfferActor->flags & ACTOR_FLAG_16)))) {
+                // Cannot talk if currently carrying another actor, unless:
+                // 1) The carried actor is the actor trying to talk
+                // or
+                // 2) Navi is forcing a talk interaction
+                // (both of these special cases are concerned with carrying Ruto around in Jabu)
+                goto dont_talk;
+            }
+        }
 
-                        // If either the A button is pressed, or the talk offer actor has `ACTOR_FLAG_16` set,
-                        // the talk offer has been accepted.
-                        if (CHECK_BTN_ALL(sControlInput->press.button, BTN_A) ||
-                            (talkOfferActor->flags & ACTOR_FLAG_16)) {
-                            // clearing `cUpTalkActor` gurantees that `talkOfferActor` is 
-                            // the actor that will be talked to.
-                            cUpTalkActor = NULL;
-                        } else if (cUpTalkActor == NULL) {
-                            return 0;
-                        }
-                    }
+        if (!(this->actor.bgCheckFlags & BGCHECKFLAG_GROUND)) {
+            if (!(this->stateFlags1 & PLAYER_STATE1_23) &&
+                !(func_808332B8(this) && !(this->stateFlags2 & PLAYER_STATE2_10))) {
+                // Cannot talk without standing on the ground, unless:
+                // 1) Currently on a horse
+                // or
+                // 2) Currently floating on the water surface
+                goto dont_talk;
+            }
+        }
 
-                    if (cUpTalkActor != NULL) {
-                        if (!forceTalkToNavi) {
-                            this->stateFlags2 |= PLAYER_STATE2_CAN_TALK_TO_NAVI;
-                        }
+        if (talkOfferActor != NULL) {
+            // At this point the talk offer can be accepted.
+            // "Speak" or "Check" will appear on the A button in the HUD.
+            this->stateFlags2 |= PLAYER_STATE2_CAN_ACCEPT_TALK_OFFER;
 
-                        if (!CHECK_BTN_ALL(sControlInput->press.button, BTN_CUP) && !forceTalkToNavi) {
-                            return 0;
-                        }
+            // If either the A button is pressed, or the talk offer actor has `ACTOR_FLAG_16` set,
+            // the talk offer has been accepted.
+            if (CHECK_BTN_ALL(sControlInput->press.button, BTN_A) || (talkOfferActor->flags & ACTOR_FLAG_16)) {
+                // Clearing `cUpTalkActor` gurantees that `talkOfferActor` is the actor that will be spoken to.
+                cUpTalkActor = NULL;
+            } else if (cUpTalkActor == NULL) {
+                return 0;
+            }
+        }
 
-                        talkOfferActor = cUpTalkActor;
-                        this->talkActor = NULL;
+        if (cUpTalkActor != NULL) {
+            if (!forceTalkToNavi) {
+                this->stateFlags2 |= PLAYER_STATE2_CAN_TALK_TO_NAVI;
+            }
 
-                        if (forceTalkToNavi || !canTalkToLockonWithCUp) {
-                            cUpTalkActor->textId = ABS(this->naviTextId);
-                        } else {
-                            if (cUpTalkActor->naviEnemyId != NAVI_ENEMY_NONE) {
-                                cUpTalkActor->textId = cUpTalkActor->naviEnemyId + 0x600;
-                            }
-                        }
-                    }
+            if (!CHECK_BTN_ALL(sControlInput->press.button, BTN_CUP) && !forceTalkToNavi) {
+                return 0;
+            }
 
-                    // `sSavedCurrentMask` saves the mask currently worn right before `this->actionFunc()` runs on this
-                    // frame. The purpose of this is to restore the current mask value when talking to an actor, if some
-                    // code cleared the current mask value before this function had a chance to run on this frame.
-                    this->currentMask = sSavedCurrentMask;
+            talkOfferActor = cUpTalkActor;
+            this->talkActor = NULL;
 
-                    Player_StartTalking(play, talkOfferActor);
-
-                    return 1;
+            if (forceTalkToNavi || !canTalkToLockOnWithCUp) {
+                cUpTalkActor->textId = ABS(this->naviTextId);
+            } else {
+                if (cUpTalkActor->naviEnemyId != NAVI_ENEMY_NONE) {
+                    cUpTalkActor->textId = cUpTalkActor->naviEnemyId + 0x600;
                 }
             }
         }
+
+        // `sSavedCurrentMask` saves the worn mask just before the current action runs on this frame.
+        // This saved mask value is then restored just before starting a conversation.
+        // This is done to handle an edge case where a conversation is started on the same frame that 
+        // a C button was pressed to take a mask on or off.
+        // Because of the actor update order relative to Player, the text ID being offered comes from the previous frame.
+        // If a mask was taken on or off this frame, the actor offering to talk would not have had a chance to see this
+        // state change and offer a new, more appropriate text ID.
+        // This is especially important to prevent adverse behavior with regards to mask trading.
+        this->currentMask = sSavedCurrentMask;
+
+        Player_StartTalking(play, talkOfferActor);
+
+        return 1;
     }
 
+dont_talk:
     return 0;
 }
 
