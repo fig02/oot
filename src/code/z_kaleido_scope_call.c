@@ -113,13 +113,18 @@ void KaleidoScopeCall_Update(PlayState* play) {
                 sKaleidoScopeUpdateFunc(play);
 
                 if (!IS_PAUSED(&play->pauseCtx)) {
+                    PauseLagData* lag = PAUSE_LAG_GET_CUR(play);
+
                     PRINTF(VT_FGCOL(GREEN));
                     // "Kaleido area Kaleidoscope Emission"
                     PRINTF("カレイド領域 カレイドスコープ排出\n");
                     PRINTF(VT_RST);
 
                     KaleidoManager_ClearOvl(kaleidoScopeOvl);
+                    
+                    lag->cleanup = osGetTime();
                     KaleidoScopeCall_LoadPlayer();
+                    lag->unpauseEnd = osGetTime();
                 }
             }
         }

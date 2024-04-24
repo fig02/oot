@@ -370,6 +370,26 @@ typedef enum {
     /* 3 */ TRANS_TILE_READY // The transition is ready, so will update and draw each frame
 } TransitionTileState;
 
+typedef struct {
+    OSTime pauseStart;
+    OSTime pauseEnd;
+    OSTime unpauseStart;
+    OSTime unpauseEnd;
+    // unpause breakdown
+    OSTime windowClose;
+    OSTime objectsDone;
+    OSTime cleanup;
+    // playerLoaded is the same as unpauseEnd
+} PauseLagData;
+
+typedef struct {
+    u8 index;
+    u8 count;
+    PauseLagData data[2];
+} PauseLagInfo;
+
+#define PAUSE_LAG_GET_CUR(play) &play->pauseLag.data[play->pauseLag.index]
+
 typedef struct PlayState {
     /* 0x00000 */ GameState state;
     /* 0x000A4 */ s16 sceneId;
@@ -449,6 +469,7 @@ typedef struct PlayState {
     /* 0x1242B */ u8 viewpoint; // toggleable camera setting by shops or player. Is also equal to the bgCamIndex + 1
     /* 0x1242C */ SceneTableEntry* loadedScene;
     /* 0x12430 */ char unk_12430[0xE8];
+    PauseLagInfo pauseLag;
 } PlayState; // size = 0x12518
 
 typedef struct {

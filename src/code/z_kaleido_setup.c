@@ -24,6 +24,18 @@ void KaleidoSetup_Update(PlayState* play) {
                 pauseCtx->debugState = 3;
             }
         } else if (CHECK_BTN_ALL(input->press.button, BTN_START)) {
+            PauseLagData* lag; 
+            play->pauseLag.index ^= 1;
+            
+            if (play->pauseLag.count < 2) {
+                play->pauseLag.count++;
+            }
+
+            lag = PAUSE_LAG_GET_CUR(play);
+
+            lag->pauseStart = osGetTime();
+            lag->unpauseStart = 0;
+            lag->unpauseEnd = 0;           
             // The start button was pressed, pause
             gSaveContext.prevHudVisibilityMode = gSaveContext.hudVisibilityMode;
 

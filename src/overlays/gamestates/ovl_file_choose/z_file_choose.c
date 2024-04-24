@@ -1441,7 +1441,7 @@ void FileSelect_FadeOut(GameState* thisx) {
 void FileSelect_LoadGame(GameState* thisx) {
     FileSelectState* this = (FileSelectState*)thisx;
 
-#if OOT_DEBUG
+// #if OOT_DEBUG
     if (this->buttonIndex == FS_BTN_SELECT_FILE_1) {
         Audio_PlaySfxGeneral(NA_SE_SY_FSEL_DECIDE_L, &gSfxDefaultPos, 4, &gSfxDefaultFreqAndVolScale,
                              &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
@@ -1451,7 +1451,7 @@ void FileSelect_LoadGame(GameState* thisx) {
         SET_NEXT_GAMESTATE(&this->state, MapSelect_Init, MapSelectState);
         this->state.running = false;
     } else
-#endif
+// #endif
     {
         Audio_PlaySfxGeneral(NA_SE_SY_FSEL_DECIDE_L, &gSfxDefaultPos, 4, &gSfxDefaultFreqAndVolScale,
                              &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);

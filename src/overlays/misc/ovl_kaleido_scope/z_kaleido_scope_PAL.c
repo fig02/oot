@@ -2622,6 +2622,7 @@ void KaleidoScope_Update(PlayState* play) {
     static s16 D_8082B258 = PAUSE_MAIN_STATE_IDLE;
     static s16 D_8082B25C = 10;
     static s16 D_8082B260 = 0;
+    PauseLagData* lag = PAUSE_LAG_GET_CUR(play);
     PauseContext* pauseCtx = &play->pauseCtx;
     InterfaceContext* interfaceCtx = &play->interfaceCtx;
     GameOverContext* gameOverCtx = &play->gameOverCtx;
@@ -3059,6 +3060,7 @@ void KaleidoScope_Update(PlayState* play) {
 
             if (pauseCtx->state == PAUSE_STATE_MAIN) {
                 KaleidoScope_UpdateNamePanel(play);
+                lag->pauseEnd = osGetTime();
             }
             break;
 
@@ -3066,6 +3068,7 @@ void KaleidoScope_Update(PlayState* play) {
             switch (pauseCtx->mainState) {
                 case PAUSE_MAIN_STATE_IDLE:
                     if (CHECK_BTN_ALL(input->press.button, BTN_START)) {
+                        lag->unpauseStart = osGetTime();
                         Interface_SetDoAction(play, DO_ACTION_NONE);
                         pauseCtx->state = PAUSE_STATE_CLOSING;
                         WREG(2) = -6240;
@@ -3621,7 +3624,10 @@ void KaleidoScope_Update(PlayState* play) {
             R_UPDATE_RATE = 3;
             R_PAUSE_BG_PRERENDER_STATE = PAUSE_BG_PRERENDER_OFF;
 
+            lag->windowClose = osGetTime();
             func_800981B8(&play->objectCtx);
+            lag->objectsDone = osGetTime();
+            
             func_800418D0(&play->colCtx, play);
 
             switch (play->sceneId) {

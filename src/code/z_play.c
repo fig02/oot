@@ -241,6 +241,8 @@ void Play_Init(GameState* thisx) {
     u8 baseSceneLayer;
     s32 pad[2];
 
+    bzero(&this->pauseLag, sizeof(PauseLagInfo));
+
     if (gSaveContext.save.entranceIndex == ENTR_LOAD_OPENING) {
         gSaveContext.save.entranceIndex = 0;
         this->state.running = false;
@@ -1060,6 +1062,129 @@ void Play_DrawOverlayElements(PlayState* this) {
     }
 }
 
+s32 PauseLag_GetDiffMs(OSTime start, OSTime end) {
+    return (OS_CYCLES_TO_USEC((end - start)) / 1000);
+}
+
+s32 PauseLag_GetDiffMsClamped(OSTime start, OSTime end) {
+    s32 ms = PauseLag_GetDiffMs(start, end);
+    ms = CLAMP_MIN(ms, 0);
+
+    return ms;
+}
+
+void PauseLag_PrintDiffText(GfxPrint* printer, s32 val, s32 y) {
+    GfxPrint_SetPos(printer, 25, y);
+
+    if (val <= 0) {
+        GfxPrint_SetColor(printer, 53, 235, 84, 255);
+    } else {
+        GfxPrint_SetColor(printer, 255, 102, 102, 255);
+    }
+
+    GfxPrint_Printf(printer, "%d ms", val);
+}
+
+void PauseLag_Draw(PlayState* this) {
+    PauseLagData* cur = PAUSE_LAG_GET_CUR(this);
+    PauseLagData* prev = &this->pauseLag.data[this->pauseLag.index ^ 1];
+    GraphicsContext* gfxCtx = this->state.gfxCtx;
+    GfxPrint printer;
+    Gfx* gfxRef;
+    Gfx* gfx;
+    s32 pauseMs;
+    s32 unpauseMs;
+
+    OPEN_DISPS(gfxCtx, "../z_play.c", 0);
+
+    pauseMs = PauseLag_GetDiffMsClamped(cur->pauseStart, cur->pauseEnd);
+    unpauseMs = PauseLag_GetDiffMsClamped(cur->unpauseStart, cur->unpauseEnd);
+
+    GfxPrint_Init(&printer);
+
+    gfxRef = POLY_OPA_DISP;
+    gfx = Gfx_Open(gfxRef);
+    gSPDisplayList(OVERLAY_DISP++, gfx);
+
+    GfxPrint_Open(&printer, gfx);
+
+    GfxPrint_SetColor(&printer, 255, 255, 255, 255);
+
+    GfxPrint_SetPos(&printer, 1, 7);
+    GfxPrint_Printf(&printer, "pause time  : %d ms", pauseMs);
+
+    GfxPrint_SetPos(&printer, 1, 8);
+    GfxPrint_Printf(&printer, "unpause time: %d ms", unpauseMs);
+
+    {
+        s32 windowClose = 0;
+        s32 objectsLoaded = 0;
+        s32 cleanup = 0;
+        s32 playerLoaded = 0;
+
+        if (unpauseMs > 0) {
+            windowClose = PauseLag_GetDiffMs(cur->unpauseStart, cur->windowClose);
+            objectsLoaded = PauseLag_GetDiffMs(cur->windowClose, cur->objectsDone);
+            cleanup = PauseLag_GetDiffMs(cur->objectsDone, cur->cleanup);
+            playerLoaded = PauseLag_GetDiffMs(cur->cleanup, cur->unpauseEnd);
+        }
+
+        GfxPrint_SetColor(&printer, 179, 179, 179, 255);
+        GfxPrint_SetPos(&printer, 1, 10);
+        GfxPrint_Printf(&printer, "unpause breakdown");
+
+        GfxPrint_SetColor(&printer, 255, 255, 255, 255);
+
+        GfxPrint_SetPos(&printer, 1, 11);
+        GfxPrint_Printf(&printer, "window close  : %d ms", windowClose);
+
+        GfxPrint_SetPos(&printer, 1, 12);
+        GfxPrint_Printf(&printer, "objects loaded: %d ms", objectsLoaded);
+
+        GfxPrint_SetPos(&printer, 1, 13);
+        GfxPrint_Printf(&printer, "cleanup       : %d ms", cleanup);
+
+        GfxPrint_SetPos(&printer, 1, 14);
+        GfxPrint_Printf(&printer, "player loaded : %d ms", playerLoaded);
+
+        GfxPrint_SetPos(&printer, 25, 7);
+        GfxPrint_Printf(&printer, "dt");
+
+        if (this->pauseLag.count >= 2 && unpauseMs > 0) {
+            s32 prevunpauseMs = PauseLag_GetDiffMs(prev->unpauseStart, prev->unpauseEnd);
+            s32 prevwindowClose = PauseLag_GetDiffMs(prev->unpauseStart, prev->windowClose);
+            s32 prevobjectsLoaded = PauseLag_GetDiffMs(prev->windowClose, prev->objectsDone);
+            s32 prevcleanup = PauseLag_GetDiffMs(prev->objectsDone, prev->cleanup);
+            s32 prevplayerLoaded = PauseLag_GetDiffMs(prev->cleanup, prev->unpauseEnd);
+
+            s32 unpauseDiff = unpauseMs - prevunpauseMs;
+            s32 windowDiff = windowClose - prevwindowClose;
+            s32 objectsDiff = objectsLoaded - prevobjectsLoaded;
+            s32 cleanupDiff = cleanup - prevcleanup;
+            s32 playerDiff = playerLoaded - prevplayerLoaded;
+
+
+            PauseLag_PrintDiffText(&printer, unpauseDiff, 8);
+            PauseLag_PrintDiffText(&printer, windowDiff, 11);
+            PauseLag_PrintDiffText(&printer, objectsDiff, 12);
+            PauseLag_PrintDiffText(&printer, cleanupDiff, 13);
+            PauseLag_PrintDiffText(&printer, playerDiff, 14);
+
+        }
+
+    }
+
+    gfx = GfxPrint_Close(&printer);
+
+    gSPEndDisplayList(gfx++);
+    Gfx_Close(gfxRef, gfx);
+    POLY_OPA_DISP = gfx;
+
+    GfxPrint_Destroy(&printer);
+
+    CLOSE_DISPS(gfxCtx, "../z_play.c", 0);
+}
+
 void Play_Draw(PlayState* this) {
     GraphicsContext* gfxCtx = this->state.gfxCtx;
     Lights* sp228;
@@ -1311,6 +1436,8 @@ void Play_Draw(PlayState* this) {
         if (!OOT_DEBUG || (R_HREG_MODE != HREG_MODE_PLAY) || R_PLAY_DRAW_OVERLAY_ELEMENTS) {
             Play_DrawOverlayElements(this);
         }
+
+        PauseLag_Draw(this);
     }
 
 Play_Draw_skip:
