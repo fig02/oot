@@ -3627,7 +3627,7 @@ void KaleidoScope_Update(PlayState* play) {
             lag->windowClose = osGetTime();
             func_800981B8(&play->objectCtx);
             lag->objectsDone = osGetTime();
-            
+
             func_800418D0(&play->colCtx, play);
 
             switch (play->sceneId) {
