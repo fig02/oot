@@ -13,7 +13,7 @@ NON_MATCHING := 0
 # If ORIG_COMPILER is 1, compile with QEMU_IRIX and the original compiler
 ORIG_COMPILER := 0
 # If COMPILER is "gcc", compile with GCC instead of IDO.
-COMPILER := ido
+COMPILER := gcc
 # Target game version. Currently the following versions are supported:
 #   gc-eu          GameCube Europe/PAL
 #   gc-eu-mq       GameCube Europe/PAL Master Quest
@@ -159,7 +159,7 @@ CFLAGS += $(CPP_DEFINES)
 CPPFLAGS += $(CPP_DEFINES)
 
 ifeq ($(COMPILER),gcc)
-  OPTFLAGS := -Os -ffast-math -fno-unsafe-math-optimizations
+  OPTFLAGS := -Og -ggdb3 -ffast-math -fno-unsafe-math-optimizations
 endif
 
 # TODO PL and DOWHILE should be disabled for non-gamecube

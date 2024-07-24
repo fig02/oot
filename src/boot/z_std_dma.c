@@ -550,31 +550,31 @@ void DmaMgr_Init(void) {
                        (u32)(_dmadataSegmentRomEnd - _dmadataSegmentRomStart));
     PRINTF("dma_rom_ad[]\n");
 
-#if OOT_DEBUG
-    name = sDmaMgrFileNames;
-    iter = gDmaDataTable;
-    idx = 0;
+// #if OOT_DEBUG
+//     name = sDmaMgrFileNames;
+//     iter = gDmaDataTable;
+//     idx = 0;
 
-    // Check if the ROM is compressed (romEnd not 0)
-    sDmaMgrIsRomCompressed = false;
-    while (iter->file.vromEnd != 0) {
-        if (iter->romEnd != 0) {
-            sDmaMgrIsRomCompressed = true;
-        }
+//     // Check if the ROM is compressed (romEnd not 0)
+//     sDmaMgrIsRomCompressed = false;
+//     while (iter->file.vromEnd != 0) {
+//         if (iter->romEnd != 0) {
+//             sDmaMgrIsRomCompressed = true;
+//         }
 
-        PRINTF("%3d %08x %08x %08x %08x %08x %c %s\n", idx, iter->file.vromStart, iter->file.vromEnd, iter->romStart,
-               iter->romEnd,
-               (iter->romEnd != 0) ? iter->romEnd - iter->romStart : iter->file.vromEnd - iter->file.vromStart,
-               (((iter->romEnd != 0) ? iter->romEnd - iter->romStart : 0) > 0x10000) ? '*' : ' ', name ? *name : "");
+//         PRINTF("%3d %08x %08x %08x %08x %08x %c %s\n", idx, iter->file.vromStart, iter->file.vromEnd, iter->romStart,
+//                iter->romEnd,
+//                (iter->romEnd != 0) ? iter->romEnd - iter->romStart : iter->file.vromEnd - iter->file.vromStart,
+//                (((iter->romEnd != 0) ? iter->romEnd - iter->romStart : 0) > 0x10000) ? '*' : ' ', name ? *name : "");
 
-        idx++;
-        iter++;
+//         idx++;
+//         iter++;
 
-        if (name != NULL) {
-            name++;
-        }
-    }
-#endif
+//         if (name != NULL) {
+//             name++;
+//         }
+//     }
+// #endif
 
     // Ensure that the boot segment always follows after the makerom segment.
     if ((uintptr_t)_bootSegmentRomStart != gDmaDataTable[0].file.vromEnd) {
