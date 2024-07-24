@@ -11,5 +11,5 @@
 /* 0x34 */ PADDING(7)
 /* 0x3B */ MEDIUM(CARTRIDGE)
 /* 0x3C */ GAME_ID("ZL")
-/* 0x3E */ REGION(PAL)
+/* 0x3E */ REGION(US)
 /* 0x3F */ GAME_REVISION(15)
