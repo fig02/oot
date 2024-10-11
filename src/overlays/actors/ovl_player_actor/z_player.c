@@ -13981,6 +13981,7 @@ static BottleCatchInfo sBottleCatchInfo[] = {
 void Player_Action_SwingBottle(Player* this, PlayState* play) {
     // `actionVar2` has two seperate uses within the same action.
     // After it is used as `inWater` here, it will be used for `startedTextbox` below.
+    // The two usages will never overlap, so this won't cause any issues.
     BottleSwingInfo* swingEntry = &sBottleSwingInfo[this->av2.inWater];
 
     Player_DecelerateToZero(this);
