@@ -6581,7 +6581,7 @@ typedef struct BottleSwingInfo {
 } BottleSwingInfo; // size = 0x0C
 
 static BottleSwingInfo sBottleSwingInfo[] = {
-    { &gPlayerAnim_link_bottle_bug_miss, &gPlayerAnim_link_bottle_bug_in, 2, 3 }, // on land
+    { &gPlayerAnim_link_bottle_bug_miss, &gPlayerAnim_link_bottle_bug_in, 2, 3 },   // on land
     { &gPlayerAnim_link_bottle_fish_miss, &gPlayerAnim_link_bottle_fish_in, 5, 3 }, // in water
 };
 
@@ -6594,8 +6594,7 @@ s32 func_8083C6B8(PlayState* play, Player* this) {
                 this->av2.inWater = true;
             }
 
-            Player_AnimPlayOnceAdjusted(
-                play, this, sBottleSwingInfo[this->av2.inWater].missAnimation);
+            Player_AnimPlayOnceAdjusted(play, this, sBottleSwingInfo[this->av2.inWater].missAnimation);
 
             Player_PlaySfx(this, NA_SE_IT_SWORD_SWING);
             Player_PlayVoiceSfx(this, NA_SE_VO_LI_AUTO_JUMP);
@@ -13978,7 +13977,7 @@ void Player_Action_8084EAC0(Player* this, PlayState* play) {
 }
 
 typedef enum BottleCatchType {
-    BOTTLE_CATCH_NONE, // This type does not have an associated entry in `sBottleCatchInfo`.
+    BOTTLE_CATCH_NONE, // This type does not have an associated entry in `sBottleCatchInfo`
     BOTTLE_CATCH_FAIRY,
     BOTTLE_CATCH_FISH,
     BOTTLE_CATCH_BLUE_FIRE,
@@ -13993,14 +13992,14 @@ typedef struct BottleCatchInfo {
 } BottleCatchInfo; // size = 0x06
 
 static BottleCatchInfo sBottleCatchInfo[] = {
-    { ACTOR_EN_ELF, ITEM_BOTTLE_FAIRY, PLAYER_IA_BOTTLE_FAIRY, 0x46 }, // BOTTLE_CATCH_FAIRY
-    { ACTOR_EN_FISH, ITEM_BOTTLE_FISH, PLAYER_IA_BOTTLE_FISH, 0x47 }, // BOTTLE_CATCH_FISH
+    { ACTOR_EN_ELF, ITEM_BOTTLE_FAIRY, PLAYER_IA_BOTTLE_FAIRY, 0x46 },         // BOTTLE_CATCH_FAIRY
+    { ACTOR_EN_FISH, ITEM_BOTTLE_FISH, PLAYER_IA_BOTTLE_FISH, 0x47 },          // BOTTLE_CATCH_FISH
     { ACTOR_EN_ICE_HONO, ITEM_BOTTLE_BLUE_FIRE, PLAYER_IA_BOTTLE_FIRE, 0x5D }, // BOTTLE_CATCH_BLUE_FIRE
-    { ACTOR_EN_INSECT, ITEM_BOTTLE_BUG, PLAYER_IA_BOTTLE_BUG, 0x7A }, // BOTTLE_CATCH_BUGS
+    { ACTOR_EN_INSECT, ITEM_BOTTLE_BUG, PLAYER_IA_BOTTLE_BUG, 0x7A },          // BOTTLE_CATCH_BUGS
 };
 
 void Player_Action_SwingBottle(Player* this, PlayState* play) {
-    // `actionVar2` has two seperate uses within the same action. 
+    // `actionVar2` has two seperate uses within the same action.
     // After it is used as `inWater` here, it will be used for `startedTextbox` below.
     BottleSwingInfo* swingEntry = &sBottleSwingInfo[this->av2.inWater];
 
@@ -14028,7 +14027,7 @@ void Player_Action_SwingBottle(Player* this, PlayState* play) {
                 // Play water scoop sound on the first active frame, if applicable
                 Player_PlaySfx(this, NA_SE_IT_SCOOP_UP_WATER);
             }
-            
+
             // `interactRangeActor` will be set by the Get Item system.
             // See `Actor_OfferGetItem`.
             if (this->interactRangeActor != NULL) {
@@ -14049,7 +14048,7 @@ void Player_Action_SwingBottle(Player* this, PlayState* play) {
                     this->av2.startedTextbox = false;
                     this->stateFlags1 |= PLAYER_STATE1_28 | PLAYER_STATE1_29;
                     this->interactRangeActor->parent = &this->actor;
-                    
+
                     Player_UpdateBottleHeld(play, this, catchInfo->itemId, ABS(catchInfo->itemAction));
                     Player_AnimPlayOnceAdjusted(play, this, swingEntry->catchAnimation);
                     func_80835EA4(play, 4);
