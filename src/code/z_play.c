@@ -278,7 +278,7 @@ void Play_Init(GameState* thisx) {
         return;
     }
 
-#if OOT_DEBUG
+#if OOT_DEBUG && PLATFORM_GC
     SystemArena_Display();
 #endif
 
@@ -468,7 +468,7 @@ void Play_Init(GameState* thisx) {
     PRINTF(T("ゼルダヒープ %08x-%08x\n", "Zelda Heap %08x-%08x\n"), zAllocAligned,
            (u8*)zAllocAligned + zAllocSize - (s32)(zAllocAligned - zAlloc));
 
-#if OOT_DEBUG
+#if OOT_DEBUG && PLATFORM_GC
     Fault_AddClient(&D_801614B8, ZeldaArena_Display, NULL, NULL);
 #endif
 
@@ -525,10 +525,12 @@ void Play_Update(PlayState* this) {
     s32 pad1;
 
 #if OOT_DEBUG
+#if PLATFORM_GC
     if ((SREG(1) < 0) || (DREG(0) != 0)) {
         SREG(1) = 0;
         ZeldaArena_Display();
     }
+#endif
 
     if ((R_HREG_MODE == HREG_MODE_PRINT_OBJECT_TABLE) && (R_PRINT_OBJECT_TABLE_TRIGGER < 0)) {
         u32 i;

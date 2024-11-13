@@ -4012,7 +4012,7 @@ void Interface_Update(PlayState* play) {
     s16 risingAlpha;
     u16 action;
 
-#if OOT_DEBUG
+#if OOT_DEBUG && OOT_PAL
     {
         Input* debugInput = &play->state.input[2];
 

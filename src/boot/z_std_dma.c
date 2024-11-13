@@ -339,7 +339,7 @@ const char* DmaMgr_FindFileName(uintptr_t vrom) {
 #endif
 
 const char* DmaMgr_GetFileName(uintptr_t vrom) {
-#if OOT_DEBUG
+#if OOT_DEBUG && PLATFORM_GC
     const char* ret = DmaMgr_FindFileName(vrom);
 
     if (ret == NULL) {

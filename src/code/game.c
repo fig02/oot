@@ -77,54 +77,61 @@ void func_800C4344(GameState* gameState) {
     if (D_80121212 != 0) {
         func_801C7E78();
     }
-#elif OOT_DEBUG
-    Input* selectedInput;
-    s32 hexDumpSize;
-    u16 inputCompareValue;
+#endif
 
-    if (R_HREG_MODE == HREG_MODE_HEAP_FREE_BLOCK_TEST) {
-        __osMalloc_FreeBlockTest_Enable = R_HEAP_FREE_BLOCK_TEST_TOGGLE;
-    }
+#if OOT_DEBUG
+    {
+        Input* selectedInput;
+        s32 hexDumpSize;
+        u16 inputCompareValue;
 
-    if (R_HREG_MODE == HREG_MODE_INPUT_TEST) {
-        selectedInput =
-            &gameState->input[(u32)R_INPUT_TEST_CONTROLLER_PORT < MAXCONTROLLERS ? R_INPUT_TEST_CONTROLLER_PORT : 0];
+#if PLATFORM_GC
+        if (R_HREG_MODE == HREG_MODE_HEAP_FREE_BLOCK_TEST) {
+            __osMalloc_FreeBlockTest_Enable = R_HEAP_FREE_BLOCK_TEST_TOGGLE;
+        }
+#endif
 
-        inputCompareValue = R_INPUT_TEST_COMPARE_VALUE;
-        R_INPUT_TEST_BUTTON_CUR = selectedInput->cur.button;
-        R_INPUT_TEST_BUTTON_PRESS = selectedInput->press.button;
-        R_INPUT_TEST_REL_STICK_X = selectedInput->rel.stick_x;
-        R_INPUT_TEST_REL_STICK_Y = selectedInput->rel.stick_y;
-        R_INPUT_TEST_REL_STICK_X_2 = selectedInput->rel.stick_x;
-        R_INPUT_TEST_REL_STICK_Y_2 = selectedInput->rel.stick_y;
-        R_INPUT_TEST_CUR_STICK_X = selectedInput->cur.stick_x;
-        R_INPUT_TEST_CUR_STICK_Y = selectedInput->cur.stick_y;
-        R_INPUT_TEST_COMPARE_BUTTON_CUR = (selectedInput->cur.button == inputCompareValue);
-        R_INPUT_TEST_COMPARE_COMBO_CUR = CHECK_BTN_ALL(selectedInput->cur.button, inputCompareValue);
-        R_INPUT_TEST_COMPARE_COMBO_PRESS = CHECK_BTN_ALL(selectedInput->press.button, inputCompareValue);
-    }
+        if (R_HREG_MODE == HREG_MODE_INPUT_TEST) {
+            selectedInput =
+                &gameState
+                     ->input[(u32)R_INPUT_TEST_CONTROLLER_PORT < MAXCONTROLLERS ? R_INPUT_TEST_CONTROLLER_PORT : 0];
 
-    if (gIsCtrlr2Valid) {
-        Regs_UpdateEditor(&gameState->input[1]);
-    }
-
-    gDmaMgrVerbose = HREG(60);
-    gDmaMgrDmaBuffSize = SREG(21) != 0 ? ALIGN16(SREG(21)) : DMAMGR_DEFAULT_BUFSIZE;
-    gSystemArenaLogSeverity = HREG(61);
-    gZeldaArenaLogSeverity = HREG(62);
-
-    if (R_HREG_MODE == HREG_MODE_PRINT_MEMORY) {
-        if (R_PRINT_MEMORY_INIT != HREG_MODE_PRINT_MEMORY) {
-            R_PRINT_MEMORY_INIT = HREG_MODE_PRINT_MEMORY;
-            R_PRINT_MEMORY_TRIGGER = 0;
-            R_PRINT_MEMORY_ADDR = 0;
-            R_PRINT_MEMORY_SIZE = 0;
+            inputCompareValue = R_INPUT_TEST_COMPARE_VALUE;
+            R_INPUT_TEST_BUTTON_CUR = selectedInput->cur.button;
+            R_INPUT_TEST_BUTTON_PRESS = selectedInput->press.button;
+            R_INPUT_TEST_REL_STICK_X = selectedInput->rel.stick_x;
+            R_INPUT_TEST_REL_STICK_Y = selectedInput->rel.stick_y;
+            R_INPUT_TEST_REL_STICK_X_2 = selectedInput->rel.stick_x;
+            R_INPUT_TEST_REL_STICK_Y_2 = selectedInput->rel.stick_y;
+            R_INPUT_TEST_CUR_STICK_X = selectedInput->cur.stick_x;
+            R_INPUT_TEST_CUR_STICK_Y = selectedInput->cur.stick_y;
+            R_INPUT_TEST_COMPARE_BUTTON_CUR = (selectedInput->cur.button == inputCompareValue);
+            R_INPUT_TEST_COMPARE_COMBO_CUR = CHECK_BTN_ALL(selectedInput->cur.button, inputCompareValue);
+            R_INPUT_TEST_COMPARE_COMBO_PRESS = CHECK_BTN_ALL(selectedInput->press.button, inputCompareValue);
         }
 
-        if (R_PRINT_MEMORY_TRIGGER < 0) {
-            R_PRINT_MEMORY_TRIGGER = 0;
-            hexDumpSize = (u32)(R_PRINT_MEMORY_SIZE == 0 ? 0x100 : R_PRINT_MEMORY_SIZE * 0x10);
-            LogUtils_LogHexDump((void*)(0x80000000 + (R_PRINT_MEMORY_ADDR << 8)), hexDumpSize);
+        if (gIsCtrlr2Valid) {
+            Regs_UpdateEditor(&gameState->input[1]);
+        }
+
+        gDmaMgrVerbose = HREG(60);
+        gDmaMgrDmaBuffSize = SREG(21) != 0 ? ALIGN16(SREG(21)) : DMAMGR_DEFAULT_BUFSIZE;
+        gSystemArenaLogSeverity = HREG(61);
+        gZeldaArenaLogSeverity = HREG(62);
+
+        if (R_HREG_MODE == HREG_MODE_PRINT_MEMORY) {
+            if (R_PRINT_MEMORY_INIT != HREG_MODE_PRINT_MEMORY) {
+                R_PRINT_MEMORY_INIT = HREG_MODE_PRINT_MEMORY;
+                R_PRINT_MEMORY_TRIGGER = 0;
+                R_PRINT_MEMORY_ADDR = 0;
+                R_PRINT_MEMORY_SIZE = 0;
+            }
+
+            if (R_PRINT_MEMORY_TRIGGER < 0) {
+                R_PRINT_MEMORY_TRIGGER = 0;
+                hexDumpSize = (u32)(R_PRINT_MEMORY_SIZE == 0 ? 0x100 : R_PRINT_MEMORY_SIZE * 0x10);
+                LogUtils_LogHexDump((void*)(0x80000000 + (R_PRINT_MEMORY_ADDR << 8)), hexDumpSize);
+            }
         }
     }
 #endif
@@ -195,14 +202,15 @@ void GameState_Draw(GameState* gameState, GraphicsContext* gfxCtx) {
 #endif
 
     if (R_ENABLE_ARENA_DBG < 0) {
-#if OOT_DEBUG
+#if OOT_DEBUG && PLATFORM_GC
         s32 pad;
         DebugArena_Display();
         SystemArena_Display();
+#endif
         PRINTF(T("ハイラル滅亡まであと %08x バイト(game_alloc)\n",
                  "%08x bytes left until Hyrule is destroyed (game_alloc)\n"),
                THA_GetRemaining(&gameState->tha));
-#endif
+
         R_ENABLE_ARENA_DBG = 0;
     }
 
@@ -290,7 +298,7 @@ void GameState_Update(GameState* gameState) {
     }
 #endif
 
-#if OOT_DEBUG
+#if OOT_DEBUG && OOT_VERSION >= PAL_1_0
     if (SREG(63) == 1u) {
         if (R_VI_MODE_EDIT_STATE < VI_MODE_EDIT_STATE_INACTIVE) {
             R_VI_MODE_EDIT_STATE = VI_MODE_EDIT_STATE_INACTIVE;
@@ -431,7 +439,7 @@ void GameState_Realloc(GameState* gameState, size_t size) {
         THA_Init(&gameState->tha, NULL, 0);
         PRINTF(T("ハイラル再確保失敗\n", "Failure to secure Hyrule\n"));
 
-#if OOT_DEBUG
+#if OOT_DEBUG && PLATFORM_GC
         SystemArena_Display();
 #endif
 
@@ -526,7 +534,9 @@ void GameState_Destroy(GameState* gameState) {
     GameAlloc_Cleanup(&gameState->alloc);
 
 #if OOT_DEBUG
+#if PLATFORM_GC
     SystemArena_Display();
+#endif
     Fault_RemoveClient(&sGameFaultClient);
 #endif
 

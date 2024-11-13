@@ -60,7 +60,7 @@ ifeq ($(VERSION),ntsc-1.0)
   REGIONAL_CHECKSUM := 1
   REGION ?= JP
   PLATFORM := N64
-  DEBUG := 0
+  DEBUG := 1
 else ifeq ($(VERSION),ntsc-1.1)
   REGIONAL_CHECKSUM := 1
   REGION ?= JP
