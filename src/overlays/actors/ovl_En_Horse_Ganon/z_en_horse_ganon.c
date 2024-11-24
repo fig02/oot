@@ -102,7 +102,7 @@ static unk_D_80A69248 D_80A69248[] = {
 static s32 D_80A692B8[] = { 0, 16 };
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_F32(uncullZoneScale, 1200, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeScale, 1200, ICHAIN_STOP),
 };
 
 static EnHorseGanonActionFunc sActionFuncs[] = { func_80A68AF0, func_80A68DB0 };

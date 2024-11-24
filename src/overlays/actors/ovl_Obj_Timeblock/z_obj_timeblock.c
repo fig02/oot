@@ -53,9 +53,9 @@ static f32 sRanges[] = { 60.0, 100.0, 140.0, 180.0, 220.0, 260.0, 300.0, 300.0 }
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_U8(attentionRangeType, ATTENTION_RANGE_2, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneForward, 1800, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 300, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 1500, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeForward, 1800, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 300, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 1500, ICHAIN_STOP),
 };
 
 static Color_RGB8 sPrimColors[] = {

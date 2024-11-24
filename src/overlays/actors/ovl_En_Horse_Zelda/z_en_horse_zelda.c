@@ -97,7 +97,7 @@ static HorsePosSpeed sHorseFieldPositions[] = {
 };
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_F32(uncullZoneScale, 1200, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeScale, 1200, ICHAIN_STOP),
 };
 
 static EnHorseZeldaActionFunc sActionFuncs[] = {

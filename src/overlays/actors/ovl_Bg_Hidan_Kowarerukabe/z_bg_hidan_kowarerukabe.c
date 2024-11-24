@@ -106,9 +106,9 @@ void BgHidanKowarerukabe_OffsetActorYPos(BgHidanKowarerukabe* this) {
 }
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_F32(uncullZoneForward, 2000, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 400, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 1000, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeForward, 2000, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 400, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 1000, ICHAIN_STOP),
 };
 
 void BgHidanKowarerukabe_Init(Actor* thisx, PlayState* play) {

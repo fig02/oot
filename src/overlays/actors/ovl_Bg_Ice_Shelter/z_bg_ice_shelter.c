@@ -141,9 +141,9 @@ void BgIceShelter_RotateY(Vec3f* dest, Vec3f* src, s16 angle) {
 }
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_F32(uncullZoneForward, 1200, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 500, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 1000, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeForward, 1200, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 500, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 1000, ICHAIN_STOP),
 };
 
 void BgIceShelter_Init(Actor* thisx, PlayState* play) {

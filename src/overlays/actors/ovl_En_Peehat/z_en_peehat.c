@@ -211,15 +211,15 @@ void EnPeehat_Init(Actor* thisx, PlayState* play) {
     this->actor.naviEnemyId = NAVI_ENEMY_PEAHAT;
     this->xzDistToRise = 740.0f;
     this->xzDistMax = 1200.0f;
-    this->actor.uncullZoneForward = 4000.0f;
-    this->actor.uncullZoneScale = 800.0f;
-    this->actor.uncullZoneDownward = 1800.0f;
+    this->actor.cullVolumeForward = 4000.0f;
+    this->actor.cullVolumeScale = 800.0f;
+    this->actor.cullVolumeDownward = 1800.0f;
     switch (this->actor.params) {
         case PEAHAT_TYPE_GROUNDED:
             EnPeehat_Ground_SetStateGround(this);
             break;
         case PEAHAT_TYPE_FLYING:
-            this->actor.uncullZoneForward = 4200.0f;
+            this->actor.cullVolumeForward = 4200.0f;
             this->xzDistToRise = 2800.0f;
             this->xzDistMax = 1400.0f;
             EnPeehat_Flying_SetStateGround(this);

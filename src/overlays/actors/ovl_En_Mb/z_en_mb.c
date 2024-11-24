@@ -293,9 +293,9 @@ void EnMb_Init(Actor* thisx, PlayState* play) {
             Actor_SetScale(&this->actor, 0.02f);
             this->bodyCollider.dim.height = 170;
             this->bodyCollider.dim.radius = 45;
-            this->actor.uncullZoneForward = 4000.0f;
-            this->actor.uncullZoneScale = 800.0f;
-            this->actor.uncullZoneDownward = 1800.0f;
+            this->actor.cullVolumeForward = 4000.0f;
+            this->actor.cullVolumeScale = 800.0f;
+            this->actor.cullVolumeDownward = 1800.0f;
             this->playerDetectionRange = 710.0f;
             this->attackCollider.elem.atDmgInfo.dmgFlags = DMG_UNBLOCKABLE;
 

@@ -32,9 +32,9 @@ ActorProfile Bg_Hidan_Fslift_Profile = {
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_VEC3F_DIV1000(scale, 100, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 300, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 350, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneForward, 2000, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeScale, 300, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 350, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeForward, 2000, ICHAIN_STOP),
 };
 
 void BgHidanFslift_Init(Actor* thisx, PlayState* play) {

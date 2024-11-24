@@ -38,9 +38,9 @@ static s16 D_808B2E10[][2] = {
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_VEC3F(scale, 1, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneForward, 3000, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 1200, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 1000, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeForward, 3000, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 1200, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 1000, ICHAIN_STOP),
 };
 
 static Vec3f D_808B2E34[] = {

@@ -48,8 +48,8 @@ void EnPubox_Init(Actor* thisx, PlayState* play) {
     this->unk_164 = 1;
     thisx->colChkInfo.cylRadius = 20;
     thisx->colChkInfo.cylHeight = 50;
-    thisx->uncullZoneDownward = 1200.0f;
-    thisx->uncullZoneScale = 720.0f;
+    thisx->cullVolumeDownward = 1200.0f;
+    thisx->cullVolumeScale = 720.0f;
     ActorShape_Init(&thisx->shape, 0.0f, ActorShadow_DrawCircle, 6.0f);
     this->dyna.interactFlags = 0;
     this->dyna.transformFlags = 0;

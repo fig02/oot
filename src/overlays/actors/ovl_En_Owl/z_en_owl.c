@@ -99,9 +99,9 @@ static ColliderCylinderInit sOwlCylinderInit = {
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_VEC3F_DIV1000(scale, 25, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneForward, 1400, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 2000, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 2400, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeForward, 1400, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 2000, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 2400, ICHAIN_STOP),
 };
 
 void EnOwl_Init(Actor* thisx, PlayState* play) {
@@ -146,7 +146,7 @@ void EnOwl_Init(Actor* thisx, PlayState* play) {
     switch (owlType) {
         case OWL_DEFAULT:
             this->actionFunc = EnOwl_WaitDefault;
-            this->actor.uncullZoneForward = 4000.0f;
+            this->actor.cullVolumeForward = 4000.0f;
             this->unk_40A = 0;
             break;
         case OWL_OUTSIDE_KOKIRI:

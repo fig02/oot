@@ -177,8 +177,8 @@ f32 func_80A6B30C(EnHorseNormal* this) {
 }
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_F32(uncullZoneScale, 1200, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 300, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeScale, 1200, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 300, ICHAIN_STOP),
 };
 
 void EnHorseNormal_Init(Actor* thisx, PlayState* play) {

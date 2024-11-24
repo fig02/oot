@@ -896,9 +896,9 @@ void Actor_Init(Actor* actor, PlayState* play) {
     actor->minVelocityY = -20.0f;
     actor->xyzDistToPlayerSq = MAXFLOAT;
     actor->naviEnemyId = NAVI_ENEMY_NONE;
-    actor->uncullZoneForward = 1000.0f;
-    actor->uncullZoneScale = 350.0f;
-    actor->uncullZoneDownward = 700.0f;
+    actor->cullVolumeForward = 1000.0f;
+    actor->cullVolumeScale = 350.0f;
+    actor->cullVolumeDownward = 700.0f;
     CollisionCheck_InitInfo(&actor->colChkInfo);
     actor->floorBgId = BGCHECK_SCENE;
     ActorShape_Init(&actor->shape, 0.0f, NULL, 0.0f);
@@ -2714,12 +2714,12 @@ s32 func_800314B0(PlayState* play, Actor* actor) {
 s32 func_800314D4(PlayState* play, Actor* actor, Vec3f* arg2, f32 arg3) {
     f32 var;
 
-    if ((arg2->z > -actor->uncullZoneScale) && (arg2->z < (actor->uncullZoneForward + actor->uncullZoneScale))) {
+    if ((arg2->z > -actor->cullVolumeScale) && (arg2->z < (actor->cullVolumeForward + actor->cullVolumeScale))) {
         var = (arg3 < 1.0f) ? 1.0f : 1.0f / arg3;
 
-        if ((((fabsf(arg2->x) - actor->uncullZoneScale) * var) < 1.0f) &&
-            (((arg2->y + actor->uncullZoneDownward) * var) > -1.0f) &&
-            (((arg2->y - actor->uncullZoneScale) * var) < 1.0f)) {
+        if ((((fabsf(arg2->x) - actor->cullVolumeScale) * var) < 1.0f) &&
+            (((arg2->y + actor->cullVolumeDownward) * var) > -1.0f) &&
+            (((arg2->y - actor->cullVolumeScale) * var) < 1.0f)) {
             return true;
         }
     }

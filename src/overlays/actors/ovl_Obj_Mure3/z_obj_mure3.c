@@ -34,9 +34,9 @@ ActorProfile Obj_Mure3_Profile = {
 static s16 sRupeeCounts[] = { 5, 5, 7, 0 };
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_F32(uncullZoneForward, 100, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 1800, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 100, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeForward, 100, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 1800, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 100, ICHAIN_STOP),
 };
 
 void func_80B9A9D0(ObjMure3* this, PlayState* play) {

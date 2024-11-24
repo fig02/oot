@@ -177,7 +177,7 @@ void BgHakaTrap_Init(Actor* thisx, PlayState* play) {
     } else {
         this->timer = 40;
         this->actionFunc = func_808809B0;
-        thisx->uncullZoneScale = 500.0f;
+        thisx->cullVolumeScale = 500.0f;
     }
 
     CollisionCheck_SetInfo(&thisx->colChkInfo, NULL, &sColChkInfoInit);

@@ -41,15 +41,15 @@ static s32 (*D_808B1FA4[])(BgSpot09Obj* this, PlayState* play) = {
 };
 
 static InitChainEntry sInitChain1[] = {
-    ICHAIN_F32(uncullZoneForward, 7200, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 3000, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 7200, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeForward, 7200, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 3000, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 7200, ICHAIN_STOP),
 };
 
 static InitChainEntry sInitChain2[] = {
-    ICHAIN_F32(uncullZoneForward, 7200, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 800, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 1500, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeForward, 7200, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 800, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 1500, ICHAIN_STOP),
 };
 
 static Gfx* sDLists[] = {

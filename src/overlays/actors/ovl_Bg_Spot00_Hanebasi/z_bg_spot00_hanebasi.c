@@ -40,9 +40,9 @@ ActorProfile Bg_Spot00_Hanebasi_Profile = {
 static f32 sTorchFlameScale = 0.0f;
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_F32(uncullZoneScale, 550, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 2000, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneForward, 5000, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 550, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 2000, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeForward, 5000, ICHAIN_CONTINUE),
     ICHAIN_VEC3F_DIV1000(scale, 1000, ICHAIN_STOP),
 };
 

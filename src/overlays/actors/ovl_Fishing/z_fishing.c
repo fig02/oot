@@ -2962,8 +2962,8 @@ void Fishing_UpdateFish(Actor* thisx, PlayState* play2) {
     f32 temp;
     f32 rumbleStrength;
 
-    this->actor.uncullZoneForward = 700.0f;
-    this->actor.uncullZoneScale = 50.0f;
+    this->actor.cullVolumeForward = 700.0f;
+    this->actor.cullVolumeScale = 50.0f;
 
     if (this->isLoach == 0) {
         playerSpeedMod = (player->actor.speed * 0.15f) + 0.25f;
@@ -3082,8 +3082,8 @@ void Fishing_UpdateFish(Actor* thisx, PlayState* play2) {
         case 100:
             Fishing_HandleAquariumDialog(this, play);
 
-            this->actor.uncullZoneForward = 500.0f;
-            this->actor.uncullZoneScale = 300.0f;
+            this->actor.cullVolumeForward = 500.0f;
+            this->actor.cullVolumeScale = 300.0f;
 
             Lights_PointNoGlowSetInfo(&this->lightInfo, (s16)this->actor.world.pos.x,
                                       (s16)this->actor.world.pos.y + 20.0f, (s16)this->actor.world.pos.z - 50.0f, 255,
@@ -3629,8 +3629,8 @@ void Fishing_UpdateFish(Actor* thisx, PlayState* play2) {
             break;
 
         case 5:
-            this->actor.uncullZoneForward = 1200.0f;
-            this->actor.uncullZoneScale = 200.0f;
+            this->actor.cullVolumeForward = 1200.0f;
+            this->actor.cullVolumeScale = 200.0f;
 
             sFishFightTime++;
             PRINTF("HIT FISH %dcm\n", (u8)this->fishLength);

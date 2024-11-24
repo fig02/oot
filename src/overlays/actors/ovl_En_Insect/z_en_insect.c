@@ -94,9 +94,9 @@ static u16 sInitInsectFlags[] = {
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_VEC3F_DIV1000(scale, 10, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneForward, 700, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 20, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 600, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeForward, 700, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 20, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 600, ICHAIN_STOP),
 };
 
 void EnInsect_InitFlags(EnInsect* this) {

@@ -44,7 +44,7 @@ ActorProfile En_Viewer_Profile = {
 };
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_F32(uncullZoneScale, 300, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeScale, 300, ICHAIN_STOP),
 };
 
 static EnViewerInitData sInitData[] = {
@@ -209,9 +209,9 @@ void EnViewer_UpdateImpl(EnViewer* this, PlayState* play) {
         }
     } else if (type == ENVIEWER_TYPE_7_GANONDORF) {
         Actor_SetScale(&this->actor, 0.3f);
-        this->actor.uncullZoneForward = 10000.0f;
-        this->actor.uncullZoneScale = 10000.0f;
-        this->actor.uncullZoneDownward = 10000.0f;
+        this->actor.cullVolumeForward = 10000.0f;
+        this->actor.cullVolumeScale = 10000.0f;
+        this->actor.cullVolumeDownward = 10000.0f;
     } else if (type == ENVIEWER_TYPE_3_GANONDORF) {
         if (gSaveContext.sceneLayer == 4) {
             switch (play->csCtx.curFrame) {

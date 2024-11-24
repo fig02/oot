@@ -114,8 +114,8 @@ void EnAObj_Init(Actor* thisx, PlayState* play) {
     this->dyna.bgId = BGACTOR_NEG_ONE;
     this->dyna.interactFlags = 0;
     this->dyna.transformFlags = 0;
-    thisx->uncullZoneDownward = 1200.0f;
-    thisx->uncullZoneScale = 200.0f;
+    thisx->cullVolumeDownward = 1200.0f;
+    thisx->cullVolumeScale = 200.0f;
 
     switch (thisx->params) {
         case A_OBJ_BLOCK_LARGE:
@@ -288,8 +288,8 @@ void EnAObj_BoulderFragment(EnAObj* this, PlayState* play) {
 }
 
 void EnAObj_SetupBlock(EnAObj* this, s16 type) {
-    this->dyna.actor.uncullZoneDownward = 1200.0f;
-    this->dyna.actor.uncullZoneScale = 720.0f;
+    this->dyna.actor.cullVolumeDownward = 1200.0f;
+    this->dyna.actor.cullVolumeScale = 720.0f;
     EnAObj_SetupAction(this, EnAObj_Block);
 }
 

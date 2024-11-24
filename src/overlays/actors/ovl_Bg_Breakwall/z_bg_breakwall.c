@@ -67,9 +67,9 @@ static BombableWallInfo sBombableWallInfo[] = {
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_VEC3F_DIV1000(scale, 100, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneForward, 4000, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 400, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 400, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeForward, 4000, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 400, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 400, ICHAIN_STOP),
 };
 
 void BgBreakwall_SetupAction(BgBreakwall* this, BgBreakwallActionFunc actionFunc) {

@@ -88,7 +88,7 @@ void EnNiwLady_Init(Actor* thisx, PlayState* play) {
     PRINTF(VT_FGCOL(GREEN) "☆☆☆☆☆ ねぇちゃんうっふん ☆☆☆☆☆ %d\n" VT_RST, this->unk_278);
     PRINTF("\n\n");
     this->actionFunc = func_80AB9F24;
-    thisx->uncullZoneForward = 600.0f;
+    thisx->cullVolumeForward = 600.0f;
 }
 
 void EnNiwLady_Destroy(Actor* thisx, PlayState* play) {

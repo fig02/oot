@@ -37,9 +37,9 @@ static f32 D_80B940C0[] = { 85.0f, 85.0f, 0.0f };
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_VEC3F_DIV1000(scale, 100, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneForward, 2000, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 400, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 2000, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeForward, 2000, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 400, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 2000, ICHAIN_STOP),
 };
 
 static CollisionHeader* sCollisionHeaders[] = { &gHookshotPostCol, &gHookshotPostCol, &gHookshotTargetCol };

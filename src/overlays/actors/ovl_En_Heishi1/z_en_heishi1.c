@@ -404,9 +404,9 @@ void EnHeishi1_Update(Actor* thisx, PlayState* play) {
 
         this->actionFunc(this, play);
 
-        this->actor.uncullZoneForward = 550.0f;
-        this->actor.uncullZoneScale = 350.0f;
-        this->actor.uncullZoneDownward = 700.0f;
+        this->actor.cullVolumeForward = 550.0f;
+        this->actor.cullVolumeScale = 350.0f;
+        this->actor.cullVolumeDownward = 700.0f;
 
         if (this->type != 5) {
             path = this->path * 2;

@@ -59,9 +59,9 @@ static s16 sSceneIds[] = {
 };
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_F32(uncullZoneForward, 1800, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 500, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 1500, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeForward, 1800, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 500, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 1500, ICHAIN_STOP),
 };
 
 // The vertices and center of the bottom face

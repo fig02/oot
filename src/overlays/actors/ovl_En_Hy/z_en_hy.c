@@ -1161,7 +1161,7 @@ void EnHy_WaitForObjects(EnHy* this, PlayState* play) {
 
         if ((play->sceneId == SCENE_BACK_ALLEY_DAY) || (play->sceneId == SCENE_MARKET_DAY)) {
             this->actor.flags &= ~ACTOR_FLAG_4;
-            this->actor.uncullZoneScale = 0.0f;
+            this->actor.cullVolumeScale = 0.0f;
         }
 
         if (play->sceneId == SCENE_KAKARIKO_CENTER_GUEST_HOUSE) {

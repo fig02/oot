@@ -54,9 +54,9 @@ static s16 sSpawnActorIds[] = { ACTOR_EN_KUSA, 0, ACTOR_EN_FISH, ACTOR_EN_INSECT
 static s16 sSpawnParams[] = { 0, 2, -1, INSECT_TYPE_PERMANENT, -1 };
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_F32(uncullZoneForward, 1200, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 200, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 1200, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeForward, 1200, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 200, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 1200, ICHAIN_STOP),
 };
 
 s32 ObjMure_SetCullingImpl(Actor* thisx, PlayState* play) {

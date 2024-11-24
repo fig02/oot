@@ -33,9 +33,9 @@ ActorProfile En_Blkobj_Profile = {
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_VEC3F(scale, 1, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneForward, 800, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 200, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 300, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeForward, 800, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 200, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 300, ICHAIN_STOP),
 };
 
 static Gfx sSetupOpaDL[] = {

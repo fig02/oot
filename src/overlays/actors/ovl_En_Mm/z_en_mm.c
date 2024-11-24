@@ -130,7 +130,7 @@ static EnMmPathInfo sPathInfo[] = {
 };
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_F32(uncullZoneForward, 4000, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeForward, 4000, ICHAIN_STOP),
 };
 
 void EnMm_ChangeAnim(EnMm* this, s32 index, s32* currentIndex) {

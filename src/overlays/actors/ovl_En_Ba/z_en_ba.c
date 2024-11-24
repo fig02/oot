@@ -83,8 +83,8 @@ static Vec3f D_809B80E4 = { 0.01f, 0.01f, 0.01f };
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_S8(naviEnemyId, NAVI_ENEMY_PARASITIC_TENTACLE, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 1500, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 2500, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 1500, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 2500, ICHAIN_CONTINUE),
     ICHAIN_F32(lockOnArrowOffset, 0, ICHAIN_STOP),
 };
 

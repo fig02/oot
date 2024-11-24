@@ -68,9 +68,9 @@ static ColliderCylinderInit sCylinderInit = {
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_VEC3F_DIV1000(scale, 87, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneForward, 4000, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 3300, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 1100, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeForward, 4000, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 3300, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 1100, ICHAIN_STOP),
 };
 
 void EnJj_SetupAction(EnJj* this, EnJjActionFunc actionFunc) {

@@ -159,9 +159,9 @@ void func_80B9A534(ObjMure2* this) {
 }
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_F32(uncullZoneForward, 100, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 2100, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 100, ICHAIN_STOP),
+    ICHAIN_F32(cullVolumeForward, 100, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeScale, 2100, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullVolumeDownward, 100, ICHAIN_STOP),
 };
 
 void ObjMure2_Init(Actor* thisx, PlayState* play) {
@@ -169,7 +169,7 @@ void ObjMure2_Init(Actor* thisx, PlayState* play) {
 
     Actor_ProcessInitChain(&this->actor, sInitChain);
     if (play->csCtx.state != CS_STATE_IDLE) {
-        this->actor.uncullZoneForward += 1200.0f;
+        this->actor.cullVolumeForward += 1200.0f;
     }
     ObjMure2_SetupWait(this);
 }
