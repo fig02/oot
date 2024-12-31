@@ -314,7 +314,8 @@ void Message_UpdateOcarinaMemoryGame(PlayState* play) {
 u8 Message_ShouldAdvance(PlayState* play) {
     Input* input = &play->state.input[0];
 
-    if (CHECK_BTN_ALL(input->press.button, BTN_A) || CHECK_BTN_ALL(input->press.button, BTN_B) ||
+    // fq: changing press to hold for the B button
+    if (CHECK_BTN_ALL(input->press.button, BTN_A) || CHECK_BTN_ALL(input->cur.button, BTN_B) ||
         CHECK_BTN_ALL(input->press.button, BTN_CUP)) {
         Audio_PlaySfxGeneral(NA_SE_SY_MESSAGE_PASS, &gSfxDefaultPos, 4, &gSfxDefaultFreqAndVolScale,
                              &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
@@ -326,7 +327,8 @@ u8 Message_ShouldAdvance(PlayState* play) {
 u8 Message_ShouldAdvanceSilent(PlayState* play) {
     Input* input = &play->state.input[0];
 
-    return CHECK_BTN_ALL(input->press.button, BTN_A) || CHECK_BTN_ALL(input->press.button, BTN_B) ||
+    // fq: changing press to hold for the B button
+    return CHECK_BTN_ALL(input->press.button, BTN_A) || CHECK_BTN_ALL(input->cur.button, BTN_B) ||
            CHECK_BTN_ALL(input->press.button, BTN_CUP);
 }
 
@@ -4209,8 +4211,10 @@ void Message_Update(PlayState* play) {
                 }
                 break;
             case MSGMODE_TEXT_DISPLAYING:
+                // fq: changing quick text b button to hold, and also making all text skippable.
+                // Making all text unskippable is probably going to cause bugs.
                 if (msgCtx->textBoxType != TEXTBOX_TYPE_NONE_BOTTOM && YREG(31) == 0 &&
-                    CHECK_BTN_ALL(play->state.input[0].press.button, BTN_B) && !msgCtx->textUnskippable) {
+                    CHECK_BTN_ALL(play->state.input[0].cur.button, BTN_B) /*&& !msgCtx->textUnskippable*/) {
                     sTextboxSkipped = true;
                     msgCtx->textDrawPos = msgCtx->decodedTextLen;
                 }
