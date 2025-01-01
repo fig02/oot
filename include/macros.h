@@ -14,7 +14,7 @@
  * The translated strings match the original debug strings, they are only direct translations.
  * For example, any original name is left as is rather than being replaced with the name in the codebase.
  */
-#define T(jp, en) jp
+#define T(jp, en) en
 
 #define ARRAY_COUNT(arr) (s32)(sizeof(arr) / sizeof(arr[0]))
 #define ARRAY_COUNTU(arr) (u32)(sizeof(arr) / sizeof(arr[0]))

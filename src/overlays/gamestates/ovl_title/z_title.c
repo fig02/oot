@@ -164,8 +164,8 @@ void ConsoleLogo_Main(GameState* thisx) {
         POLY_OPA_DISP = gfx;
     }
 #endif
-
-    if (this->exit) {
+    // fq: skip n64 logo. remove when finished!
+    if (/*this->exit*/ 1) {
         gSaveContext.seqId = (u8)NA_BGM_DISABLED;
         gSaveContext.natureAmbienceId = 0xFF;
         gSaveContext.gameMode = GAMEMODE_TITLE_SCREEN;

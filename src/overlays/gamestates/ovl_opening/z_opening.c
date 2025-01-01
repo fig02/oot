@@ -7,13 +7,24 @@
 #include "global.h"
 
 void TitleSetup_SetupTitleScreen(TitleSetupState* this) {
-    gSaveContext.gameMode = GAMEMODE_TITLE_SCREEN;
+    // gSaveContext.gameMode = GAMEMODE_TITLE_SCREEN;
+    // this->state.running = false;
+    // gSaveContext.save.linkAge = LINK_AGE_ADULT;
+    // Sram_InitDebugSave();
+    // gSaveContext.save.cutsceneIndex = 0xFFF3;
+    // gSaveContext.sceneLayer = 7;
+    // SET_NEXT_GAMESTATE(&this->state, Play_Init, PlayState);
+
+    // fq: boot to map select for debugging. Remove and uncomment the above when finished!
+    gSaveContext.gameMode = GAMEMODE_NORMAL;
+    SET_NEXT_GAMESTATE(&this->state, MapSelect_Init, MapSelectState);
     this->state.running = false;
-    gSaveContext.save.linkAge = LINK_AGE_ADULT;
-    Sram_InitDebugSave();
-    gSaveContext.save.cutsceneIndex = 0xFFF3;
-    gSaveContext.sceneLayer = 7;
-    SET_NEXT_GAMESTATE(&this->state, Play_Init, PlayState);
+    gSaveContext.buttonStatus[0] = gSaveContext.buttonStatus[1] = gSaveContext.buttonStatus[2] =
+        gSaveContext.buttonStatus[3] = gSaveContext.buttonStatus[4] = BTN_ENABLED;
+    gSaveContext.forceRisingButtonAlphas = gSaveContext.nextHudVisibilityMode = gSaveContext.hudVisibilityMode =
+        gSaveContext.hudVisibilityModeTimer = gSaveContext.magicCapacity = 0;
+    gSaveContext.magicFillTarget = gSaveContext.save.info.playerData.magic;
+    gSaveContext.save.info.playerData.magicLevel = gSaveContext.save.info.playerData.magic = 0;
 }
 
 void func_80803C5C(TitleSetupState* this) {

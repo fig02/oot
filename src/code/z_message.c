@@ -4083,7 +4083,7 @@ void Message_Update(PlayState* play) {
 #endif
 
     if (msgCtx->msgLength != 0) {
-
+        PRINTF("msglength != 0 : mode:%d\n", msgCtx->msgMode);
         switch (msgCtx->msgMode) {
             case MSGMODE_TEXT_START:
                 D_8014B2F4++;
@@ -4213,7 +4213,7 @@ void Message_Update(PlayState* play) {
             case MSGMODE_TEXT_DISPLAYING:
                 // fq: changing quick text b button to hold, and also making all text skippable.
                 // Making all text unskippable is probably going to cause bugs.
-                if (msgCtx->textBoxType != TEXTBOX_TYPE_NONE_BOTTOM && YREG(31) == 0 &&
+                if (msgCtx->textBoxType != TEXTBOX_TYPE_NONE_BOTTOM && YREG(31) == 0 && !sTextboxSkipped &&
                     CHECK_BTN_ALL(play->state.input[0].cur.button, BTN_B) /*&& !msgCtx->textUnskippable*/) {
                     sTextboxSkipped = true;
                     msgCtx->textDrawPos = msgCtx->decodedTextLen;
