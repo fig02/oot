@@ -5,15 +5,31 @@
  */
 
 #include "z_en_dnt_nomal.h"
-#include "assets/objects/object_dnk/object_dnk.h"
 #include "overlays/actors/ovl_En_Dnt_Demo/z_en_dnt_demo.h"
 #include "overlays/actors/ovl_En_Ex_Ruppy/z_en_ex_ruppy.h"
 #include "overlays/actors/ovl_En_Ex_Item/z_en_ex_item.h"
 #include "overlays/effects/ovl_Effect_Ss_Hahen/z_eff_ss_hahen.h"
-#include "assets/objects/object_hintnuts/object_hintnuts.h"
-#include "terminal.h"
 
-#define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_5)
+#include "libc64/math64.h"
+#include "gfx.h"
+#include "gfx_setupdl.h"
+#include "one_point_cutscene.h"
+#include "rand.h"
+#include "regs.h"
+#include "segmented_address.h"
+#include "sfx.h"
+#include "sys_matrix.h"
+#include "terminal.h"
+#include "versions.h"
+#include "z_lib.h"
+#include "z64effect.h"
+#include "z64play.h"
+#include "z64player.h"
+
+#include "assets/objects/object_dnk/object_dnk.h"
+#include "assets/objects/object_hintnuts/object_hintnuts.h"
+
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 void EnDntNomal_Init(Actor* thisx, PlayState* play);
 void EnDntNomal_Destroy(Actor* thisx, PlayState* play);
@@ -38,6 +54,10 @@ void EnDntNomal_TargetTalk(EnDntNomal* this, PlayState* play);
 void EnDntNomal_TargetGivePrize(EnDntNomal* this, PlayState* play);
 void EnDntNomal_TargetReturn(EnDntNomal* this, PlayState* play);
 void EnDntNomal_TargetBurrow(EnDntNomal* this, PlayState* play);
+
+#if OOT_PAL_N64
+void EnDntNomal_DoNothing(EnDntNomal* this, PlayState* play);
+#endif
 
 void EnDntNomal_SetupStageWait(EnDntNomal* this, PlayState* play);
 void EnDntNomal_SetupStageCelebrate(EnDntNomal* this, PlayState* play);
@@ -123,7 +143,7 @@ void EnDntNomal_Init(Actor* thisx, PlayState* play) {
         this->type = ENDNTNOMAL_TARGET;
     }
     this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
-    this->actor.colChkInfo.mass = 0xFF;
+    this->actor.colChkInfo.mass = MASS_IMMOVABLE;
     this->objectId = -1;
     if (this->type == ENDNTNOMAL_TARGET) {
         PRINTF("\n\n");
@@ -235,7 +255,12 @@ void EnDntNomal_TargetWait(EnDntNomal* this, PlayState* play) {
     this->targetVtx[3].z = targetZ - 24.0f;
 
     SkelAnime_Update(&this->skelAnime);
-    if ((this->targetQuad.base.acFlags & AC_HIT) || BREG(0)) {
+#if OOT_VERSION < PAL_1_0
+    if (this->targetQuad.base.acFlags & AC_HIT)
+#else
+    if ((this->targetQuad.base.acFlags & AC_HIT) || BREG(0))
+#endif
+    {
         this->targetQuad.base.acFlags &= ~AC_HIT;
 
         dx = fabsf(targetX - this->targetQuad.elem.acDmgInfo.hitPos.x);
@@ -411,9 +436,22 @@ void EnDntNomal_TargetBurrow(EnDntNomal* this, PlayState* play) {
 
     SkelAnime_Update(&this->skelAnime);
     if (frame >= this->endFrame) {
+#if !OOT_PAL_N64
         this->actionFunc = EnDntNomal_SetupTargetWait;
+#else
+        this->hitCounter = 0;
+        this->actor.shape.rot.y = this->actor.yawTowardsPlayer;
+        this->actor.world.rot.y = this->actor.yawTowardsPlayer;
+        Math_Vec3f_Copy(&this->actor.world.pos, &this->actor.home.pos);
+        this->actionFunc = EnDntNomal_DoNothing;
+#endif
     }
 }
+
+#if OOT_PAL_N64
+void EnDntNomal_DoNothing(EnDntNomal* this, PlayState* play) {
+}
+#endif
 
 void EnDntNomal_SetupStageWait(EnDntNomal* this, PlayState* play) {
     if (this->timer3 == 0) {
@@ -653,7 +691,7 @@ void EnDntNomal_SetupStageAttack(EnDntNomal* this, PlayState* play) {
     if (this->timer3 == 0) {
         this->endFrame = (f32)Animation_GetLastFrame(&gDntStageSpitAnim);
         Animation_Change(&this->skelAnime, &gDntStageSpitAnim, 1.0f, 0.0f, this->endFrame, ANIMMODE_ONCE, -10.0f);
-        this->actor.colChkInfo.mass = 0xFF;
+        this->actor.colChkInfo.mass = MASS_IMMOVABLE;
         this->isSolid = true;
         this->timer2 = 0;
         Actor_ChangeCategory(play, &play->actorCtx, &this->actor, ACTORCAT_ENEMY);

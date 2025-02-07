@@ -5,12 +5,15 @@
  */
 
 #include "z_en_horse.h"
+#include "z64horse.h"
+#include "global.h"
+#include "versions.h"
 #include "overlays/actors/ovl_En_In/z_en_in.h"
 #include "assets/objects/object_horse/object_horse.h"
 #include "assets/objects/object_hni/object_hni.h"
 #include "assets/scenes/overworld/spot09/spot09_scene.h"
 
-#define FLAGS ACTOR_FLAG_4
+#define FLAGS ACTOR_FLAG_UPDATE_CULLING_DISABLED
 
 typedef void (*EnHorseCsFunc)(EnHorse*, PlayState*, CsCmdActorCue*);
 typedef void (*EnHorseActionFunc)(EnHorse*, PlayState*);
@@ -368,8 +371,8 @@ static RaceInfo sIngoRace = { ARRAY_COUNT(sIngoRaceWaypoints), sIngoRaceWaypoint
 static s32 sAnimSoundFrames[] = { 0, 16 };
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_F32(uncullZoneScale, 600, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 300, ICHAIN_STOP),
+    ICHAIN_F32(cullingVolumeScale, 600, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullingVolumeDownward, 300, ICHAIN_STOP),
 };
 
 static u8 sResetNoInput[] = { 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0 };
@@ -454,7 +457,7 @@ s32 EnHorse_BgCheckBridgeJumpPoint(EnHorse* this, PlayState* play) {
     if (this->actor.speed < 12.8f) {
         return false;
     }
-    if (GET_EVENTCHKINF_CARPENTERS_FREE_ALL()) {
+    if (GET_EVENTCHKINF_CARPENTERS_ALL_RESCUED()) {
         return false;
     }
 
@@ -523,7 +526,7 @@ void EnHorse_RaceWaypointPos(RaceWaypoint* waypoints, s32 index, Vec3f* pos) {
 }
 
 void EnHorse_RotateToPoint(EnHorse* this, PlayState* play, Vec3f* pos, s16 turnAmount) {
-    func_8006DD9C(&this->actor, pos, turnAmount);
+    Horse_RotateToPoint(&this->actor, pos, turnAmount);
 }
 
 void EnHorse_UpdateIngoRaceInfo(EnHorse* this, PlayState* play, RaceInfo* raceInfo) {
@@ -643,7 +646,7 @@ int func_80A5BBBC(PlayState* play, EnHorse* this, Vec3f* pos) {
         return false;
     }
     eyeDist = Math3D_Vec3f_DistXYZ(pos, &play->view.eye);
-    return func_800314D4(play, &this->actor, &sp24, sp20) || eyeDist < 100.0f;
+    return Actor_CullingVolumeTest(play, &this->actor, &sp24, sp20) || eyeDist < 100.0f;
 }
 
 void EnHorse_IdleAnimSounds(EnHorse* this, PlayState* play) {
@@ -676,7 +679,7 @@ s32 EnHorse_Spawn(EnHorse* this, PlayState* play) {
             if (play->sceneId != SCENE_LON_LON_RANCH ||
                 //! Same flag checked twice
                 (Flags_GetEventChkInf(EVENTCHKINF_EPONA_OBTAINED) &&
-                 (GET_EVENTINF_HORSES_STATE() != EVENTINF_HORSES_STATE_6 ||
+                 (GET_EVENTINF_INGO_RACE_STATE() != INGO_RACE_STATE_TRAPPED_WIN_EPONA ||
                   Flags_GetEventChkInf(EVENTCHKINF_EPONA_OBTAINED))) ||
                 // always load two spawns inside lon lon
                 ((sHorseSpawns[i].pos.x == 856 && sHorseSpawns[i].pos.y == 0 && sHorseSpawns[i].pos.z == -918) ||
@@ -699,8 +702,10 @@ s32 EnHorse_Spawn(EnHorse* this, PlayState* play) {
                 this->actor.world.rot.y = sHorseSpawns[i].angle;
                 this->actor.shape.rot.y = Actor_WorldYawTowardActor(&this->actor, &GET_PLAYER(play)->actor);
                 spawn = true;
+#if OOT_VERSION >= PAL_1_0
                 SkinMatrix_Vec3fMtxFMultXYZW(&play->viewProjectionMtxF, &this->actor.world.pos,
                                              &this->actor.projectedPos, &this->actor.projectedW);
+#endif
             }
         }
     }
@@ -720,7 +725,7 @@ void EnHorse_ResetRace(EnHorse* this, PlayState* play) {
 s32 EnHorse_PlayerCanMove(EnHorse* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
 
-    if ((player->stateFlags1 & PLAYER_STATE1_0) || func_8002DD78(GET_PLAYER(play)) == 1 ||
+    if ((player->stateFlags1 & PLAYER_STATE1_0) || func_8002DD78(GET_PLAYER(play)) == true ||
         (player->stateFlags1 & PLAYER_STATE1_20) || ((this->stateFlags & ENHORSE_FLAG_19) && !this->inRace) ||
         this->action == ENHORSE_ACT_HBA || player->actor.flags & ACTOR_FLAG_TALK ||
         play->csCtx.state != CS_STATE_IDLE) {
@@ -743,7 +748,7 @@ void EnHorse_Init(Actor* thisx, PlayState* play2) {
     EnHorse* this = (EnHorse*)thisx;
     PlayState* play = play2;
 
-    AREG(6) = 0;
+    R_EXITED_SCENE_RIDING_HORSE = false;
     Actor_ProcessInitChain(&this->actor, sInitChain);
     EnHorse_ClearDustFlags(&this->dustFlags);
     R_EPONAS_SONG_PLAYED = false;
@@ -778,7 +783,7 @@ void EnHorse_Init(Actor* thisx, PlayState* play2) {
 
     // params was -1
     if (this->actor.params == 0x7FFF) {
-        this->actor.params = 1;
+        this->actor.params = HORSE_PTYPE_1;
     }
 
     if (play->sceneId == SCENE_LON_LON_BUILDINGS) {
@@ -786,25 +791,25 @@ void EnHorse_Init(Actor* thisx, PlayState* play2) {
     } else if (play->sceneId == SCENE_GERUDOS_FORTRESS && this->type == HORSE_HNI) {
         this->stateFlags = ENHORSE_FLAG_18 | ENHORSE_UNRIDEABLE;
     } else {
-        if (this->actor.params == 3) {
+        if (this->actor.params == HORSE_PTYPE_INGO_SPAWNED_RIDING) {
             this->stateFlags = ENHORSE_FLAG_19 | ENHORSE_CANT_JUMP | ENHORSE_UNRIDEABLE;
-        } else if (this->actor.params == 6) {
+        } else if (this->actor.params == HORSE_PTYPE_6) {
             this->stateFlags = ENHORSE_FLAG_19 | ENHORSE_CANT_JUMP;
-            if (Flags_GetEventChkInf(EVENTCHKINF_EPONA_OBTAINED) || DREG(1) != 0) {
+            if (Flags_GetEventChkInf(EVENTCHKINF_EPONA_OBTAINED) || R_DEBUG_FORCE_EPONA_OBTAINED) {
                 this->stateFlags &= ~ENHORSE_CANT_JUMP;
                 this->stateFlags |= ENHORSE_FLAG_26;
-            } else if (GET_EVENTINF(EVENTINF_HORSES_06) && this->type == HORSE_HNI) {
+            } else if (GET_EVENTINF(EVENTINF_INGO_RACE_SECOND_RACE) && this->type == HORSE_HNI) {
                 this->stateFlags |= ENHORSE_FLAG_21 | ENHORSE_FLAG_20;
             }
-        } else if (this->actor.params == 1) {
+        } else if (this->actor.params == HORSE_PTYPE_1) {
             this->stateFlags = ENHORSE_FLAG_7;
         } else {
             this->stateFlags = 0;
         }
     }
 
-    if (play->sceneId == SCENE_LON_LON_RANCH && GET_EVENTINF_HORSES_STATE() == EVENTINF_HORSES_STATE_6 &&
-        !Flags_GetEventChkInf(EVENTCHKINF_EPONA_OBTAINED) && !DREG(1)) {
+    if (play->sceneId == SCENE_LON_LON_RANCH && GET_EVENTINF_INGO_RACE_STATE() == INGO_RACE_STATE_TRAPPED_WIN_EPONA &&
+        !(Flags_GetEventChkInf(EVENTCHKINF_EPONA_OBTAINED) || R_DEBUG_FORCE_EPONA_OBTAINED)) {
         this->stateFlags |= ENHORSE_FLAG_25;
     }
 
@@ -838,12 +843,13 @@ void EnHorse_Init(Actor* thisx, PlayState* play2) {
                 Actor_Kill(&this->actor);
                 return;
             }
-        } else if (!Flags_GetEventChkInf(EVENTCHKINF_EPONA_OBTAINED) && !DREG(1) && !IS_DAY) {
+        } else if (!(Flags_GetEventChkInf(EVENTCHKINF_EPONA_OBTAINED) || R_DEBUG_FORCE_EPONA_OBTAINED) && !IS_DAY) {
             Actor_Kill(&this->actor);
             return;
         }
     } else if (play->sceneId == SCENE_STABLE) {
-        if (IS_DAY || Flags_GetEventChkInf(EVENTCHKINF_EPONA_OBTAINED) || DREG(1) != 0 || !LINK_IS_ADULT) {
+        if (IS_DAY || Flags_GetEventChkInf(EVENTCHKINF_EPONA_OBTAINED) || R_DEBUG_FORCE_EPONA_OBTAINED ||
+            !LINK_IS_ADULT) {
             Actor_Kill(&this->actor);
             return;
         }
@@ -861,24 +867,25 @@ void EnHorse_Init(Actor* thisx, PlayState* play2) {
     EnHorse_ResetRace(this, play);
     EnHorse_ResetHorsebackArchery(this, play);
 
-    if (this->actor.params == 2) {
+    if (this->actor.params == HORSE_PTYPE_INACTIVE) {
         EnHorse_InitInactive(this);
-    } else if (this->actor.params == 3) {
+    } else if (this->actor.params == HORSE_PTYPE_INGO_SPAWNED_RIDING) {
         EnHorse_InitIngoHorse(this);
         this->rider = Actor_Spawn(&play->actorCtx, play, ACTOR_EN_IN, this->actor.world.pos.x, this->actor.world.pos.y,
                                   this->actor.world.pos.z, this->actor.shape.rot.x, this->actor.shape.rot.y, 1, 1);
         ASSERT(this->rider != NULL, "this->race.rider != NULL", "../z_en_horse.c", 3077);
-        if (!GET_EVENTINF(EVENTINF_HORSES_06)) {
+        if (!GET_EVENTINF(EVENTINF_INGO_RACE_SECOND_RACE)) {
             this->ingoHorseMaxSpeed = 12.07f;
         } else {
             this->ingoHorseMaxSpeed = 12.625f;
         }
-    } else if (this->actor.params == 7) {
+    } else if (this->actor.params == HORSE_PTYPE_7) {
         EnHorse_InitCutscene(this, play);
-    } else if (this->actor.params == 8) {
+    } else if (this->actor.params == HORSE_PTYPE_HORSEBACK_ARCHERY) {
         EnHorse_InitHorsebackArchery(this);
         Interface_InitHorsebackArchery(play);
-    } else if (play->sceneId == SCENE_LON_LON_RANCH && !Flags_GetEventChkInf(EVENTCHKINF_EPONA_OBTAINED) && !DREG(1)) {
+    } else if (play->sceneId == SCENE_LON_LON_RANCH && !Flags_GetEventChkInf(EVENTCHKINF_EPONA_OBTAINED) &&
+               !R_DEBUG_FORCE_EPONA_OBTAINED) {
         EnHorse_InitFleePlayer(this);
     } else {
         if (play->sceneId == SCENE_LON_LON_BUILDINGS) {
@@ -914,7 +921,7 @@ void EnHorse_RotateToPlayer(EnHorse* this, PlayState* play) {
 
 void EnHorse_Freeze(EnHorse* this) {
     if (this->action != ENHORSE_ACT_CS_UPDATE && this->action != ENHORSE_ACT_HBA) {
-        if (sResetNoInput[this->actor.params] != 0 && this->actor.params != 4) {
+        if (!(sResetNoInput[this->actor.params] == 0 || this->actor.params == HORSE_PTYPE_4)) {
             this->noInputTimer = 0;
             this->noInputTimerMax = 0;
         }
@@ -941,10 +948,10 @@ void EnHorse_Frozen(EnHorse* this, PlayState* play) {
         this->jntSph.base.ocFlags1 |= OC1_ON;
         if (this->playerControlled == true) {
             this->stateFlags &= ~ENHORSE_FLAG_7;
-            if (this->actor.params == 4) {
+            if (this->actor.params == HORSE_PTYPE_4) {
                 EnHorse_StartMountedIdleResetAnim(this);
-            } else if (this->actor.params == 9) {
-                this->actor.params = 5;
+            } else if (this->actor.params == HORSE_PTYPE_PLAYER_SPAWNED_RIDING) {
+                this->actor.params = HORSE_PTYPE_5;
                 if (play->csCtx.state != CS_STATE_IDLE) {
                     EnHorse_StartMountedIdle(this);
                 } else {
@@ -956,8 +963,8 @@ void EnHorse_Frozen(EnHorse* this, PlayState* play) {
             } else {
                 EnHorse_StartMountedIdleResetAnim(this);
             }
-            if (this->actor.params != 0) {
-                this->actor.params = 0;
+            if (this->actor.params != HORSE_PTYPE_0) {
+                this->actor.params = HORSE_PTYPE_0;
                 return;
             }
         } else {
@@ -1737,9 +1744,11 @@ void EnHorse_Inactive(EnHorse* this, PlayState* play2) {
 
     if (R_EPONAS_SONG_PLAYED && this->type == HORSE_EPONA) {
         R_EPONAS_SONG_PLAYED = false;
-        if (EnHorse_Spawn(this, play) != 0) {
+        if (EnHorse_Spawn(this, play)) {
+#if OOT_VERSION >= PAL_1_0
             Audio_PlaySfxGeneral(NA_SE_EV_HORSE_NEIGH, &this->actor.projectedPos, 4, &gSfxDefaultFreqAndVolScale,
                                  &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
+#endif
             this->stateFlags &= ~ENHORSE_INACTIVE;
             gSaveContext.save.info.horseData.sceneId = play->sceneId;
 
@@ -1752,7 +1761,7 @@ void EnHorse_Inactive(EnHorse* this, PlayState* play2) {
     if (!(this->stateFlags & ENHORSE_INACTIVE)) {
         this->followTimer = 0;
         EnHorse_SetFollowAnimation(this, play);
-        this->actor.params = 0;
+        this->actor.params = HORSE_PTYPE_0;
         this->cyl1.base.ocFlags1 |= OC1_ON;
         this->cyl2.base.ocFlags1 |= OC1_ON;
         this->jntSph.base.ocFlags1 |= OC1_ON;
@@ -1814,8 +1823,10 @@ void EnHorse_Idle(EnHorse* this, PlayState* play) {
         R_EPONAS_SONG_PLAYED = false;
         if (!func_80A5BBBC(play, this, &this->actor.world.pos)) {
             if (EnHorse_Spawn(this, play)) {
+#if OOT_VERSION >= PAL_1_0
                 Audio_PlaySfxGeneral(NA_SE_EV_HORSE_NEIGH, &this->actor.projectedPos, 4, &gSfxDefaultFreqAndVolScale,
                                      &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
+#endif
                 this->followTimer = 0;
                 EnHorse_SetFollowAnimation(this, play);
                 Camera_SetViewParam(play->cameraPtrs[CAM_ID_MAIN], CAM_VIEW_TARGET, &this->actor);
@@ -1928,6 +1939,12 @@ void EnHorse_FollowPlayer(EnHorse* this, PlayState* play) {
         this->skin.skelAnime.playSpeed = 1.0f;
         this->stateFlags &= ~ENHORSE_LAND2_SOUND;
         this->unk_21C = this->unk_228;
+#if OOT_VERSION < PAL_1_0
+        if (this->stateFlags & ENHORSE_DRAW) {
+            Audio_PlaySfxGeneral(NA_SE_EV_HORSE_NEIGH, &this->unk_21C, 4, &gSfxDefaultFreqAndVolScale,
+                                 &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
+        }
+#endif
     } else if (this->stateFlags & ENHORSE_TURNING_TO_PLAYER) {
         this->actor.world.rot.y += this->followPlayerTurnSpeed;
         this->actor.shape.rot.y = this->actor.world.rot.y;
@@ -2383,7 +2400,7 @@ void EnHorse_CutsceneUpdate(EnHorse* this, PlayState* play) {
 
     if (play->csCtx.state == 3) {
         this->playerControlled = 1;
-        this->actor.params = 10;
+        this->actor.params = HORSE_PTYPE_10;
         this->action = ENHORSE_ACT_IDLE;
         EnHorse_Freeze(this);
         return;
@@ -3578,7 +3595,7 @@ void EnHorse_Update(Actor* thisx, PlayState* play2) {
             this->stateFlags &= ~ENHORSE_FLAG_24;
         }
 
-        if (play->sceneId == SCENE_GERUDO_VALLEY && !GET_EVENTCHKINF_CARPENTERS_FREE_ALL()) {
+        if (play->sceneId == SCENE_GERUDO_VALLEY && !GET_EVENTCHKINF_CARPENTERS_ALL_RESCUED()) {
             EnHorse_CheckBridgeJumps(this, play);
         }
 
@@ -3594,9 +3611,9 @@ void EnHorse_Update(Actor* thisx, PlayState* play2) {
         }
 
         if (thisx->speed == 0.0f && !(this->stateFlags & ENHORSE_FLAG_19)) {
-            thisx->colChkInfo.mass = 0xFF;
+            thisx->colChkInfo.mass = MASS_IMMOVABLE;
         } else {
-            thisx->colChkInfo.mass = 0xFE;
+            thisx->colChkInfo.mass = MASS_HEAVY;
         }
 
         if (thisx->speed >= 5.0f) {

@@ -1,7 +1,9 @@
 #include "z_en_ssh.h"
 #include "assets/objects/object_ssh/object_ssh.h"
 
-#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_4 | ACTOR_FLAG_5)
+#define FLAGS                                                                                 \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_UPDATE_CULLING_DISABLED | \
+     ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 #define SSH_STATE_STUNNED (1 << 0)
 #define SSH_STATE_GROUND_START (1 << 2)
@@ -471,7 +473,7 @@ s32 EnSsh_CheckHitPlayer(EnSsh* this, PlayState* play) {
     Actor_PlaySfx(&this->actor, NA_SE_EN_STALTU_ROLL);
     Actor_PlaySfx(&this->actor, NA_SE_VO_ST_ATTACK);
     play->damagePlayer(play, -8);
-    func_8002F71C(play, &this->actor, 4.0f, this->actor.yawTowardsPlayer, 6.0f);
+    Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 4.0f, this->actor.yawTowardsPlayer, 6.0f);
     this->hitCount--;
     return true;
 }

@@ -5,9 +5,24 @@
  */
 
 #include "z_en_sw.h"
+
+#include "libc64/math64.h"
+#include "libc64/qrand.h"
+#include "attributes.h"
+#include "gfx.h"
+#include "gfx_setupdl.h"
+#include "sfx.h"
+#include "sys_math3d.h"
+#include "sys_matrix.h"
+#include "z_en_item00.h"
+#include "z_lib.h"
+#include "z64effect.h"
+#include "z64play.h"
+#include "z64player.h"
+
 #include "assets/objects/object_st/object_st.h"
 
-#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_4)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_UPDATE_CULLING_DISABLED)
 
 void EnSw_Init(Actor* thisx, PlayState* play);
 void EnSw_Destroy(Actor* thisx, PlayState* play);
@@ -119,7 +134,7 @@ s32 EnSw_ClingToWall(EnSw* this, CollisionPoly* poly) {
     this->rotMtxF.zw = 0.0f;
     this->rotMtxF.ww = 1.0f;
     Matrix_MtxFToYXZRotS(&this->rotMtxF, &this->actor.world.rot, 0);
-    //! @bug: Does not return.
+    //! @bug Does not return, but the return value is not used by any caller so it doesn't matter.
 }
 
 /*returns a wall for the spider to cling to in range of (posA) and (PosB).

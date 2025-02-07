@@ -1,5 +1,5 @@
 #pragma increment_block_number "gc-eu:128 gc-eu-mq:128 gc-jp:128 gc-jp-ce:128 gc-jp-mq:128 gc-us:128 gc-us-mq:128" \
-                               "ntsc-1.2:128"
+                               "ntsc-1.2:128 pal-1.0:128 pal-1.1:128"
 
 #include "global.h"
 #include "terminal.h"
@@ -185,9 +185,9 @@ void SpeedMeter_DrawAllocEntry(SpeedMeterAllocEntry* this, GraphicsContext* gfxC
     Gfx* gfx;
 
     if (this->maxval == 0) {
-        PRINTF(VT_FGCOL(RED));
+        PRINTF_COLOR_RED();
         LOG_NUM("this->maxval", this->maxval, "../speed_meter.c", 313);
-        PRINTF(VT_RST);
+        PRINTF_RST();
     } else {
         OPEN_DISPS(gfxCtx, "../speed_meter.c", 318);
 

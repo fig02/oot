@@ -5,11 +5,26 @@
  */
 
 #include "z_en_fw.h"
-#include "assets/objects/object_fw/object_fw.h"
 #include "overlays/actors/ovl_En_Bom/z_en_bom.h"
-#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
-#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_4 | ACTOR_FLAG_9)
+#include "libc64/math64.h"
+#include "libc64/qrand.h"
+#include "gfx.h"
+#include "gfx_setupdl.h"
+#include "segmented_address.h"
+#include "sfx.h"
+#include "sys_matrix.h"
+#include "z_en_item00.h"
+#include "z_lib.h"
+#include "z64play.h"
+#include "z64player.h"
+
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/object_fw/object_fw.h"
+
+#define FLAGS                                                                                 \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_UPDATE_CULLING_DISABLED | \
+     ACTOR_FLAG_HOOKSHOT_PULLS_ACTOR)
 
 void EnFw_Init(Actor* thisx, PlayState* play);
 void EnFw_Destroy(Actor* thisx, PlayState* play);
@@ -361,8 +376,7 @@ void EnFw_Update(Actor* thisx, PlayState* play) {
     EnFw* this = (EnFw*)thisx;
 
     SkelAnime_Update(&this->skelAnime);
-    if (!CHECK_FLAG_ALL(this->actor.flags, ACTOR_FLAG_13)) {
-        // not attached to hookshot.
+    if (!CHECK_FLAG_ALL(this->actor.flags, ACTOR_FLAG_HOOKSHOT_ATTACHED)) {
         Actor_MoveXZGravity(&this->actor);
         Actor_UpdateBgCheckInfo(play, &this->actor, 10.0f, 20.0f, 0.0f, UPDBGCHECKINFO_FLAG_0 | UPDBGCHECKINFO_FLAG_2);
         this->actionFunc(this, play);

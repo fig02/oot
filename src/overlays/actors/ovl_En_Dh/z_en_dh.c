@@ -1,7 +1,35 @@
+/*
+ * File: z_en_dh.c
+ * Overlay: ovl_En_Dh
+ * Description: Dead Hand
+ */
+
 #include "z_en_dh.h"
+
+#include "libc64/qrand.h"
+#include "attributes.h"
+#include "gfx.h"
+#include "gfx_setupdl.h"
+#include "ichain.h"
+#include "rand.h"
+#include "sequence.h"
+#include "sfx.h"
+#include "sys_math.h"
+#include "sys_matrix.h"
+#include "z_en_item00.h"
+#include "z_lib.h"
+#include "z64audio.h"
+#include "z64effect.h"
+#include "z64play.h"
+#include "z64player.h"
+
+#include "global.h"
+
 #include "assets/objects/object_dh/object_dh.h"
 
-#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_4 | ACTOR_FLAG_10)
+#define FLAGS                                                                                 \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_UPDATE_CULLING_DISABLED | \
+     ACTOR_FLAG_HOOKSHOT_PULLS_PLAYER)
 
 typedef enum EnDhAction {
     /* 0 */ DH_WAIT,
@@ -233,7 +261,7 @@ void EnDh_Wait(EnDh* this, PlayState* play) {
         Math_SmoothStepToS(&this->actor.shape.rot.y, this->actor.yawTowardsPlayer, 1, 0x7D0, 0);
         SkelAnime_Update(&this->skelAnime);
         if (this->actor.params != ENDH_START_ATTACK_BOMB) {
-            func_8008EEAC(play, &this->actor);
+            Player_SetAutoLockOnActor(play, &this->actor);
         }
     }
 }
@@ -330,7 +358,7 @@ void EnDh_Attack(EnDh* this, PlayState* play) {
                 this->actionState++;
             } else if (this->collider2.base.atFlags & AT_HIT) {
                 this->collider2.base.atFlags &= ~AT_HIT;
-                func_8002F71C(play, &this->actor, 8.0f, this->actor.shape.rot.y, 8.0f);
+                Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 8.0f, this->actor.shape.rot.y, 8.0f);
             }
             break;
         case 3:

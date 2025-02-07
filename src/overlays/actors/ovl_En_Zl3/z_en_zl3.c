@@ -6,16 +6,34 @@
 
 #include "z_en_zl3.h"
 
+#include "libc64/math64.h"
+#include "libc64/qrand.h"
+#include "attributes.h"
+#include "gfx.h"
+#include "gfx_setupdl.h"
+#include "one_point_cutscene.h"
+#include "regs.h"
+#include "segmented_address.h"
+#include "seqcmd.h"
+#include "sequence.h"
+#include "sfx.h"
+#include "sys_matrix.h"
 #include "terminal.h"
-
+#include "z_en_item00.h"
+#include "z_lib.h"
+#include "z64audio.h"
 #include "z64frame_advance.h"
+#include "z64play.h"
+#include "z64player.h"
+
+#include "global.h"
 
 #include "overlays/actors/ovl_En_Encount2/z_en_encount2.h"
 #include "overlays/actors/ovl_Door_Warp1/z_door_warp1.h"
 #include "assets/objects/object_zl2/object_zl2.h"
 #include "assets/objects/object_zl2_anime2/object_zl2_anime2.h"
 
-#define FLAGS ACTOR_FLAG_4
+#define FLAGS ACTOR_FLAG_UPDATE_CULLING_DISABLED
 
 void EnZl3_Init(Actor* thisx, PlayState* play);
 void EnZl3_Destroy(Actor* thisx, PlayState* play);
@@ -2070,7 +2088,7 @@ void func_80B58014(EnZl3* this, PlayState* play) {
         this->action = 34;
         this->unk_3D0 = 0;
         func_80B57AE0(this, play);
-    } else if ((invincibilityTimer > 0) || (player->fallDistance >= 0x33)) {
+    } else if ((invincibilityTimer > 0) || (player->fallDistance >= 51)) {
         func_80B54E14(this, &gZelda2Anime2Anim_007664, 0, -11.0f, 0);
         this->action = 30;
         func_80B537E8(this);
@@ -2225,7 +2243,7 @@ s32 func_80B5899C(EnZl3* this, PlayState* play) {
         Player* player = GET_PLAYER(play);
         s8 invincibilityTimer = player->invincibilityTimer;
 
-        if ((invincibilityTimer > 0) || (player->fallDistance >= 0x33)) {
+        if ((invincibilityTimer > 0) || (player->fallDistance >= 51)) {
             func_80B54E14(this, &gZelda2Anime2Anim_007664, 2, -11.0f, 0);
             this->action = 35;
             func_80B56DC8(this);
@@ -2646,7 +2664,7 @@ void func_80B59DB8(EnZl3* this, PlayState* play) {
     s32 objectSlot = Object_GetSlot(objectCtx, OBJECT_ZL2_ANIME2);
     s32 pad2;
 
-#if OOT_DEBUG
+#if DEBUG_FEATURES
     if (objectSlot < 0) {
         PRINTF(VT_FGCOL(RED) "En_Zl3_main_bankアニメーションのバンクを読めない!!!!!!!!!!!!\n" VT_RST);
         return;

@@ -1,8 +1,16 @@
 #include "z_en_encount1.h"
-#include "terminal.h"
 #include "overlays/actors/ovl_En_Tite/z_en_tite.h"
+#include "overlays/actors/ovl_En_Reeba/z_en_reeba.h"
 
-#define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_LOCK_ON_DISABLED)
+#include "rand.h"
+#include "regs.h"
+#include "terminal.h"
+#include "z_lib.h"
+#include "z64debug_display.h"
+#include "z64play.h"
+#include "z64player.h"
+
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_LOCK_ON_DISABLED)
 
 void EnEncount1_Init(Actor* thisx, PlayState* play);
 void EnEncount1_Update(Actor* thisx, PlayState* play);
@@ -321,7 +329,7 @@ void EnEncount1_Update(Actor* thisx, PlayState* play) {
 
     this->updateFunc(this, play);
 
-    if (OOT_DEBUG && BREG(0) != 0) {
+    if (DEBUG_FEATURES && BREG(0) != 0) {
         if (this->outOfRangeTimer != 0) {
             if ((this->outOfRangeTimer & 1) == 0) {
                 DebugDisplay_AddObject(this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z,

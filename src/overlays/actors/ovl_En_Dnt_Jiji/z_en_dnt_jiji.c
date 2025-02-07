@@ -5,12 +5,29 @@
  */
 
 #include "z_en_dnt_jiji.h"
-#include "assets/objects/object_dns/object_dns.h"
 #include "overlays/actors/ovl_En_Dnt_Demo/z_en_dnt_demo.h"
 #include "overlays/effects/ovl_Effect_Ss_Hahen/z_eff_ss_hahen.h"
-#include "terminal.h"
 
-#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_4)
+#include "libc64/math64.h"
+#include "gfx.h"
+#include "gfx_setupdl.h"
+#include "one_point_cutscene.h"
+#include "rand.h"
+#include "regs.h"
+#include "segmented_address.h"
+#include "seqcmd.h"
+#include "sequence.h"
+#include "sfx.h"
+#include "sys_matrix.h"
+#include "terminal.h"
+#include "z_lib.h"
+#include "z64effect.h"
+#include "z64play.h"
+#include "z64player.h"
+
+#include "assets/objects/object_dns/object_dns.h"
+
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_CULLING_DISABLED)
 
 void EnDntJiji_Init(Actor* thisx, PlayState* play);
 void EnDntJiji_Destroy(Actor* thisx, PlayState* play);
@@ -83,7 +100,7 @@ void EnDntJiji_Init(Actor* thisx, PlayState* play) {
     // "Deku Scrub mask show elder"
     PRINTF(VT_FGCOL(YELLOW) "☆☆☆☆☆ デグナッツお面品評会長老 ☆☆☆☆☆ %x\n" VT_RST, this->stage);
     this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
-    this->actor.colChkInfo.mass = 0xFF;
+    this->actor.colChkInfo.mass = MASS_IMMOVABLE;
     this->actor.attentionRangeType = ATTENTION_RANGE_6;
     this->actionFunc = EnDntJiji_SetFlower;
     this->actor.gravity = -2.0f;
@@ -116,7 +133,7 @@ void EnDntJiji_Wait(EnDntJiji* this, PlayState* play) {
 
     SkelAnime_Update(&this->skelAnime);
     if ((this->timer == 1) && (this->actor.xzDistToPlayer < 150.0f) && !Play_InCsMode(play) &&
-        !(player->stateFlags1 & PLAYER_STATE1_ACTOR_CARRY)) {
+        !(player->stateFlags1 & PLAYER_STATE1_CARRYING_ACTOR)) {
         OnePointCutscene_Init(play, 2230, -99, &this->actor, CAM_ID_MAIN);
         this->timer = 0;
         Player_SetCsActionWithHaltedActors(play, NULL, PLAYER_CSACTION_8);
@@ -282,7 +299,7 @@ void EnDntJiji_GivePrize(EnDntJiji* this, PlayState* play) {
             PRINTF("実 \n");
             PRINTF("実 \n");
             PRINTF("実 \n");
-            SET_ITEMGETINF(ITEMGETINF_1F);
+            SET_ITEMGETINF(ITEMGETINF_FOREST_STAGE_NUT_UPGRADE);
         } else {
             // "stick"
             PRINTF("棒 \n");
@@ -291,7 +308,7 @@ void EnDntJiji_GivePrize(EnDntJiji* this, PlayState* play) {
             PRINTF("棒 \n");
             PRINTF("棒 \n");
             PRINTF("棒 \n");
-            SET_ITEMGETINF(ITEMGETINF_1E);
+            SET_ITEMGETINF(ITEMGETINF_FOREST_STAGE_STICK_UPGRADE);
         }
         this->actor.textId = 0;
         if ((this->stage != NULL) && (this->stage->actor.update != NULL)) {

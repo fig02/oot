@@ -5,6 +5,16 @@
  */
 
 #include "z_bg_spot08_iceblock.h"
+
+#include "libc64/math64.h"
+#include "libc64/qrand.h"
+#include "ichain.h"
+#include "sys_math3d.h"
+#include "sys_matrix.h"
+#include "z_lib.h"
+#include "z64play.h"
+#include "z64player.h"
+
 #include "assets/objects/object_spot08_obj/object_spot08_obj.h"
 
 #define FLAGS 0
@@ -46,7 +56,7 @@ void BgSpot08Iceblock_InitDynaPoly(BgSpot08Iceblock* this, PlayState* play, Coll
     CollisionHeader_GetVirtual(collision, &colHeader);
     this->dyna.bgId = DynaPoly_SetBgActor(play, &play->colCtx.dyna, &this->dyna.actor, colHeader);
 
-#if OOT_DEBUG
+#if DEBUG_FEATURES
     if (this->dyna.bgId == BG_ACTOR_MAX) {
         s32 pad2;
 
@@ -278,9 +288,9 @@ void BgSpot08Iceblock_SpawnTwinFloe(BgSpot08Iceblock* this, PlayState* play) {
 }
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_F32(uncullZoneForward, 3000, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 1000, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 2200, ICHAIN_STOP),
+    ICHAIN_F32(cullingVolumeDistance, 3000, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullingVolumeScale, 1000, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullingVolumeDownward, 2200, ICHAIN_STOP),
 };
 
 void BgSpot08Iceblock_Init(Actor* thisx, PlayState* play) {

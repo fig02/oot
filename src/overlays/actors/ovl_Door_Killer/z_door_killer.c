@@ -11,7 +11,7 @@
 #include "assets/objects/object_haka_door/object_haka_door.h"
 #include "assets/objects/object_door_killer/object_door_killer.h"
 
-#define FLAGS ACTOR_FLAG_4
+#define FLAGS ACTOR_FLAG_UPDATE_CULLING_DISABLED
 
 typedef enum DoorKillerBehaviour {
     /* 0 */ DOOR_KILLER_DOOR,
@@ -353,7 +353,7 @@ void DoorKiller_FallOver(DoorKiller* this, PlayState* play) {
         if ((fabsf(playerPosRelToDoor.y) < 20.0f) && (fabsf(playerPosRelToDoor.x) < 20.0f) &&
             (playerPosRelToDoor.z < 100.0f) && (playerPosRelToDoor.z > 0.0f)) {
             this->hasHitPlayerOrGround |= 1;
-            func_8002F6D4(play, &this->actor, 6.0f, this->actor.yawTowardsPlayer, 6.0f, 16);
+            Actor_SetPlayerKnockbackLarge(play, &this->actor, 6.0f, this->actor.yawTowardsPlayer, 6.0f, 0x10);
             Actor_PlaySfx(&this->actor, NA_SE_EN_KDOOR_HIT);
             Player_PlaySfx(player, NA_SE_PL_BODY_HIT);
         }

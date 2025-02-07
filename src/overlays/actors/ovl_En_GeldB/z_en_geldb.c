@@ -5,9 +5,26 @@
  */
 
 #include "z_en_geldb.h"
+
+#include "libc64/qrand.h"
+#include "gfx.h"
+#include "gfx_setupdl.h"
+#include "ichain.h"
+#include "rand.h"
+#include "segmented_address.h"
+#include "sequence.h"
+#include "sfx.h"
+#include "sys_matrix.h"
+#include "z_en_item00.h"
+#include "z_lib.h"
+#include "z64audio.h"
+#include "z64effect.h"
+#include "z64play.h"
+#include "z64player.h"
+
 #include "assets/objects/object_geldb/object_geldb.h"
 
-#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_4)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_UPDATE_CULLING_DISABLED)
 
 typedef enum EnGeldBAction {
     /*  0 */ GELDB_WAIT,
@@ -923,7 +940,7 @@ void EnGeldB_SpinAttack(EnGeldB* this, PlayState* play) {
         } else if (this->swordCollider.base.atFlags & AT_HIT) {
             this->swordCollider.base.atFlags &= ~AT_HIT;
             if (&player->actor == this->swordCollider.base.at) {
-                func_8002F71C(play, &this->actor, 6.0f, this->actor.yawTowardsPlayer, 6.0f);
+                Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 6.0f, this->actor.yawTowardsPlayer, 6.0f);
                 this->spinAttackState = 2;
                 Player_SetCsActionWithHaltedActors(play, &this->actor, PLAYER_CSACTION_24);
                 Message_StartTextbox(play, 0x6003, &this->actor);

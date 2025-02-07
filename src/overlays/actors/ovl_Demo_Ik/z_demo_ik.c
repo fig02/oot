@@ -2,7 +2,7 @@
 #include "terminal.h"
 #include "assets/objects/object_ik/object_ik.h"
 
-#define FLAGS ACTOR_FLAG_4
+#define FLAGS ACTOR_FLAG_UPDATE_CULLING_DISABLED
 
 void DemoIk_Init(Actor* thisx, PlayState* play);
 void DemoIk_Destroy(Actor* thisx, PlayState* play);
@@ -54,12 +54,12 @@ s32 DemoIk_CheckForCue(PlayState* play, u16 cueId, s32 cueChannel) {
 }
 
 void DemoIk_SetMove(DemoIk* this, PlayState* play) {
-    this->skelAnime.moveFlags |= ANIM_FLAG_UPDATE_XZ;
-    AnimTaskQueue_AddActorMove(play, &this->actor, &this->skelAnime, 1.0f);
+    this->skelAnime.movementFlags |= ANIM_FLAG_UPDATE_XZ;
+    AnimTaskQueue_AddActorMovement(play, &this->actor, &this->skelAnime, 1.0f);
 }
 
 void DemoIk_EndMove(DemoIk* this) {
-    this->skelAnime.moveFlags &= ~ANIM_FLAG_UPDATE_XZ;
+    this->skelAnime.movementFlags &= ~ANIM_FLAG_UPDATE_XZ;
 }
 
 f32 DemoIk_GetCurFrame(DemoIk* this) {

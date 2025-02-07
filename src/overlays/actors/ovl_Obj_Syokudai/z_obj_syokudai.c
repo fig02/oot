@@ -6,10 +6,21 @@
 
 #include "z_obj_syokudai.h"
 #include "overlays/actors/ovl_En_Arrow/z_en_arrow.h"
+
+#include "libc64/qrand.h"
+#include "gfx.h"
+#include "gfx_setupdl.h"
+#include "ichain.h"
+#include "one_point_cutscene.h"
+#include "sfx.h"
+#include "sys_matrix.h"
+#include "z_lib.h"
+#include "z64play.h"
+
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 #include "assets/objects/object_syokudai/object_syokudai.h"
 
-#define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_10)
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_HOOKSHOT_PULLS_PLAYER)
 
 void ObjSyokudai_Init(Actor* thisx, PlayState* play);
 void ObjSyokudai_Destroy(Actor* thisx, PlayState* play);
@@ -70,9 +81,9 @@ static ColliderCylinderInit sCylInitFlame = {
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_VEC3F_DIV1000(scale, 1000, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneForward, 4000, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 800, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 800, ICHAIN_STOP),
+    ICHAIN_F32(cullingVolumeDistance, 4000, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullingVolumeScale, 800, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullingVolumeDownward, 800, ICHAIN_STOP),
 };
 
 static s32 sLitTorchCount;

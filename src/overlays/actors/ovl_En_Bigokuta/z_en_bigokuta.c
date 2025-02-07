@@ -1,7 +1,28 @@
 #include "z_en_bigokuta.h"
+
+#include "libc64/qrand.h"
+#include "gfx.h"
+#include "gfx_setupdl.h"
+#include "ichain.h"
+#include "rand.h"
+#include "rumble.h"
+#include "sequence.h"
+#include "sfx.h"
+#include "sys_matrix.h"
+#include "z_en_item00.h"
+#include "z_lib.h"
+#include "z64audio.h"
+#include "z64effect.h"
+#include "z64play.h"
+#include "z64player.h"
+
+#include "global.h"
+
 #include "assets/objects/object_bigokuta/object_bigokuta.h"
 
-#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_4 | ACTOR_FLAG_5)
+#define FLAGS                                                                                 \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_UPDATE_CULLING_DISABLED | \
+     ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 void EnBigokuta_Init(Actor* thisx, PlayState* play);
 void EnBigokuta_Destroy(Actor* thisx, PlayState* play);
@@ -731,7 +752,7 @@ void func_809BE798(EnBigokuta* this, PlayState* play) {
         } else {
             effectRot = -0x6000;
         }
-        func_8002F71C(play, &this->actor, 10.0f, this->actor.world.rot.y + effectRot, 5.0f);
+        Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 10.0f, this->actor.world.rot.y + effectRot, 5.0f);
         if (this->actionFunc == func_809BDC08) {
             func_809BD4A4(this);
             this->unk_196 = 40;
@@ -785,7 +806,7 @@ void EnBigokuta_Update(Actor* thisx, PlayState* play2) {
             for (i = 0; i < ARRAY_COUNT(this->cylinder); i++) {
                 CollisionCheck_SetAT(play, &play->colChkCtx, &this->cylinder[i].base);
             }
-            this->actor.flags |= ACTOR_FLAG_24;
+            this->actor.flags |= ACTOR_FLAG_SFX_FOR_PLAYER_BODY_HIT;
         } else {
             for (i = 0; i < ARRAY_COUNT(this->cylinder); i++) {
                 CollisionCheck_SetOC(play, &play->colChkCtx, &this->cylinder[i].base);

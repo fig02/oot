@@ -5,11 +5,29 @@
  */
 
 #include "z_en_ik.h"
+
+#include "libc64/qrand.h"
+#include "gfx.h"
+#include "gfx_setupdl.h"
+#include "rand.h"
+#include "rumble.h"
+#include "sfx.h"
+#include "sequence.h"
+#include "sys_matrix.h"
+#include "terminal.h"
+#include "versions.h"
+#include "z_en_item00.h"
+#include "z_lib.h"
+#include "z64audio.h"
+#include "z64effect.h"
+#include "z64play.h"
+#include "z64player.h"
+#include "z64skin_matrix.h"
+
 #include "assets/scenes/dungeons/jyasinboss/jyasinboss_scene.h"
 #include "assets/objects/object_ik/object_ik.h"
-#include "terminal.h"
 
-#define FLAGS ACTOR_FLAG_4
+#define FLAGS ACTOR_FLAG_UPDATE_CULLING_DISABLED
 
 typedef void (*EnIkDrawFunc)(struct EnIk*, PlayState*);
 
@@ -201,7 +219,7 @@ void EnIk_InitImpl(Actor* thisx, PlayState* play) {
 
     thisx->update = EnIk_UpdateEnemy;
     thisx->draw = EnIk_DrawEnemy;
-    thisx->flags |= ACTOR_FLAG_10;
+    thisx->flags |= ACTOR_FLAG_HOOKSHOT_PULLS_PLAYER;
 
     Collider_InitCylinder(play, &this->bodyCollider);
     Collider_SetCylinder(play, &this->bodyCollider, thisx, &sCylinderInit);
@@ -757,9 +775,11 @@ void EnIk_UpdateDamage(EnIk* this, PlayState* play) {
         } else if (this->actor.colChkInfo.health <= 10) {
             Actor_ChangeCategory(play, &play->actorCtx, &this->actor, ACTORCAT_BOSS);
             SfxSource_PlaySfxAtFixedWorldPos(play, &this->actor.world.pos, 20, NA_SE_EN_LAST_DAMAGE);
+#if !OOT_PAL_N64
             if (this->switchFlag != 0xFF) {
                 Flags_SetSwitch(play, this->switchFlag);
             }
+#endif
             return;
         } else if (prevHealth == 50) {
             Actor_ChangeCategory(play, &play->actorCtx, &this->actor, ACTORCAT_ENEMY);
@@ -817,7 +837,7 @@ void EnIk_UpdateEnemy(Actor* thisx, PlayState* play) {
                 prevInvincibilityTimer = player->invincibilityTimer;
 
                 if (player->invincibilityTimer <= 0) {
-                    if (player->invincibilityTimer < -39) {
+                    if (player->invincibilityTimer <= -40) {
                         player->invincibilityTimer = 0;
                     } else {
                         player->invincibilityTimer = 0;
@@ -826,7 +846,7 @@ void EnIk_UpdateEnemy(Actor* thisx, PlayState* play) {
                     }
                 }
 
-                func_8002F71C(play, &this->actor, 8.0f, this->actor.yawTowardsPlayer, 8.0f);
+                Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 8.0f, this->actor.yawTowardsPlayer, 8.0f);
                 player->invincibilityTimer = prevInvincibilityTimer;
             }
         }
@@ -1231,6 +1251,9 @@ void EnIk_CsAction4(EnIk* this, PlayState* play) {
 
 void EnIk_CsAction5(EnIk* this, PlayState* play) {
     if (EnIk_GetCue(play, 4) == NULL) {
+#if OOT_PAL_N64
+        Flags_SetSwitch(play, this->switchFlag);
+#endif
         Actor_Kill(&this->actor);
     }
 }
@@ -1522,7 +1545,7 @@ void EnIk_StartDefeatCutscene(Actor* thisx, PlayState* play) {
         Cutscene_SetScript(play, gSpiritBossNabooruKnuckleDefeatCs);
         gSaveContext.cutsceneTrigger = 1;
         Actor_SetScale(&this->actor, 0.01f);
-        SET_EVENTCHKINF(EVENTCHKINF_3C);
+        SET_EVENTCHKINF(EVENTCHKINF_DEFEATED_NABOORU_KNUCKLE);
         EnIk_SetupCsAction3(this, play);
     }
 }
@@ -1531,7 +1554,8 @@ void EnIk_Init(Actor* thisx, PlayState* play) {
     EnIk* this = (EnIk*)thisx;
     s32 upperParams = IK_GET_UPPER_PARAMS(&this->actor);
 
-    if (((IK_GET_ARMOR_TYPE(&this->actor) == IK_TYPE_NABOORU) && GET_EVENTCHKINF(EVENTCHKINF_3C)) ||
+    if (((IK_GET_ARMOR_TYPE(&this->actor) == IK_TYPE_NABOORU) &&
+         GET_EVENTCHKINF(EVENTCHKINF_DEFEATED_NABOORU_KNUCKLE)) ||
         (upperParams != 0 && Flags_GetSwitch(play, upperParams >> 8))) {
         Actor_Kill(&this->actor);
     } else {

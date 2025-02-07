@@ -1,9 +1,22 @@
 #include "z_en_ex_ruppy.h"
+#include "overlays/actors/ovl_En_Diving_Game/z_en_diving_game.h"
+
+#include "libc64/qrand.h"
+#include "gfx.h"
+#include "gfx_setupdl.h"
+#include "rand.h"
+#include "segmented_address.h"
+#include "sfx.h"
+#include "sys_matrix.h"
 #include "terminal.h"
-#include "../ovl_En_Diving_Game/z_en_diving_game.h"
+#include "z_en_item00.h"
+#include "z_lib.h"
+#include "z64effect.h"
+#include "z64play.h"
+
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 
-#define FLAGS ACTOR_FLAG_4
+#define FLAGS ACTOR_FLAG_UPDATE_CULLING_DISABLED
 
 void EnExRuppy_Init(Actor* thisx, PlayState* play);
 void EnExRuppy_Destroy(Actor* thisx, PlayState* play);
@@ -338,7 +351,7 @@ void EnExRuppy_WaitToBlowUp(EnExRuppy* this, PlayState* play) {
             explosionScaleStep = 6;
         }
         EffectSsBomb2_SpawnLayered(play, &this->actor.world.pos, &velocity, &accel, explosionScale, explosionScaleStep);
-        func_8002F71C(play, &this->actor, 2.0f, this->actor.yawTowardsPlayer, 0.0f);
+        Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 2.0f, this->actor.yawTowardsPlayer, 0.0f);
         Actor_PlaySfx(&this->actor, NA_SE_IT_BOMB_EXPLOSION);
         Actor_Kill(&this->actor);
     }

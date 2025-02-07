@@ -6,6 +6,21 @@
 
 #include "z_bg_dodoago.h"
 #include "overlays/actors/ovl_En_Bom/z_en_bom.h"
+
+#include "gfx.h"
+#include "gfx_setupdl.h"
+#include "ichain.h"
+#include "macros.h"
+#include "one_point_cutscene.h"
+#include "rand.h"
+#include "rumble.h"
+#include "sfx.h"
+#include "sys_matrix.h"
+#include "z_en_item00.h"
+#include "z_lib.h"
+#include "z64effect.h"
+#include "z64play.h"
+
 #include "assets/objects/object_ddan_objects/object_ddan_objects.h"
 
 #define FLAGS 0
@@ -102,9 +117,9 @@ void BgDodoago_SpawnSparkles(Vec3f* meanPos, PlayState* play) {
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_VEC3F_DIV1000(scale, 100, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneForward, 5000, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 1000, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 800, ICHAIN_STOP),
+    ICHAIN_F32(cullingVolumeDistance, 5000, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullingVolumeScale, 1000, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullingVolumeDownward, 800, ICHAIN_STOP),
 };
 
 void BgDodoago_Init(Actor* thisx, PlayState* play) {

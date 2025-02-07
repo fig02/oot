@@ -8,7 +8,7 @@
 #include "assets/objects/object_jya_obj/object_jya_obj.h"
 #include "terminal.h"
 
-#define FLAGS ACTOR_FLAG_4
+#define FLAGS ACTOR_FLAG_UPDATE_CULLING_DISABLED
 
 void BgJyaZurerukabe_Init(Actor* thisx, PlayState* play);
 void BgJyaZurerukabe_Destroy(Actor* thisx, PlayState* play);
@@ -54,9 +54,9 @@ static s16 D_8089BA30[6] = {
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_VEC3F_DIV1000(scale, 100, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneForward, 1000, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 1200, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 1000, ICHAIN_STOP),
+    ICHAIN_F32(cullingVolumeDistance, 1000, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullingVolumeScale, 1200, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullingVolumeDownward, 1000, ICHAIN_STOP),
 };
 
 void BgJyaZurerukabe_InitDynaPoly(BgJyaZurerukabe* this, PlayState* play, CollisionHeader* collision, s32 flag) {
@@ -67,7 +67,7 @@ void BgJyaZurerukabe_InitDynaPoly(BgJyaZurerukabe* this, PlayState* play, Collis
     CollisionHeader_GetVirtual(collision, &colHeader);
     this->dyna.bgId = DynaPoly_SetBgActor(play, &play->colCtx.dyna, &this->dyna.actor, colHeader);
 
-#if OOT_DEBUG
+#if DEBUG_FEATURES
     if (this->dyna.bgId == BG_ACTOR_MAX) {
         s32 pad2;
 
@@ -97,13 +97,13 @@ void func_8089B4C8(BgJyaZurerukabe* this, PlayState* play) {
             case 3:
             case 5:
                 if (fabsf(D_8089B9C0[D_8089BA30[i]]) > 1.0f) {
-                    func_8002F6D4(play, &this->dyna.actor, 1.5f, this->dyna.actor.shape.rot.y, 0.0f, 0);
+                    Actor_SetPlayerKnockbackLarge(play, &this->dyna.actor, 1.5f, this->dyna.actor.shape.rot.y, 0.0f, 0);
                 }
                 break;
             case 1:
             case 4:
                 if (fabsf(D_8089B9C0[D_8089BA30[i]] - D_8089B9C0[D_8089BA30[i + 1]]) > 1.0f) {
-                    func_8002F6D4(play, &this->dyna.actor, 1.5f, this->dyna.actor.shape.rot.y, 0.0f, 0);
+                    Actor_SetPlayerKnockbackLarge(play, &this->dyna.actor, 1.5f, this->dyna.actor.shape.rot.y, 0.0f, 0);
                 }
                 break;
         }
@@ -125,10 +125,10 @@ void BgJyaZurerukabe_Init(Actor* thisx, PlayState* play) {
     }
 
     if (i == ARRAY_COUNT(D_8089B9F0)) {
-        PRINTF(VT_COL(RED, WHITE));
+        PRINTF_COLOR_ERROR();
         PRINTF("home pos が変更されたみたい(%s %d)(arg_data 0x%04x)\n", "../z_bg_jya_zurerukabe.c", 299,
                this->dyna.actor.params);
-        PRINTF(VT_RST);
+        PRINTF_RST();
     }
 
     this->unk_16E = D_8089B9F8[this->unk_168];

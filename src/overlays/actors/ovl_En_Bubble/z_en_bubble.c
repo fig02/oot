@@ -1,4 +1,16 @@
 #include "z_en_bubble.h"
+
+#include "libc64/qrand.h"
+#include "gfx.h"
+#include "gfx_setupdl.h"
+#include "sfx.h"
+#include "sys_math3d.h"
+#include "sys_matrix.h"
+#include "z_en_item00.h"
+#include "z_lib.h"
+#include "z64effect.h"
+#include "z64play.h"
+
 #include "assets/objects/object_bubble/object_bubble.h"
 
 #define FLAGS ACTOR_FLAG_ATTENTION_ENABLED
@@ -115,7 +127,7 @@ void EnBubble_DamagePlayer(EnBubble* this, PlayState* play) {
     s32 damage = -this->colliderSphere.elements[0].base.atDmgInfo.damage;
 
     play->damagePlayer(play, damage);
-    func_8002F7A0(play, &this->actor, 6.0f, this->actor.yawTowardsPlayer, 6.0f);
+    Actor_SetPlayerKnockbackSmallNoDamage(play, &this->actor, 6.0f, this->actor.yawTowardsPlayer, 6.0f);
 }
 
 s32 EnBubble_Explosion(EnBubble* this, PlayState* play) {

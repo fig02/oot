@@ -5,14 +5,31 @@
  */
 
 #include "z_en_g_switch.h"
-#include "terminal.h"
 #include "overlays/actors/ovl_En_Syateki_Itm/z_en_syateki_itm.h"
 #include "overlays/effects/ovl_Effect_Ss_Kakera/z_eff_ss_kakera.h"
 #include "overlays/effects/ovl_Effect_Ss_HitMark/z_eff_ss_hitmark.h"
+
+#include "libc64/qrand.h"
+#include "gfx.h"
+#include "gfx_setupdl.h"
+#include "rand.h"
+#include "regs.h"
+#include "segmented_address.h"
+#include "sfx.h"
+#include "sys_matrix.h"
+#include "terminal.h"
+#include "z_en_item00.h"
+#include "z_lib.h"
+#include "z64audio.h"
+#include "z64debug_display.h"
+#include "z64effect.h"
+#include "z64play.h"
+#include "z64player.h"
+
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 #include "assets/objects/object_tsubo/object_tsubo.h"
 
-#define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_5)
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 typedef enum GSwitchMoveState {
     /* 0 */ MOVE_TARGET,
@@ -448,7 +465,7 @@ void EnGSwitch_Update(Actor* thisx, PlayState* play) {
         }
     }
 
-    if (OOT_DEBUG && BREG(0) != 0 && (this->type == ENGSWITCH_SILVER_TRACKER)) {
+    if (DEBUG_FEATURES && BREG(0) != 0 && (this->type == ENGSWITCH_SILVER_TRACKER)) {
         DebugDisplay_AddObject(this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z,
                                this->actor.world.rot.x, this->actor.world.rot.y, this->actor.world.rot.z, 1.0f, 1.0f,
                                1.0f, 255, 0, 0, 255, 4, play->state.gfxCtx);

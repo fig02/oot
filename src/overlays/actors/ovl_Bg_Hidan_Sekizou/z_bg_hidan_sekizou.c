@@ -5,6 +5,17 @@
  */
 
 #include "z_bg_hidan_sekizou.h"
+
+#include "gfx.h"
+#include "gfx_setupdl.h"
+#include "ichain.h"
+#include "segmented_address.h"
+#include "sfx.h"
+#include "sys_matrix.h"
+#include "z_lib.h"
+#include "z64play.h"
+#include "z64player.h"
+
 #include "assets/objects/object_hidan_objects/object_hidan_objects.h"
 
 #define FLAGS 0
@@ -115,8 +126,8 @@ static CollisionCheckInfoInit sColChkInfoInit = { 1, 40, 240, MASS_IMMOVABLE };
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_VEC3F_DIV1000(scale, 100, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneScale, 400, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneForward, 1500, ICHAIN_STOP),
+    ICHAIN_F32(cullingVolumeScale, 400, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullingVolumeDistance, 1500, ICHAIN_STOP),
 };
 
 static void* sFireballsTexs[] = {
@@ -259,7 +270,7 @@ void func_8088D750(BgHidanSekizou* this, PlayState* play) {
             phi_a3 = -0x4000;
         }
     }
-    func_8002F71C(play, &this->dyna.actor, 5.0f, phi_a3, 1.0f);
+    Actor_SetPlayerKnockbackLargeNoDamage(play, &this->dyna.actor, 5.0f, phi_a3, 1.0f);
 }
 
 void BgHidanSekizou_Update(Actor* thisx, PlayState* play2) {

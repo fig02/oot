@@ -9,9 +9,12 @@
 #include "overlays/actors/ovl_En_Boom/z_en_boom.h"
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 
-#pragma increment_block_number "gc-jp:128 gc-jp-ce:128 gc-jp-mq:128 gc-us:128 gc-us-mq:128 ntsc-1.2:128"
+#pragma increment_block_number "gc-eu:128 gc-eu-mq:128 gc-jp:128 gc-jp-ce:128 gc-jp-mq:128 gc-us:128 gc-us-mq:128" \
+                               "ntsc-1.2:128 pal-1.0:128 pal-1.1:128"
 
-#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_4 | ACTOR_FLAG_5)
+#define FLAGS                                                                                 \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_UPDATE_CULLING_DISABLED | \
+     ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 #define GET_BODY(this) ((BossVa*)(this)->actor.parent)
 #define vaGorePulse offset.x
@@ -589,7 +592,7 @@ void BossVa_Init(Actor* thisx, PlayState* play2) {
     switch (this->actor.params) {
         case BOSSVA_BODY:
             SkelAnime_Init(play, &this->skelAnime, &gBarinadeBodySkel, &gBarinadeBodyAnim, NULL, NULL, 0);
-            this->actor.flags |= ACTOR_FLAG_24;
+            this->actor.flags |= ACTOR_FLAG_SFX_FOR_PLAYER_BODY_HIT;
             break;
         case BOSSVA_SUPPORT_1:
         case BOSSVA_SUPPORT_2:
@@ -608,7 +611,7 @@ void BossVa_Init(Actor* thisx, PlayState* play2) {
             SkelAnime_InitFlex(play, &this->skelAnime, &gBarinadeStumpSkel, &gBarinadeStumpAnim, NULL, NULL, 0);
             break;
         default:
-            this->actor.flags |= ACTOR_FLAG_24;
+            this->actor.flags |= ACTOR_FLAG_SFX_FOR_PLAYER_BODY_HIT;
             SkelAnime_Init(play, &this->skelAnime, &gBarinadeBariSkel, &gBarinadeBariAnim, NULL, NULL, 0);
             this->actor.shape.yOffset = 400.0f;
             break;
@@ -639,7 +642,7 @@ void BossVa_Init(Actor* thisx, PlayState* play2) {
             } else {
                 this->actor.colChkInfo.damageTable = sDamageTable;
                 sPhase2Timer = 0xFFFF;
-                if (GET_EVENTCHKINF(EVENTCHKINF_76)) {
+                if (GET_EVENTCHKINF(EVENTCHKINF_BEGAN_BARINADE_BATTLE)) {
                     sCsState = INTRO_CALL_BARI;
                     sDoorState = 100;
                     Player_SetCsActionWithHaltedActors(play, &this->actor, PLAYER_CSACTION_1);
@@ -974,7 +977,7 @@ void BossVa_BodyIntro(BossVa* this, PlayState* play) {
                 sSubCamAtNext.y = 140.0f;
                 sSubCamAtNext.z = -200.0f;
 
-                if (!GET_EVENTCHKINF(EVENTCHKINF_76)) {
+                if (!GET_EVENTCHKINF(EVENTCHKINF_BEGAN_BARINADE_BATTLE)) {
                     TitleCard_InitBossName(play, &play->actorCtx.titleCtx, SEGMENTED_TO_VIRTUAL(gBarinadeTitleCardTex),
                                            160, 180, 128, 40);
                 }
@@ -1016,7 +1019,7 @@ void BossVa_BodyIntro(BossVa* this, PlayState* play) {
                 Play_ChangeCameraStatus(play, CAM_ID_MAIN, CAM_STAT_ACTIVE);
                 Player_SetCsActionWithHaltedActors(play, &this->actor, PLAYER_CSACTION_7);
                 sCsState++;
-                SET_EVENTCHKINF(EVENTCHKINF_76);
+                SET_EVENTCHKINF(EVENTCHKINF_BEGAN_BARINADE_BATTLE);
                 player->actor.shape.rot.y = player->actor.world.rot.y = this->actor.yawTowardsPlayer + 0x8000;
             }
             break;
@@ -1071,7 +1074,7 @@ void BossVa_BodyPhase1(BossVa* this, PlayState* play) {
     if (this->colliderBody.base.atFlags & AT_HIT) {
         this->colliderBody.base.atFlags &= ~AT_HIT;
         if (this->colliderBody.base.at == &player->actor) {
-            func_8002F71C(play, &this->actor, 8.0f, this->actor.yawTowardsPlayer, 8.0f);
+            Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 8.0f, this->actor.yawTowardsPlayer, 8.0f);
         }
     }
 
@@ -1145,6 +1148,8 @@ void BossVa_BodyPhase2(BossVa* this, PlayState* play) {
             sKillBari++;
             if ((this->actor.colorFilterTimer != 0) && !(this->actor.colorFilterParams & 0x4000)) {
                 this->invincibilityTimer = this->actor.colorFilterTimer - 5;
+                //! @bug This condition is always false as this->invincibilityTimer is an s8 so can never
+                //! be larger than 160.
                 if (this->invincibilityTimer > 160) {
                     this->invincibilityTimer = 0;
                 }
@@ -1161,7 +1166,7 @@ void BossVa_BodyPhase2(BossVa* this, PlayState* play) {
 
         sPhase2Timer = (sPhase2Timer + 0x18) & 0xFFF0;
         if (this->colliderBody.base.at == &player->actor) {
-            func_8002F71C(play, &this->actor, 8.0f, this->actor.yawTowardsPlayer, 8.0f);
+            Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 8.0f, this->actor.yawTowardsPlayer, 8.0f);
             Actor_PlaySfx(&player->actor, NA_SE_PL_BODY_HIT);
         }
     }
@@ -1237,7 +1242,7 @@ void BossVa_BodyPhase3(BossVa* this, PlayState* play) {
     if (this->colliderBody.base.atFlags & AT_HIT) {
         this->colliderBody.base.atFlags &= ~AT_HIT;
         if (this->colliderBody.base.at == &player->actor) {
-            func_8002F71C(play, &this->actor, 8.0f, this->actor.yawTowardsPlayer, 8.0f);
+            Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 8.0f, this->actor.yawTowardsPlayer, 8.0f);
             this->actor.world.rot.y += (s16)Rand_CenteredFloat(0x2EE0) + 0x8000;
             Actor_PlaySfx(&player->actor, NA_SE_PL_BODY_HIT);
         }
@@ -1358,7 +1363,7 @@ void BossVa_BodyPhase4(BossVa* this, PlayState* play) {
     if (this->colliderBody.base.atFlags & AT_HIT) {
         this->colliderBody.base.atFlags &= ~AT_HIT;
         if (this->colliderBody.base.at == &player->actor) {
-            func_8002F71C(play, &this->actor, 8.0f, this->actor.yawTowardsPlayer, 8.0f);
+            Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 8.0f, this->actor.yawTowardsPlayer, 8.0f);
             this->actor.world.rot.y += (s16)Rand_CenteredFloat(0x2EE0) + 0x8000;
             Actor_PlaySfx(&player->actor, NA_SE_PL_BODY_HIT);
         }
@@ -2545,7 +2550,8 @@ void BossVa_BariPhase3Attack(BossVa* this, PlayState* play) {
     this->vaBariUnused.y += this->vaBariUnused.z;
     if ((this->colliderLightning.base.atFlags & AT_HIT) || (this->colliderSph.base.atFlags & AT_HIT)) {
         if ((this->colliderLightning.base.at == &player->actor) || (this->colliderSph.base.at == &player->actor)) {
-            func_8002F71C(play, &this->actor, 8.0f, GET_BODY(this)->actor.yawTowardsPlayer, 8.0f);
+            Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 8.0f, GET_BODY(this)->actor.yawTowardsPlayer,
+                                                  8.0f);
             Actor_PlaySfx(&player->actor, NA_SE_PL_BODY_HIT);
             this->colliderSph.base.at = NULL;
             this->colliderLightning.base.at = NULL;
@@ -2640,7 +2646,8 @@ void BossVa_BariPhase2Attack(BossVa* this, PlayState* play) {
 
     if ((this->colliderLightning.base.atFlags & AT_HIT) || (this->colliderSph.base.atFlags & AT_HIT)) {
         if ((this->colliderLightning.base.at == &player->actor) || (this->colliderSph.base.at == &player->actor)) {
-            func_8002F71C(play, &this->actor, 8.0f, GET_BODY(this)->actor.yawTowardsPlayer, 8.0f);
+            Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 8.0f, GET_BODY(this)->actor.yawTowardsPlayer,
+                                                  8.0f);
             Actor_PlaySfx(&player->actor, NA_SE_PL_BODY_HIT);
             this->colliderSph.base.at = NULL;
             this->colliderLightning.base.at = NULL;

@@ -9,10 +9,23 @@ extern Mtx D_01000000;
 
 extern void* osRomBase;
 extern s32 osTvType;
+extern u32 osRomType;
+extern u32 osVersion;
 extern s32 osResetType;
 extern s32 osCicId;
 extern u32 osMemSize;
 extern u8 osAppNMIBuffer[0x40];
+
+extern u32 __osBbIsBb;
+extern u32 __osBbEepromSize;
+extern u32 __osBbPakSize;
+extern u32 __osBbFlashSize;
+extern u32 __osBbEepromAddress;
+extern u32 __osBbPakAddress[4];
+extern u32 __osBbFlashAddress;
+extern u32 __osBbSramSize;
+extern u32 __osBbSramAddress;
+extern u32 __osBbHackFlags;
 
 extern s8 D_80009430;
 extern vu8 gViConfigBlack;
@@ -64,39 +77,16 @@ extern s32 gZeldaArenaLogSeverity;
 extern MapData gMapDataTable;
 extern s16 gSpoilingItems[3];
 extern s16 gSpoilingItemReverts[3];
-extern FlexSkeletonHeader* gPlayerSkelHeaders[2];
-extern u8 gPlayerModelTypes[PLAYER_MODELGROUP_MAX][PLAYER_MODELGROUPENTRY_MAX];
-extern Gfx* gPlayerLeftHandBgsDLs[];
-extern Gfx* gPlayerLeftHandOpenDLs[];
-extern Gfx* gPlayerLeftHandClosedDLs[];
-extern Gfx* gPlayerLeftHandBoomerangDLs[];
-extern Gfx gCullBackDList[];
-extern Gfx gCullFrontDList[];
+
 extern Gfx gEmptyDL[];
-extern u32 gBitFlags[32];
-extern u16 gEquipMasks[EQUIP_TYPE_MAX];
-extern u16 gEquipNegMasks[EQUIP_TYPE_MAX];
-extern u32 gUpgradeMasks[UPG_MAX];
-extern u8 gEquipShifts[EQUIP_TYPE_MAX];
-extern u8 gUpgradeShifts[UPG_MAX];
-extern u16 gUpgradeCapacities[UPG_MAX][4];
-extern u32 gGsFlagsMasks[4];
-extern u32 gGsFlagsShifts[4];
-extern void* gItemIcons[0x82];
-extern u8 gItemSlots[56];
-extern SceneCmdHandlerFunc gSceneCmdHandlers[SCENE_CMD_ID_MAX];
-extern s16 gLinkObjectIds[2];
-extern u32 gObjectTableSize;
-extern RomFile gObjectTable[OBJECT_ID_MAX];
-extern EntranceInfo gEntranceTable[ENTR_MAX];
-extern SceneTableEntry gSceneTable[SCENE_ID_MAX];
+
 extern u16 gSramSlotOffsets[];
 // 4 16-colors palettes
 extern u64 gMojiFontTLUTs[4][4]; // original name: "moji_tlut"
 extern u64 gMojiFontTex[]; // original name: "font_ff"
 extern u8 gBossMarkState;
 
-#if OOT_DEBUG
+#if DEBUG_FEATURES
 extern u32 gIsCtrlr2Valid;
 #endif
 extern s16* gWaveSamples[9];
@@ -136,7 +126,7 @@ extern u16 D_801333D0;
 extern Vec3f gSfxDefaultPos;
 extern f32 gSfxDefaultFreqAndVolScale;
 extern s8 gSfxDefaultReverb;
-#if OOT_DEBUG
+#if DEBUG_FEATURES
 extern u8 D_801333F0;
 extern u8 gAudioSfxSwapOff;
 extern u8 D_801333F8;
@@ -144,7 +134,7 @@ extern u8 D_801333F8;
 extern u8 gSeqCmdWritePos;
 extern u8 gSeqCmdReadPos;
 extern u8 gStartSeqDisabled;
-#if OOT_DEBUG
+#if DEBUG_FEATURES
 extern u8 gAudioDebugPrintSeqCmd;
 #endif
 extern u8 gSoundModeList[];
@@ -156,8 +146,8 @@ extern s32 gSystemArenaLogSeverity;
 extern u8 __osPfsInodeCacheBank;
 extern s32 __osPfsLastChannel;
 
-extern const TempoData gTempoData;
-extern const AudioHeapInitSizes gAudioHeapInitSizes;
+extern TempoData gTempoData;
+extern AudioHeapInitSizes gAudioHeapInitSizes;
 extern s16 gOcarinaSongItemMap[];
 extern AudioTable gSoundFontTable;
 extern u8 gSequenceFontTable[];

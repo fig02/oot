@@ -5,8 +5,24 @@
  */
 
 #include "z_en_mb.h"
-#include "assets/objects/object_mb/object_mb.h"
+
+#include "libc64/qrand.h"
+#include "gfx.h"
+#include "gfx_setupdl.h"
+#include "ichain.h"
+#include "rand.h"
+#include "rumble.h"
+#include "segmented_address.h"
+#include "sfx.h"
+#include "sys_matrix.h"
 #include "versions.h"
+#include "z_en_item00.h"
+#include "z_lib.h"
+#include "z64effect.h"
+#include "z64play.h"
+#include "z64player.h"
+
+#include "assets/objects/object_mb/object_mb.h"
 
 /*
  * This actor can have three behaviors:
@@ -15,7 +31,7 @@
  * - "Spear Patrol" (variable 0xPP00 PP=pathId): uses a spear, patrols following a path, charges
  */
 
-#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_4)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_UPDATE_CULLING_DISABLED)
 
 typedef enum EnMbType {
     /* -1 */ ENMB_TYPE_SPEAR_GUARD = -1,
@@ -293,9 +309,9 @@ void EnMb_Init(Actor* thisx, PlayState* play) {
             Actor_SetScale(&this->actor, 0.02f);
             this->bodyCollider.dim.height = 170;
             this->bodyCollider.dim.radius = 45;
-            this->actor.uncullZoneForward = 4000.0f;
-            this->actor.uncullZoneScale = 800.0f;
-            this->actor.uncullZoneDownward = 1800.0f;
+            this->actor.cullingVolumeDistance = 4000.0f;
+            this->actor.cullingVolumeScale = 800.0f;
+            this->actor.cullingVolumeDownward = 1800.0f;
             this->playerDetectionRange = 710.0f;
             this->attackCollider.elem.atDmgInfo.dmgFlags = DMG_UNBLOCKABLE;
 
@@ -605,8 +621,10 @@ void EnMb_Stunned(EnMb* this, PlayState* play) {
     if ((player->stateFlags2 & PLAYER_STATE2_7) && player->actor.parent == &this->actor) {
         player->stateFlags2 &= ~PLAYER_STATE2_7;
         player->actor.parent = NULL;
+#if OOT_VERSION >= PAL_1_0
         player->av2.actionVar2 = 200;
-        func_8002F71C(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
+#endif
+        Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
         this->attack = ENMB_ATTACK_NONE;
     }
 
@@ -714,17 +732,21 @@ void EnMb_ClubWaitAfterAttack(EnMb* this, PlayState* play) {
  * Slow down, charge again if the player is near, or resume walking.
  */
 void EnMb_SpearPatrolEndCharge(EnMb* this, PlayState* play) {
+#if OOT_VERSION >= PAL_1_0
     Player* player = GET_PLAYER(play);
+#endif
     f32 lastFrame;
     s16 relYawFromPlayer;
     s16 yawPlayerToWaypoint;
 
+#if OOT_VERSION >= PAL_1_0
     if ((player->stateFlags2 & PLAYER_STATE2_7) && player->actor.parent == &this->actor) {
         player->stateFlags2 &= ~PLAYER_STATE2_7;
         player->actor.parent = NULL;
         player->av2.actionVar2 = 200;
-        func_8002F71C(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
+        Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
     }
+#endif
 
     if (this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) {
         Math_SmoothStepToF(&this->actor.speed, 0.0f, 1.0f, 1.5f, 0.0f);
@@ -840,8 +862,9 @@ void EnMb_ClubAttack(EnMb* this, PlayState* play) {
                 }
             }
 
-            func_8002F71C(play, &this->actor, (650.0f - this->actor.xzDistToPlayer) * 0.04f + 4.0f,
-                          this->actor.world.rot.y, 8.0f);
+            Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor,
+                                                  (650.0f - this->actor.xzDistToPlayer) * 0.04f + 4.0f,
+                                                  this->actor.world.rot.y, 8.0f);
 
             player->invincibilityTimer = prevPlayerInvincibilityTimer;
         }
@@ -911,7 +934,7 @@ void EnMb_SpearPatrolPrepareAndCharge(EnMb* this, PlayState* play) {
         if (this->attackCollider.base.at == &player->actor) {
             if (!endCharge && !(player->stateFlags2 & PLAYER_STATE2_7)) {
                 if (player->invincibilityTimer < 0) {
-                    if (player->invincibilityTimer < -39) {
+                    if (player->invincibilityTimer <= -40) {
                         player->invincibilityTimer = 0;
                     } else {
                         player->invincibilityTimer = 0;
@@ -944,19 +967,24 @@ void EnMb_SpearPatrolPrepareAndCharge(EnMb* this, PlayState* play) {
 
     if (endCharge) {
         if (hasHitPlayer || (player->stateFlags2 & PLAYER_STATE2_7)) {
-#if OOT_VERSION < NTSC_1_2
+#if OOT_VERSION < PAL_1_0
+            player->stateFlags2 &= ~PLAYER_STATE2_7;
+            this->attackCollider.base.atFlags &= ~AT_HIT;
+            player->actor.parent = NULL;
+            Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
+#elif OOT_VERSION < NTSC_1_2
             player->stateFlags2 &= ~PLAYER_STATE2_7;
             this->attackCollider.base.atFlags &= ~AT_HIT;
             player->actor.parent = NULL;
             player->av2.actionVar2 = 200;
-            func_8002F71C(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
+            Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
 #else
             this->attackCollider.base.atFlags &= ~AT_HIT;
             if (player->stateFlags2 & PLAYER_STATE2_7) {
                 player->stateFlags2 &= ~PLAYER_STATE2_7;
                 player->actor.parent = NULL;
                 player->av2.actionVar2 = 200;
-                func_8002F71C(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
+                Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
             }
 #endif
         }
@@ -1021,19 +1049,24 @@ void EnMb_SpearPatrolImmediateCharge(EnMb* this, PlayState* play) {
 
     if (endCharge) {
         if (hasHitPlayer || (player->stateFlags2 & PLAYER_STATE2_7)) {
-#if OOT_VERSION < NTSC_1_2
+#if OOT_VERSION < PAL_1_0
+            this->attackCollider.base.atFlags &= ~AT_HIT;
+            player->stateFlags2 &= ~PLAYER_STATE2_7;
+            player->actor.parent = NULL;
+            Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
+#elif OOT_VERSION < NTSC_1_2
             this->attackCollider.base.atFlags &= ~AT_HIT;
             player->stateFlags2 &= ~PLAYER_STATE2_7;
             player->actor.parent = NULL;
             player->av2.actionVar2 = 200;
-            func_8002F71C(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
+            Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
 #else
             this->attackCollider.base.atFlags &= ~AT_HIT;
             if (player->stateFlags2 & PLAYER_STATE2_7) {
                 player->stateFlags2 &= ~PLAYER_STATE2_7;
                 player->actor.parent = NULL;
                 player->av2.actionVar2 = 200;
-                func_8002F71C(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
+                Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
             }
 #endif
             this->attack = ENMB_ATTACK_NONE;
@@ -1308,17 +1341,30 @@ void EnMb_SetupSpearDead(EnMb* this) {
 }
 
 void EnMb_SpearDead(EnMb* this, PlayState* play) {
+#if OOT_VERSION >= NTSC_1_1
     Player* player = GET_PLAYER(play);
+#endif
 
     Math_SmoothStepToF(&this->actor.speed, 0.0f, 1.0f, 0.5f, 0.0f);
 
+#if OOT_VERSION < NTSC_1_1
+    // Empty
+#elif OOT_VERSION < PAL_1_0
+    if ((player->stateFlags2 & PLAYER_STATE2_7) && player->actor.parent == &this->actor) {
+        player->stateFlags2 &= ~PLAYER_STATE2_7;
+        player->actor.parent = NULL;
+        Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
+        this->attack = ENMB_ATTACK_NONE;
+    }
+#else
     if ((player->stateFlags2 & PLAYER_STATE2_7) && player->actor.parent == &this->actor) {
         player->stateFlags2 &= ~PLAYER_STATE2_7;
         player->actor.parent = NULL;
         player->av2.actionVar2 = 200;
-        func_8002F71C(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
+        Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 4.0f, this->actor.world.rot.y, 4.0f);
         this->attack = ENMB_ATTACK_NONE;
     }
+#endif
 
     if (SkelAnime_Update(&this->skelAnime)) {
         if (this->timer1 > 0) {
@@ -1398,8 +1444,10 @@ void EnMb_CheckColliding(EnMb* this, PlayState* play) {
             if ((player->stateFlags2 & PLAYER_STATE2_7) && player->actor.parent == &this->actor) {
                 player->stateFlags2 &= ~PLAYER_STATE2_7;
                 player->actor.parent = NULL;
+#if OOT_VERSION >= PAL_1_0
                 player->av2.actionVar2 = 200;
-                func_8002F71C(play, &this->actor, 6.0f, this->actor.world.rot.y, 6.0f);
+#endif
+                Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 6.0f, this->actor.world.rot.y, 6.0f);
             }
             this->damageEffect = this->actor.colChkInfo.damageEffect;
             this->attack = ENMB_ATTACK_NONE;

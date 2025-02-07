@@ -1,9 +1,23 @@
 #include "z_en_fire_rock.h"
 #include "overlays/actors/ovl_En_Encount2/z_en_encount2.h"
+
+#include "attributes.h"
+#include "gfx.h"
+#include "gfx_setupdl.h"
+#include "rand.h"
+#include "regs.h"
+#include "sfx.h"
+#include "sys_matrix.h"
 #include "terminal.h"
+#include "z_lib.h"
+#include "z64debug_display.h"
+#include "z64effect.h"
+#include "z64play.h"
+#include "z64player.h"
+
 #include "assets/objects/object_efc_star_field/object_efc_star_field.h"
 
-#define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_5)
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 void EnFireRock_Init(Actor* thisx, PlayState* play);
 void EnFireRock_Destroy(Actor* thisx, PlayState* play);
@@ -284,7 +298,7 @@ void FireRock_WaitSpawnRocksFromCeiling(EnFireRock* this, PlayState* play) {
         this->playerNearby = 0;
     }
 
-    if (OOT_DEBUG && BREG(0) != 0) {
+    if (DEBUG_FEATURES && BREG(0) != 0) {
         DebugDisplay_AddObject(this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z,
                                this->actor.world.rot.x, this->actor.world.rot.y, this->actor.world.rot.z, 1.0f, 1.0f,
                                1.0f, 0, 255, 0, 255, 4, play->state.gfxCtx);
@@ -367,7 +381,7 @@ void EnFireRock_Update(Actor* thisx, PlayState* play) {
                 this->collider.base.atFlags &= ~AT_HIT;
                 if (this->collider.base.at == playerActor) {
                     if (!(player->stateFlags1 & PLAYER_STATE1_26)) {
-                        func_8002F758(play, thisx, 2.0f, -player->actor.world.rot.y, 3.0f, 4);
+                        Actor_SetPlayerKnockbackSmall(play, thisx, 2.0f, -player->actor.world.rot.y, 3.0f, 4);
                     }
                     return;
                 }

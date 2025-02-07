@@ -7,7 +7,7 @@
 #include "z_en_bdfire.h"
 #include "assets/objects/object_kingdodongo/object_kingdodongo.h"
 
-#define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_5)
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 void EnBdfire_Init(Actor* thisx, PlayState* play);
 void EnBdfire_Destroy(Actor* thisx, PlayState* play);
@@ -171,7 +171,7 @@ void func_809BC598(EnBdfire* this, PlayState* play) {
                 player->bodyFlameTimers[i] = Rand_S16Offset(0, 200);
             }
             player->bodyIsBurning = true;
-            func_8002F6D4(play, &this->actor, 20.0f, this->actor.world.rot.y, 0.0f, 8);
+            Actor_SetPlayerKnockbackLarge(play, &this->actor, 20.0f, this->actor.world.rot.y, 0.0f, 8);
             PRINTF("POWER\n");
         }
     }

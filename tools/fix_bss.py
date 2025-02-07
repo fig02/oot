@@ -91,6 +91,11 @@ def read_relocs(object_path: Path, section_name: str) -> list[Reloc]:
     with open(object_path, "rb") as f:
         elffile = elftools.elf.elffile.ELFFile(f)
         symtab = elffile.get_section_by_name(".symtab")
+
+        section = elffile.get_section_by_name(section_name)
+        if section is None:
+            return []
+
         data = elffile.get_section_by_name(section_name).data()
 
         reloc_section = elffile.get_section_by_name(f".rel{section_name}")
@@ -183,11 +188,11 @@ base = None
 build = None
 
 
-def get_file_pointers_worker_init(version: str):
+def get_file_pointers_worker_init(base_path: Path, build_path: Path):
     global base
     global build
-    base = open(f"baseroms/{version}/baserom-decompressed.z64", "rb")
-    build = open(f"build/{version}/oot-{version}.z64", "rb")
+    base = open(base_path, "rb")
+    build = open(build_path, "rb")
 
 
 def get_file_pointers_worker(file: mapfile_parser.mapfile.File) -> list[Pointer]:
@@ -200,8 +205,14 @@ def get_file_pointers_worker(file: mapfile_parser.mapfile.File) -> list[Pointer]
 # C files to a list of pointers into their BSS sections
 def compare_pointers(version: str) -> dict[Path, BssSection]:
     mapfile_path = Path(f"build/{version}/oot-{version}.map")
+    base_path = Path(f"baseroms/{version}/baserom-decompressed.z64")
+    build_path = Path(f"build/{version}/oot-{version}.z64")
     if not mapfile_path.exists():
         raise FixBssException(f"Could not open {mapfile_path}")
+    if not base_path.exists():
+        raise FixBssException(f"Could not open {base_path}")
+    if not build_path.exists():
+        raise FixBssException(f"Could not open {build_path}")
 
     mapfile = mapfile_parser.mapfile.MapFile()
     mapfile.readMapFile(mapfile_path)
@@ -225,7 +236,7 @@ def compare_pointers(version: str) -> dict[Path, BssSection]:
     file_results = []
     with multiprocessing.Pool(
         initializer=get_file_pointers_worker_init,
-        initargs=(version,),
+        initargs=(base_path, build_path),
     ) as p:
         for mapfile_segment in source_code_segments:
             for file in mapfile_segment:
@@ -611,7 +622,7 @@ def format_pragma(amounts: dict[str, int], max_line_length: int) -> list[str]:
     first = True
     for version, amount in sorted(amounts.items()):
         part = f"{version}:{amount}"
-        if len(current_line) + len(part) + len('" \\') > max_line_length:
+        if len(current_line) + len(" ") + len(part) + len('" \\') > max_line_length:
             lines.append(current_line + '" ')
             current_line = " " * len(pragma_start) + '"'
             first = True
@@ -692,6 +703,12 @@ def process_file(
         raise FixBssException(f"Could not determine compiler command line for {file}")
 
     output(f"Compiler command: {shlex.join(command_line)}")
+
+    if any(s.startswith("tools/egcs/") for s in command_line):
+        raise FixBssException(
+            "Can't automatically fix BSS ordering for EGCS-compiled files"
+        )
+
     symbol_table, ucode = run_cfe(command_line, keep_files=False)
 
     bss_variables = find_bss_variables(symbol_table, ucode)

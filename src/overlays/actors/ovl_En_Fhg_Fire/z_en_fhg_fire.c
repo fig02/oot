@@ -11,7 +11,7 @@
 #include "overlays/actors/ovl_En_fHG/z_en_fhg.h"
 #include "overlays/effects/ovl_Effect_Ss_Fhg_Flash/z_eff_ss_fhg_flash.h"
 
-#define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_5)
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 typedef enum StrikeMode {
     /*  0 */ STRIKE_INIT,
@@ -535,7 +535,8 @@ void EnFhgFire_EnergyBall(EnFhgFire* this, PlayState* play) {
                     if ((bossGnd->flyMode >= GND_FLY_VOLLEY) && (this->work[FHGFIRE_RETURN_COUNT] >= 2)) {
                         Actor_PlaySfx(&this->actor, NA_SE_EN_FANTOM_LAUGH);
                     }
-                    func_8002F698(play, &this->actor, 3.0f, this->actor.world.rot.y, 0.0f, 3, 0x10);
+                    Actor_SetPlayerKnockback(play, &this->actor, 3.0f, this->actor.world.rot.y, 0.0f,
+                                             PLAYER_KNOCKBACK_LARGE_SHOCK, 0x10);
                 }
                 break;
             case FHGFIRE_LIGHT_BLUE:

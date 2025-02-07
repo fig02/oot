@@ -8,7 +8,7 @@
 #include "assets/objects/object_demo_kekkai/object_demo_kekkai.h"
 #include "assets/scenes/dungeons/ganontika/ganontika_scene.h"
 
-#define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_5)
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 void DemoKekkai_Init(Actor* thisx, PlayState* play);
 void DemoKekkai_Destroy(Actor* thisx, PlayState* play);
@@ -188,7 +188,7 @@ void DemoKekkai_Update(Actor* thisx, PlayState* play2) {
 
     if (this->energyAlpha > 0.99f) {
         if ((this->collider1.base.atFlags & AT_HIT) || (this->collider2.base.atFlags & AT_HIT)) {
-            func_8002F71C(play, &this->actor, 6.0f, this->actor.yawTowardsPlayer, 6.0f);
+            Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 6.0f, this->actor.yawTowardsPlayer, 6.0f);
         }
         CollisionCheck_SetAT(play, &play->colChkCtx, &this->collider1.base);
         CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider1.base);
@@ -246,7 +246,7 @@ void DemoKekkai_TrialBarrierIdle(Actor* thisx, PlayState* play) {
     DemoKekkai* this = (DemoKekkai*)thisx;
 
     if (this->collider1.base.atFlags & AT_HIT) {
-        func_8002F71C(play, &this->actor, 5.0f, this->actor.yawTowardsPlayer, 5.0f);
+        Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 5.0f, this->actor.yawTowardsPlayer, 5.0f);
     }
     CollisionCheck_SetAT(play, &play->colChkCtx, &this->collider1.base);
     CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider1.base);
