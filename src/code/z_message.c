@@ -327,19 +327,19 @@ void Message_UpdateOcarinaMemoryGame(PlayState* play) {
 u8 Message_ShouldAdvance(PlayState* play) {
     Input* input = &play->state.input[0];
 
-    if (CHECK_BTN_ALL(input->press.button, BTN_A) || CHECK_BTN_ALL(input->press.button, BTN_B) ||
+    if (CHECK_BTN_ALL(input->press.button, BTN_A) || CHECK_BTN_ALL(input->cur.button, BTN_B) ||
         CHECK_BTN_ALL(input->press.button, BTN_CUP)) {
         Audio_PlaySfxGeneral(NA_SE_SY_MESSAGE_PASS, &gSfxDefaultPos, 4, &gSfxDefaultFreqAndVolScale,
                              &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
     }
-    return CHECK_BTN_ALL(input->press.button, BTN_A) || CHECK_BTN_ALL(input->press.button, BTN_B) ||
+    return CHECK_BTN_ALL(input->press.button, BTN_A) || CHECK_BTN_ALL(input->cur.button, BTN_B) ||
            CHECK_BTN_ALL(input->press.button, BTN_CUP);
 }
 
 u8 Message_ShouldAdvanceSilent(PlayState* play) {
     Input* input = &play->state.input[0];
 
-    return CHECK_BTN_ALL(input->press.button, BTN_A) || CHECK_BTN_ALL(input->press.button, BTN_B) ||
+    return CHECK_BTN_ALL(input->press.button, BTN_A) || CHECK_BTN_ALL(input->cur.button, BTN_B) ||
            CHECK_BTN_ALL(input->press.button, BTN_CUP);
 }
 
@@ -1273,7 +1273,7 @@ void Message_DrawTextWide(PlayState* play, Gfx** gfxP) {
                 msgCtx->textDelay = MSG_BUF_DECODED_WIDE[++i];
                 break;
             case MESSAGE_WIDE_UNSKIPPABLE:
-                msgCtx->textUnskippable = true;
+                // msgCtx->textUnskippable = true;
                 break;
             case MESSAGE_WIDE_TWO_CHOICE:
                 msgCtx->textboxEndType = TEXTBOX_ENDTYPE_2_CHOICE;
@@ -4324,7 +4324,7 @@ void Message_Update(PlayState* play) {
                 break;
             case MSGMODE_TEXT_DISPLAYING:
                 if (msgCtx->textBoxType != TEXTBOX_TYPE_NONE_BOTTOM && YREG(31) == 0 &&
-                    CHECK_BTN_ALL(input->press.button, BTN_B) && !msgCtx->textUnskippable) {
+                    !sTextboxSkipped && CHECK_BTN_ALL(input->cur.button, BTN_B) && !msgCtx->textUnskippable) {
                     sTextboxSkipped = true;
                     msgCtx->textDrawPos = msgCtx->decodedTextLen;
                 }
