@@ -414,9 +414,9 @@ typedef enum AudioThreadCmdOp {
 /**
  * Change the sound mode of audio
  *
- * @param soundMode (s32) see the `SoundMode` enum
+ * @param soundMode (s32) see the `SoundOutputMode` enum
  */
-#define AUDIOCMD_GLOBAL_SET_SOUND_MODE(soundMode) \
+#define AUDIOCMD_GLOBAL_SET_SOUND_OUTPUT_MODE(soundMode) \
     AudioThread_QueueCmdS32(AUDIO_MK_CMD(AUDIOCMD_OP_GLOBAL_SET_SOUND_MODE, 0, 0, 0), soundMode)
 
 /**
